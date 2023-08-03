@@ -13,8 +13,9 @@ if (require('electron-squirrel-startup')) {
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
+    width: 1800,
+    height: 1000,
+    //fullscreen: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
@@ -52,8 +53,8 @@ app.on('activate', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-import { walk } from './walk';
+import { walk } from './LibraryMain/';
 
 ipcMain.on('request-dir-listing', async (event) => {
-  event.reply('response-dir-listing', walk('./Letture'));
+  event.reply('response-dir-listing', walk('../renderer/Letture'));
 });

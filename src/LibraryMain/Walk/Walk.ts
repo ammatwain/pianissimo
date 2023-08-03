@@ -1,8 +1,8 @@
 import FS from 'fs';
 import PATH from 'path';
 
-function safeReadDirSync (path: string): any {
-    let dirData: any;
+function safeReadDirSync (path: string): string[] {
+    let dirData: string[];
     try {
       dirData = FS.readdirSync(path);
     } catch(ex) {
@@ -24,18 +24,18 @@ interface WorkItem {
 export const walk2 = function(path: string, level: number = 0): WorkItem[] {
     path = PATH.resolve(__dirname,path);
     console.log("PATH",path);
-    let workItems: WorkItem[] = [];
+    const workItems: WorkItem[] = [];
     const workItem: WorkItem = {
         id: path,
         level: level,
     };
     const pathStats: FS.Stats = FS.statSync(path);
     if (pathStats.isDirectory){
-        let entries: string[] = safeReadDirSync(path);
+        const entries: string[] = safeReadDirSync(path);
         entries.forEach((entry: string)=>{
             const entryStats: FS.Stats = FS.statSync(path);
             console.log("ENTRY", entry);
-            if (pathStats.isDirectory){
+            if (entryStats.isDirectory){
                 workItem.children = walk(entry, level + 1);
             }
         });
@@ -46,16 +46,16 @@ export const walk2 = function(path: string, level: number = 0): WorkItem[] {
 
 export const walk = function(dir: string, level: number = 0) {
     dir = PATH.resolve(__dirname, dir);
-    var results: WorkItem[] = [];
-    var list = safeReadDirSync(dir);
+    const results: WorkItem[] = [];
+    const list = safeReadDirSync(dir);
     list.forEach(function(file: string) {
         file = dir + '/' + file;
-        var stat = FS.statSync(file);
-        let workItem: WorkItem = {
+        const stat = FS.statSync(file);
+        const workItem: WorkItem = {
             id: file,
             level: level,
         }
-        if (stat && stat.isDirectory()) { 
+        if (stat && stat.isDirectory()) {
             /* Recurse into a subdirectory */
             workItem.children = walk(file, level + 1);
         }
