@@ -55,5 +55,5 @@ app.on('activate', () => {
 import { walk } from './walk';
 
 ipcMain.on('request-dir-listing', async (event) => {
-  event.reply('response-dir-listing', walk('../../'));
+  event.reply('response-dir-listing', walk('./'));
 });
