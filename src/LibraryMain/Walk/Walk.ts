@@ -1,5 +1,6 @@
 import FS from 'fs';
 import PATH from 'path';
+import { IInfoFile, IWorkItem } from '../../LibraryCommon/Interfaces';
 
 function safeReadDirSync (path: string): string[] {
     let dirData: string[];
@@ -15,51 +16,102 @@ function safeReadDirSync (path: string): string[] {
     return dirData;
 }
 
-interface WorkItem {
-    id: string;
-    level: number;
-    children?: WorkItem[];
+export function checkArrayInInfo(info: IInfoFile): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    let ok: boolean = true;
+    if (!('keys' in info)) {
+        info.keys = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
+        ok = false;
+    }
+    if (!('shot' in info)) {
+        info.shot = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        ok = false;
+    }
+    if (!('done' in info)) {
+        info.done = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        ok = false;
+    }
+    if (!('fail' in info)) {
+        info.fail = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+        ok = false;
+    }
+    return ok;
 }
 
-export const walk2 = function(path: string, level: number = 0): WorkItem[] {
-    path = PATH.resolve(__dirname,path);
-    console.log("PATH",path);
-    const workItems: WorkItem[] = [];
-    const workItem: WorkItem = {
-        id: path,
-        level: level,
-    };
-    const pathStats: FS.Stats = FS.statSync(path);
-    if (pathStats.isDirectory){
-        const entries: string[] = safeReadDirSync(path);
-        entries.forEach((entry: string)=>{
-            const entryStats: FS.Stats = FS.statSync(path);
-            console.log("ENTRY", entry);
-            if (entryStats.isDirectory){
-                workItem.children = walk(entry, level + 1);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function readInfo(dir: string): IInfoFile {
+    const removePath = PATH.resolve(__dirname,'../renderer');
+    const dirBasename: string = PATH.basename(dir,'.jmxl');
+    const isJmxl: boolean = PATH.extname(dir) === '.jmxl';
+    const jsonFile: string = PATH.resolve(dir,'info.json');
+    const mxlFile: string = PATH.resolve(dir,'sheet.mxl');
+    console.log(removePath, jsonFile, mxlFile);
+    let infoFile: IInfoFile;
+    if (FS.existsSync(jsonFile)) {
+        infoFile = <IInfoFile>JSON.parse(FS.readFileSync(jsonFile).toString('utf8'));
+    } else {
+        infoFile = {
+            caption:  dirBasename,
+            keys: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],
+            shot: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            done: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            fail: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            type: null,
+            info: null,
+        }
+        if (isJmxl){
+            infoFile.type = 'sheet';
+            infoFile.practice = false;
+            if (FS.existsSync(mxlFile)){
+                infoFile.sheet = 'sheet.mxl';
             }
-        });
+        } else {
+            infoFile.type = 'book';
+        }
+        FS.writeFileSync(jsonFile,JSON.stringify(infoFile));
     }
-    workItems.push(workItem);
-    return workItems;
-};
+    if (!checkArrayInInfo(infoFile)) {
+        FS.writeFileSync(jsonFile,JSON.stringify(infoFile));
+    }
+    infoFile.info = jsonFile;
+    return infoFile;
+}
 
-export const walk = function(dir: string, level: number = 0) {
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const walk = function(dir: string, id: string = '') {
+    const removePath = PATH.resolve(__dirname,'../renderer');
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    let level: number = 0;
+    let idStr: string = id;
+    if (id!=='') {
+        level = (id.split('-').length) || 0 ;
+    }
+    if (level) {
+        idStr = id + '-';
+    }
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
+    let idNum: number = 0;
     dir = PATH.resolve(__dirname, dir);
-    const results: WorkItem[] = [];
+    const results: IWorkItem[] = [];
     const list = safeReadDirSync(dir);
     list.forEach(function(file: string) {
         file = dir + '/' + file;
         const stat = FS.statSync(file);
-        const workItem: WorkItem = {
-            id: file,
+        const workItem: IWorkItem = {
+            id: idStr + idNum,
+            path: file.replace(removePath,'.'),
+            name: PATH.basename(file),
             level: level,
         }
         if (stat && stat.isDirectory()) {
             /* Recurse into a subdirectory */
-            workItem.children = walk(file, level + 1);
+            if (PATH.extname(file)!=='.jmxl') {
+                workItem.children = walk(file, workItem.id);
+            }
+            Object.assign(workItem,readInfo(file));
+            results.push(workItem);
+            idNum++;
         }
-        results.push(workItem);
     });
     return results;
 }

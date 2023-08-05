@@ -12,6 +12,7 @@ export const plugins = [
         patterns: [
 //            { from: path.resolve(__dirname, "src/Letture"), to: path.resolve(__dirname, ".webpack/main/Letture")},
             { from: path.resolve(__dirname, "src/Letture"), to: path.resolve(__dirname, ".webpack/renderer/Letture")},
+            { from: path.resolve(__dirname, "src/Data"), to: path.resolve(__dirname, ".webpack/main/Data")},
         ],
     }),
 ];

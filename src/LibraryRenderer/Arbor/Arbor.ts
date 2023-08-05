@@ -1,6 +1,6 @@
 import { default as ajax } from './Ajax';
 import './style/style.scss';
-
+import { IArborBranch, IArborStore } from '../../LibraryCommon';
 declare global {
     interface ParentNode {
         branchId: string;
@@ -8,38 +8,17 @@ declare global {
     interface HTMLLIElement {
         branchId: string;
     }
-    interface Window {
-        ArborList: any[];
-    }
-}
-
-window.ArborList = [];
-
-export interface IArborBranch  {
-    id?: string;
-    text?: string;
-    checked?: boolean;
-    disabled?: boolean;
-    percent?: number;
-    status?: number;
-    parent?: IArborBranch;
-    children?: IArborBranch[];
-}
-
-interface IArborStore  {
-    arborBranches?: IArborBranch[];
-    branchesById?: {[index: string]: IArborBranch };
-    leafBranchesById?: {[index: string]: IArborBranch };
-    defaultValues?: string[];
-    defaultDisables?: any[];
 }
 
 function deepClone(obj: IArborBranch[] ): IArborBranch[] {
   return JSON.parse(JSON.stringify(obj));
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function uniq(arr: any[]): any[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const map: {[index: string]: any} = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return arr.reduce((acc: any[], item: any) => {
     if (!map[item]) {
       map[item] = true;
@@ -56,8 +35,11 @@ function empty(ele: HTMLElement): void {
 }
 
 interface ICallbackAnimation {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     active(): any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enter(): any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     leave(): any;
 }
 
@@ -82,8 +64,9 @@ function collapseFromLeaf(arbor: Arbor, leafBranch: IArborBranch) {
   } catch (error) {
     return;
   }
-  if(leafBranch.hasOwnProperty('parent'))
+  if('parent' in leafBranch) {
     collapseFromLeaf(arbor, leafBranch.parent);
+  }
 }
 
 function expandFromRoot(arbor: Arbor, root: IArborBranch) {
@@ -91,7 +74,7 @@ function expandFromRoot(arbor: Arbor, root: IArborBranch) {
     if(branchListItemElement.classList.contains('_close')) {
         (<HTMLSpanElement>branchListItemElement.querySelector('switcher')).click();
     }
-    if(root.hasOwnProperty('children')) {
+    if('children' in root) {
         for(let child of root.children) {
             expandFromRoot(arbor, child);
         }
@@ -102,16 +85,21 @@ interface IArborOptions {
     data?: IArborBranch[];
     selectMode?: string;
     values?: string[];
-    disables?: any[];
-    beforeLoad?: Function;
-    loaded?: Function;
     url?: string;
     method?: string;
     closeDepth?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    disables?: any[];
+    // eslint-disable-next-line @typescript-eslint/ban-types
     onChange?: Function;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    beforeLoad?: Function;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    loaded?: Function;
 }
 
 export class Arbor {
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     private initcount: number = 0;
     private defaultOptions: IArborOptions = {
         selectMode: 'checkbox',
@@ -125,6 +113,7 @@ export class Arbor {
     }
     private arborStore: IArborStore = {};
     public liElementsById: {[index: string]: HTMLLIElement} = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private willUpdateBranchesById: any = {};
     private container: HTMLElement = null;
     private options: IArborOptions;
@@ -141,14 +130,14 @@ export class Arbor {
         this.setDisables(uniq(values));
     }
     get selectedBranches(): IArborBranch[] {
-        let branches = [];
-        let brancesById = this.arborStore.branchesById;
-        for (let id in brancesById) {
+        const branches: IArborBranch[] = [];
+        const branchesById: {[index: string]: IArborBranch} = this.arborStore.branchesById;
+        for (const id in branchesById) {
         if (
-            brancesById.hasOwnProperty(id) &&
-            (brancesById[id].status === 1 || brancesById[id].status === 2)
+            id in branchesById &&
+            (branchesById[id].status === 1 || branchesById[id].status === 2)
         ) {
-            const branch = Object.assign({}, brancesById[id]);
+            const branch = Object.assign({}, branchesById[id]);
             delete branch.parent;
             delete branch.children;
             branches.push(branch);
@@ -157,20 +146,23 @@ export class Arbor {
         return branches;
     }
     get disabledBranches(): IArborBranch[] {
-        let branches = [];
-        let branchesById = this.arborStore.branchesById;
-        for (let id in branchesById) {
-        if (branchesById.hasOwnProperty(id) && branchesById[id].disabled) {
-            let branch = Object.assign({}, branchesById[id]);
-            delete branch.parent;
-            branches.push(branch);
-        }
+        const branches: IArborBranch[] = [];
+        const branchesById: {[index: string]: IArborBranch} = this.arborStore.branchesById;
+        for (const id in branchesById) {
+            if (id in branchesById && branchesById[id].disabled) {
+                const branch: IArborBranch = <IArborBranch>Object.assign({}, branchesById[id]);
+                delete branch.parent;
+                branches.push(branch);
+            }
         }
         return branches;
     }
 
+    public getLeafById(id: string): IArborBranch {
+        return this.arborStore.leafBranchesById[id] || null;
+    }
+
     constructor(container: HTMLElement | string, options: IArborOptions ) {
-        window.ArborList.push(this);
         if (container instanceof HTMLElement ) {
             this.container = container;
         } else {
@@ -182,8 +174,18 @@ export class Arbor {
             this.load((data: IArborBranch[]) => {
               this.initialize(data);
             });
-        } else {
+        } else if (this.options.data){
             this.initialize(this.options.data);
+        } else {
+            this.initialize(
+                [
+                    {
+                        id: '0',
+                        percent:0,
+                        caption: 'undefined',
+                    },
+                ]
+            );
         }
     }
 
@@ -209,7 +211,7 @@ export class Arbor {
 
     initialize(data: IArborBranch[] ) {
         this.initcount++;
-        console.log("INIT COUNTER",this.initcount);
+//        console.log("INIT COUNTER",this.initcount);
 //        console.time('init');
         this.arborStore = this.parseArborData(data);
         this.render(this.arborStore.arborBranches);
@@ -225,6 +227,7 @@ export class Arbor {
         }
 
         this.arborStore.defaultDisables.length && this.setDisables(this.arborStore.defaultDisables);
+        this.updateAllPercents();
         loaded && loaded.call(this);
 //        console.timeEnd('init');
     };
@@ -262,12 +265,12 @@ export class Arbor {
         empty(this.container);
         this.container.appendChild(arborElement);
         arborElement.addEventListener("click",(e: Event)=>{
-            
+
             Object.values(this.liElementsById).forEach((element: HTMLLIElement)=>{
                 element.classList.remove("_selected");
             });
-            
-            let liEle: HTMLLIElement = (<HTMLElement>e.target).closest('LI');
+
+            const liEle: HTMLLIElement = (<HTMLElement>e.target).closest('LI');
             if (liEle) {
                 liEle.classList.add("_selected");
             }
@@ -277,8 +280,8 @@ export class Arbor {
 
     getValues() {
         const values: string[] = [];
-        for (let id in this.arborStore.leafBranchesById) {
-          if (this.arborStore.leafBranchesById.hasOwnProperty(id)) {
+        for (const id in this.arborStore.leafBranchesById) {
+          if (id in this.arborStore.leafBranchesById) {
             if (
               this.arborStore.leafBranchesById[id].status === 1 ||
               this.arborStore.leafBranchesById[id].status === 2
@@ -314,8 +317,8 @@ export class Arbor {
 
     getDisables(): string[] {
         const values = [];
-        for (let id in this.arborStore.leafBranchesById) {
-            if (this.arborStore.leafBranchesById.hasOwnProperty(id)) {
+        for (const id in this.arborStore.leafBranchesById) {
+            if (id in this.arborStore.leafBranchesById) {
                 if (this.arborStore.leafBranchesById[id].disabled) {
                     values.push(id);
                 }
@@ -332,6 +335,7 @@ export class Arbor {
         this.updateListItemElements();
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     buildArbor(branches: IArborBranch[], depth: number, level: number = 0) {
         const rootUlEle = this.createUnorderedListElelement();
         if (branches && branches.length) {
@@ -389,15 +393,15 @@ export class Arbor {
     };
 
     onItemClick(id: string): void {
-        console.time('onItemClick');
+//        console.time('onItemClick');
         const branch = this.arborStore.branchesById[id];
-        const onChange: Function = this.options.onChange;
+        const onChange = this.options.onChange;
         if (!branch.disabled) {
             this.setValue(id);
             this.updateListItemElements();
         }
         onChange && onChange.call(this);
-        console.timeEnd('onItemClick');
+//        console.timeEnd('onItemClick');
     };
 
     setValue(value: string): void {
@@ -412,8 +416,10 @@ export class Arbor {
     };
     setPercentLinearGradient(span: HTMLSpanElement, value: number = null) {
         value = value || 0;
-        span.style.background = `linear-gradient(to right, #3333cc ${value}%, #788898 ${value}%)`;
-        span.style.color = "#ffffff";
+//        span.style.background = `linear-gradient(to right, #3333cc ${value}%, #788898 ${value}%)`;
+//        span.style.color = "#ffffff";
+        span.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${value}%, rgba(0,0,0,0.333) ${value}%)`;
+        //span.style.color = "#ffffff";
         span.innerHTML = `${(value || 0 ).toFixed(0)}%`;
     }
     setPercent(branch: IArborBranch, value: number): void{
@@ -427,10 +433,13 @@ export class Arbor {
                 this.updatePercents(branch.parent);
             }
         }
+//        console.log(branch.id, 'percent update',value)
     }
 
     updatePercents(branch: IArborBranch){
+        // eslint-disable-next-line @typescript-eslint/no-inferrable-types
         let thisPercent: number = 0;
+        // eslint-disable-next-line @typescript-eslint/no-inferrable-types
         let childrenPercent: number = 0;
 
         if (branch.children && branch.children.length>0){
@@ -451,7 +460,7 @@ export class Arbor {
 
     updateAllPercents(): void {
         Object.values(this.arborStore.branchesById).forEach((branch: IArborBranch)=>{
-            console.log(branch.id);
+//            console.log(branch.id);
             if (!(branch.children && branch.children.length)){
                 this.setPercent(branch, branch.percent);
             }
@@ -530,7 +539,7 @@ export class Arbor {
         const {parent} = branch;
         if (parent) {
             if (changeState === 'status') {
-                let pStatus = null;
+                let parentStatus = null;
                 const statusCount = parent.children.reduce((acc, child) => {
                 if (!isNaN(child.status)) {
                     return acc + child.status;
@@ -539,12 +548,12 @@ export class Arbor {
             }, 0);
 
             if (statusCount) {
-                pStatus = statusCount === parent.children.length * 2 ? 2 : 1;
+                parentStatus = statusCount === parent.children.length * 2 ? 2 : 1;
             } else {
-                pStatus = 0;
+                parentStatus = 0;
             }
-            if (parent.status === pStatus) return;
-                parent.status = pStatus;
+            if (parent.status === parentStatus) return;
+                parent.status = parentStatus;
             } else {
                 const pDisabled = parent.children.reduce(
                     (acc, child) => acc && child.disabled,
@@ -627,7 +636,7 @@ export class Arbor {
     get randomBranch(): IArborBranch{
         let branch: IArborBranch;
         do {
-            let items = Object.values(this.arborStore.branchesById);
+            const items: IArborBranch[] = Object.values(this.arborStore.branchesById);
             branch = items[Math.floor(Math.random()*items.length)];
         } while (branch.children && branch.children.length);
         return branch;
@@ -664,22 +673,24 @@ export class Arbor {
         li.appendChild(checkbox);
         const label = document.createElement('span');
         label.classList.add('label');
-        const text = document.createTextNode(branch.text);
-        label.appendChild(text);
+        const caption = document.createTextNode(branch.caption);
+        label.appendChild(caption);
         li.appendChild(label);
         li.branchId = branch.id;
         return li;
     };
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     load = function(callback: Function) {
-        console.time('load');
+//        console.time('load');
         const {url, method, beforeLoad} = this.options;
         ajax({
             url,
             method,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             success: (result: any) => {
                 let data = result;
-                console.timeEnd('load');
+//                console.timeEnd('load');
                 if (beforeLoad) {
                     data = beforeLoad(result);
                 }
