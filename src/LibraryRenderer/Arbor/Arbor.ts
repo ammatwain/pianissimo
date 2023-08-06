@@ -637,7 +637,7 @@ export class Arbor {
         let branch: IArborBranch;
         do {
             const items: IArborBranch[] = Object.values(this.arborStore.branchesById);
-            branch = items[Math.floor(Math.random()*items.length)];
+            branch = items[Math.floor(Math.random() * items.length)];
         } while (branch.children && branch.children.length);
         return branch;
     }

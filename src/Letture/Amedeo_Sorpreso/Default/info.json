@@ -1,6 +1,6 @@
 {
-    "caption": "Letture",
-    "order": 3,
+    "caption": "Default",
+    "order": 5,
     "type": "book",
     "sheet": null,
     "practice": false,

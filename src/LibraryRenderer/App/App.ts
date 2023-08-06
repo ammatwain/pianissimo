@@ -3,6 +3,7 @@ import { IArborBranch } from '../../LibraryCommon';
 import { Arbor } from "../Arbor";
 import { WebMidi, Input, NoteMessageEvent } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { Maestro } from '../Maestro';
 
 declare global {
     interface Window {
@@ -20,6 +21,7 @@ interface IAppData {
     osmdDivId?: string;
     osmd? : OpenSheetMusicDisplay;
     midiInput? : Input[] = [];
+    maestro?: Maestro;
     selectSample?: string;
 }
 
@@ -47,27 +49,37 @@ export class App {
         // webmidi
         WebMidi.enable().then(() => {
             console.log("WebMidi.js has been enabled!");
+            // osmd
+            this.data.osmd = new OpenSheetMusicDisplay(this.data.osmdDivId, {
+                backend: "svg",
+                drawTitle: true,
+                disableCursor:false,
+                followCursor:true,
+            });
+            console.log("OSMD has been enabled!", this.data.osmd.Version);
             this.data.midiInput = WebMidi.inputs;
-        });
-        // osmd
-        this.data.osmd = new OpenSheetMusicDisplay(this.data.osmdDivId, {
-            backend: "svg",
-            drawTitle: true,
-            disableCursor:false,
-            followCursor:true,
-        });
-        console.log(this.data.osmd.Version);
-        //arbor
-        this.data.arbor = new Arbor(`#${this.data.arborDivID}`, {closeDepth:1, onChange: ()=>{
-            const values: string[] = this.arbor.getValues();
-            if (values.length===1) {
-                const leaf: IArborBranch = this.arbor.getLeafById(values[0]);
-                if (leaf) {
-                    this.selectSampleOnChange(`${leaf.path}/${leaf.sheet}`, leaf.caption);
+            //maestro
+            this.data.maestro = new Maestro({osmd: this.osmd, midiInputs: this.midiInputs});
+            console.log("Maestro has been enabled!");
+            //arbor
+            this.data.arbor = new Arbor(`#${this.data.arborDivID}`, {closeDepth:1, onChange: ()=>{
+                const values: string[] = this.arbor.getValues();
+                //if (values.length===1) {
+                //    const leaf: IArborBranch = this.arbor.getLeafById(values[0]);
+                //    if (leaf) {
+                //        this.selectSampleOnChange(`${leaf.path}/${leaf.sheet}`, leaf.caption);
+                //    }
+                //} else
+                if (values.length>0){
+                    this.maestro.exercises = [];
+                    values.forEach((id: string)=>{
+                        this.maestro.exercises.push(this.arbor.getLeafById(id));
+                    });
+                    this.maestro.loadSheet(null, 3);
                 }
-            }
-        }});
-        this.setListeners();
+            }});
+            this.setListeners();
+        });
     }
 
     setListeners() {
@@ -81,30 +93,10 @@ export class App {
         window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
             console.log(arg);
         });
-        if (this.midiInputs) {
-            this.midiInputs.forEach((input: Input)=>{
 
-                input.addListener("noteon",(e: NoteMessageEvent)=>{
-                    console.log(e.note.number);
-    //              musicante.setMidiNoteOn(e.note.number);
-    //                  if(musicante.allNotesUnderCursorArePlayed()){
-    //                  musicante.next();
-    //              }
-                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
-
-                input.addListener("noteoff",(e: NoteMessageEvent)=>{
-                    console.log(e.note.number);
-    //              musicante.setMidiNoteOff(e.note.number);
-                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
-
-                input.addListener("pitchbend",(e: NoteMessageEvent)=>{
-                    console.log(e);
-    //              musicante.setMidiNoteOff(e.note.number);
-                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
-
-            });
-        }
         window.electron.ipcRenderer.sendMessage('request-dir-listing', {});
+
+        this.maestro.setListeners();
 
         // this.test();
     }
@@ -126,6 +118,10 @@ export class App {
 
     public get arbor(): Arbor {
         return this.data.arbor || null;
+    }
+
+    public get maestro(): Maestro {
+        return this.data.maestro || null;
     }
 
     disable() {

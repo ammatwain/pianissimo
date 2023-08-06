@@ -1,8 +1,8 @@
 {
-    "caption": "c",
-    "order": 5,
-    "type": "book",
-    "sheet": null,
+    "caption": "Default 1",
+    "order": 1,
+    "type": "sheet",
+    "sheet": "sheet.mxl",
     "practice": false,
     "shot": [
         0,
