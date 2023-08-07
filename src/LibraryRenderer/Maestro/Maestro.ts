@@ -1,5 +1,5 @@
 import { IExercise } from "../../LibraryCommon";
-import { ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, SourceMeasure } from "opensheetmusicdisplay";
+import { RepetitionInstruction, RepetitionCalculator, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, SourceMeasure } from "opensheetmusicdisplay";
 import { Input, NoteMessageEvent } from "../WebMidi";
 
 
@@ -9,6 +9,8 @@ export interface IMaestroParams {
 }
 
 interface IMaestroData extends IMaestroParams{
+    repetitionCalculator: RepetitionCalculator;
+    repeats: [RepetitionInstruction[],RepetitionInstruction[]][];
     midiNotes : boolean[];
     osmdNotes : number[];
     playMeasures : number[];
@@ -22,6 +24,8 @@ interface IMaestroData extends IMaestroParams{
 
 export class Maestro{
     private data: IMaestroData = {
+        repetitionCalculator: new RepetitionCalculator(),
+        repeats : [],
         midiNotes : [],
         osmdNotes : [],
         playMeasures : [],
@@ -33,20 +37,49 @@ export class Maestro{
         errors: 0,
     }
 
+    //https://www.myriad-online.com/resources/docs/melody/italiano/breaks.htm
+    /*
+    0  0 StartLine,      // linea |             = Indica la prima battuta del brano da suonare.
+    0  1 ForwardJump,    // linea |:            = Inizio di un gruppo di battute che vanno suonate più volte.
+    1  2 BackJumpLine,   // linea :|            = Fine di un gruppo di battute che vanno suonate più volte.
+    1  3 Ending,         // linea |             = Indica l'ultima battuta del brano da suonare.
+    1  4 DaCapo,         // Salto               = D.C. Salta all'inizio del brano.
+    1  5 DalSegno,       // Salto               = Salta al Segno
+    1  6 Fine,           // Azione Condizionata = Fine dell'esecuzione se all'ultima volta.
+    1  7 ToCoda,         // Salto/Condizionato  = Salta al coda se all'ultima volta.
+    1  8 DalSegnoAlFine, // Salto               = Salta al Segno e termina l'esecuzione al simbolo Fine successivo.
+    1  9 DaCapoAlFine,   // Salto               = Salta all'inizio del brano e termina l'esecuzione al simbolo Fine successivo.
+    1 10 DalSegnoAlCoda, // Salto               = Salta al Segno e prosegue l'esecuzione fino al simbolo Coda (o al salto ToCoda ).
+    1 11 DaCapoAlCoda,   // Salto               = Salta all'inizio del brano e prosegue l'esecuzione fino al simbolo Coda  (o al salto toCoda ).
+    1 12 Coda,           // Destinazione salto  = Destinazione di "Salta al Coda" (Da Coda, ToCoda)
+    0 13 Segno,          // Destinazione salto  = Destinazione di "Salta al Segno" (D.S.)
+    ? 14 None,
+    */
     constructor(params: IMaestroParams){
         this.data.osmd = params.osmd;
         this.data.midiInputs = params.midiInputs;
         if (!(this.osmd.TransposeCalculator && (this.osmd.TransposeCalculator instanceof ExtendedTransposeCalculator))) {
             this.osmd.TransposeCalculator = new ExtendedTransposeCalculator(this.osmd);
-        }
+         }
         this.sheetNotes = [];
         for (let i=0;i<128;i++){
             this.data.midiNotes.push(false);
         }
         this.clearMidiNotes();
     }
+    public fillRepeats(): void {
+        this.data.repeats = [];
+        this.osmd.Sheet.SourceMeasures.forEach((m: SourceMeasure ,index:number)=>{
+            this.data.repeats.push([
+                m.FirstRepetitionInstructions,
+                m.LastRepetitionInstructions,
+            ]);
+        });
+    }
 
     public calculatePlayerMeasures(): void {
+      this.fillRepeats();
+      console.log(this.data.repeats);
       this.data.playMeasures = [];
       const starts: number[] = [];
       this.osmd.Sheet.SourceMeasures.forEach((m: SourceMeasure ,index:number)=>{
@@ -67,6 +100,7 @@ export class Maestro{
           }
         }
       });
+      this.data.playMeasures.push(-1);
     }
 
     public get OSMD():OpenSheetMusicDisplay  {
@@ -191,32 +225,55 @@ export class Maestro{
         });
     }
 
+    public test(): void {
+        this.osmd.cursor.reset();
+        while(!this.osmd.cursor.iterator.EndReached) {
+            this.osmd.cursor.next();
+            console.log("---------------------------------");
+            console.log("JumpOccurred", this.osmd.cursor.Iterator.JumpOccurred);
+            console.log("EndReached", this.osmd.cursor.Iterator.EndReached);
+        }
+    }
+
     public next(){
         this.data.osmdNotes = [];
         this.clearMidiNotes();
         //let expectedMeasureIndex:number = this.playerMeasures[this.playerMeasureIndex];
         console.log("PRE-WHILE ","Current",this.osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.expectedMeasureIndex) ;
-        while (!this.osmd.cursor.Iterator.EndReached && this.data.osmdNotes.length<1) {
+        while (
+            this.expectedMeasureIndex>=0 &&
+            this.data.osmdNotes.length<1
+//            !this.osmd.cursor.Iterator.EndReached &&
+        ) {
             this.osmd.cursor.Iterator.moveToNextVisibleVoiceEntry(false)
             this.osmd.cursor.update();
 
     //      expectedMeasureIndex = this.playerMeasures[this.playerMeasureIndex];
     //      console.log("IN-WHILE  ","Current",this.osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",expectedMeasureIndex) ;
 
-            if ( this.osmd.cursor.Iterator.CurrentMeasureIndex!=this.expectedMeasureIndex ) {
+            if (
+                this.expectedMeasureIndex>=0 &&
+                this.osmd.cursor.Iterator.CurrentMeasureIndex!==this.expectedMeasureIndex
+            ) {
                 // C'E' SALTO UN SALTO DI MISURA
                 // AGGIORNIAMO
                 this.playerMeasureIndex++;
                 //expectedMeasureIndex = this.playerMeasures[this.playerMeasureIndex];
 
                 console.log("Current",this.osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.expectedMeasureIndex) ;
-                if (!(this.osmd.cursor.Iterator.EndReached) && (this.osmd.cursor.Iterator.CurrentMeasureIndex!=this.expectedMeasureIndex)){
+                if (
+                    //!(this.osmd.cursor.Iterator.EndReached) &&
+                    this.expectedMeasureIndex>=0 &&
+                    (this.osmd.cursor.Iterator.CurrentMeasureIndex!==this.expectedMeasureIndex)
+                ){
                     // SIAMO IN PRESENZA DI UNA RIPETIZIONE
                     this.osmd.cursor.resetIterator();
                     this.osmd.cursor.update();
+                    console.log("playerMeasures",this.playerMeasures) ;
                     console.log("Current",this.osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.expectedMeasureIndex) ;
                     while (this.osmd.cursor.Iterator.CurrentMeasureIndex < this.expectedMeasureIndex) {
                         this.osmd.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+                        console.log("backJumpOccurred2",this.osmd.cursor.iterator.backJumpOccurred);
                         this.osmd.cursor.update();
                         console.log("Current",this.osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.expectedMeasureIndex) ;
                     }
@@ -227,7 +284,10 @@ export class Maestro{
             if (this.playerMeasureIndex>=this.playerMeasures.length) {
                 this.playerMeasureIndex = this.playerMeasures.length-1;
             }
-            if(this.osmd.cursor.Iterator.EndReached) {
+            if(
+                this.osmd.cursor.Iterator.EndReached ||
+                this.expectedMeasureIndex<0
+            ) {
                 console.log("END REACHED");
                 //1
                 this.osmd.cursor.reset();
@@ -268,15 +328,18 @@ export class Maestro{
                 this.playerMeasures = [];
                 this.playerMeasureIndex = 0;
                 this.calculatePlayerMeasures();
+                console.log(this.data.playMeasures);
                 this.osmd.Sheet.Transpose = transposeValue;
                 this.osmd.zoom = 1.0;
                 //this.osmd.FollowCursor = true;
                 this.osmd.Sheet.Title.text = exercise.caption;
                 this.osmd.updateGraphic();
-
                 this.osmd.render();
                 this.reset();
                 this.osmd.cursor.show();
+                this.test();
+                this.data.repetitionCalculator.calculateRepetitions(this.OSMD.Sheet, this.data.repeats);
+                console.log(this.data.repeats);
                 if(afterEnd!==null && typeof afterEnd === 'function'){
                     afterEnd();
                 }
