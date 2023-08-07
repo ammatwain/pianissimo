@@ -57,7 +57,7 @@ app.on('activate', () => {
 import { walk } from './LibraryMain/';
 
 ipcMain.on('request-dir-listing', async (event) => {
-  event.reply('response-dir-listing', walk('../renderer/Letture'));
+  event.reply('response-dir-listing', walk('../renderer/main_window/Letture'));
 });
 
 ipcMain.on('request-sheet', async (event,sheet) => {

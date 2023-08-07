@@ -1,6 +1,7 @@
 import FS from 'fs';
 import PATH from 'path';
 import { IInfoFile, IWorkItem } from '../../LibraryCommon/Interfaces';
+import { app } from 'electron';
 
 function safeReadDirSync (path: string): string[] {
     let dirData: string[];
@@ -40,7 +41,8 @@ export function checkArrayInInfo(info: IInfoFile): boolean {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function readInfo(dir: string): IInfoFile {
-    const removePath = PATH.resolve(__dirname,'../renderer');
+    //const removePath = PATH.resolve(__dirname,'../renderer/main_window');
+    const removePath = PATH.resolve(__dirname, dir).split('/Letture/')[0];
     const dirBasename: string = PATH.basename(dir,'.jmxl');
     const isJmxl: boolean = PATH.extname(dir) === '.jmxl';
     const jsonFile: string = PATH.resolve(dir,'info.json');
@@ -79,7 +81,9 @@ export function readInfo(dir: string): IInfoFile {
 
 // eslint-disable-next-line @typescript-eslint/no-inferrable-types
 export const walk = function(dir: string, id: string = '') {
-    const removePath = PATH.resolve(__dirname,'../renderer');
+    //const removePath = PATH.resolve(__dirname,'../renderer');
+    //const removePath = PATH.resolve(__dirname,'../renderer/main_window');
+    const removePath = PATH.resolve(__dirname, dir).split('/Letture/')[0];
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     let level: number = 0;
     let idStr: string = id;
@@ -96,10 +100,17 @@ export const walk = function(dir: string, id: string = '') {
     const list = safeReadDirSync(dir);
     list.forEach(function(file: string) {
         file = dir + '/' + file;
+        let removedPath: string = '';
         const stat = FS.statSync(file);
+        if (app.isPackaged) {
+            removedPath = file.replace(removePath,'.');
+        } else {
+            removedPath = file.replace(removePath,'./main_window');
+        }
         const workItem: IWorkItem = {
             id: idStr + idNum,
-            path: file.replace(removePath,'.'),
+//            path: file.replace(removePath,'.'),
+            path: removedPath,
             name: PATH.basename(file),
             level: level,
         }

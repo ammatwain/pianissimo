@@ -1,7 +1,7 @@
 import './App.scss';
 import { IArborBranch } from '../../LibraryCommon';
 import { Arbor } from "../Arbor";
-import { WebMidi, Input, NoteMessageEvent } from "../WebMidi";
+import { WebMidi, Input } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { Maestro } from '../Maestro';
 
@@ -20,7 +20,7 @@ interface IAppData {
     errorTr?: HTMLTableRowElement;
     osmdDivId?: string;
     osmd? : OpenSheetMusicDisplay;
-    midiInput? : Input[] = [];
+    midiInput? : Input[];
     maestro?: Maestro;
     selectSample?: string;
 }
