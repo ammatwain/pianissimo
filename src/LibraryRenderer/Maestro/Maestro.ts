@@ -1,7 +1,7 @@
 import { IExercise } from "../../LibraryCommon";
-import { RepetitionInstruction, RepetitionCalculator, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, SourceMeasure } from "opensheetmusicdisplay";
+import { RepetitionInstruction, RepetitionCalculator, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, SourceMeasure, MusicSheet } from "opensheetmusicdisplay";
 import { Input, NoteMessageEvent } from "../WebMidi";
-
+import { Repetitions } from "../Repetitions";
 
 export interface IMaestroParams {
     osmd?: OpenSheetMusicDisplay;
@@ -9,7 +9,6 @@ export interface IMaestroParams {
 }
 
 interface IMaestroData extends IMaestroParams{
-    repetitionCalculator: RepetitionCalculator;
     repeats: [RepetitionInstruction[],RepetitionInstruction[]][];
     midiNotes : boolean[];
     osmdNotes : number[];
@@ -24,7 +23,6 @@ interface IMaestroData extends IMaestroParams{
 
 export class Maestro{
     private data: IMaestroData = {
-        repetitionCalculator: new RepetitionCalculator(),
         repeats : [],
         midiNotes : [],
         osmdNotes : [],
@@ -67,17 +65,46 @@ export class Maestro{
         }
         this.clearMidiNotes();
     }
-    public fillRepeats(): void {
-        this.data.repeats = [];
-        this.osmd.Sheet.SourceMeasures.forEach((m: SourceMeasure ,index:number)=>{
-            this.data.repeats.push([
-                m.FirstRepetitionInstructions,
-                m.LastRepetitionInstructions,
-            ]);
-        });
-    }
 
     public calculatePlayerMeasures(): void {
+        const sheet: MusicSheet = this.osmd.Sheet;
+        this.data.playMeasures = [];
+        const tmp: number[] = [];
+        let latest: number = -1;
+        sheet.SourceMeasures.forEach((m: SourceMeasure, index: number)=>{
+            if(latest<index) {
+                tmp.push(index);
+                /*
+                m.FirstRepetitionInstructions.forEach((ri: RepetitionInstruction)=>{
+                    const repetitions: Repetitions = new Repetitions(ri.type, sheet.SourceMeasures, index);
+                    const array: number[] = repetitions.array;
+                    array.forEach((n: number)=>{
+                        tmp.push(n);
+                    });
+                });
+                */
+                // le istruzioni di salto sono a fine misura
+                m.LastRepetitionInstructions.forEach((ri: RepetitionInstruction)=>{
+                    const repetitions: Repetitions = new Repetitions(ri.type, sheet.SourceMeasures, index);
+                    const array: number[] = repetitions.array;
+                    array.forEach((n: number)=>{
+                        tmp.push(n);
+                    });
+                });
+                latest = tmp[tmp.length-1];
+            }
+        });
+        for(let i: number = 0 ; i < tmp.length; i++) {
+            if (tmp[i] === -1) {
+                break;
+            }
+            this.data.playMeasures.push(tmp[i]);
+        }
+        this.data.playMeasures.push(-1);
+    }
+
+/*
+    public calculatePlayerMeasures2(): void {
       this.fillRepeats();
       console.log(this.data.repeats);
       this.data.playMeasures = [];
@@ -102,7 +129,7 @@ export class Maestro{
       });
       this.data.playMeasures.push(-1);
     }
-
+*/
     public get OSMD():OpenSheetMusicDisplay  {
       return this.osmd;
     };
@@ -229,9 +256,6 @@ export class Maestro{
         this.osmd.cursor.reset();
         while(!this.osmd.cursor.iterator.EndReached) {
             this.osmd.cursor.next();
-            console.log("---------------------------------");
-            console.log("JumpOccurred", this.osmd.cursor.Iterator.JumpOccurred);
-            console.log("EndReached", this.osmd.cursor.Iterator.EndReached);
         }
     }
 
@@ -338,7 +362,6 @@ export class Maestro{
                 this.reset();
                 this.osmd.cursor.show();
                 this.test();
-                this.data.repetitionCalculator.calculateRepetitions(this.OSMD.Sheet, this.data.repeats);
                 console.log(this.data.repeats);
                 if(afterEnd!==null && typeof afterEnd === 'function'){
                     afterEnd();
