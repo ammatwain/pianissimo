@@ -70,7 +70,7 @@ export class Repetitions {
         let result: number = measure;
         console.log(m.FirstRepetitionInstructions);
         let index: number = m.FirstRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
-            return Number(r.type) === Number(sign);
+            return r.type === sign;
         });
         if (index<0){
             result = -1;
@@ -84,7 +84,7 @@ export class Repetitions {
         let result: number = measure;
         console.log(m.LastRepetitionInstructions);
         let index: number = m.LastRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
-            return Number(r.type) === Number(sign);
+            return r.type === sign;
         });
         if (index<0){
             result = -1;
@@ -95,7 +95,7 @@ export class Repetitions {
     signInBoth(sign: RepetitionInstructionEnum, measure: number): number {
         let result: number = this.signInFirst(sign, measure);
         if (result<0) {
-            let result: number = this.signInLast(sign, measure);
+            result = this.signInLast(sign, measure);
         }
         return result;
     }
@@ -109,6 +109,9 @@ export class Repetitions {
                 break;
             }
         }
+        if (result<0) {
+            result = defaultValue;
+        }
         return result;
     }
 
@@ -120,6 +123,9 @@ export class Repetitions {
             if (result>=0){
                 break;
             }
+        }
+        if (result<0) {
+            result = defaultValue;
         }
         return result;
     }
@@ -133,6 +139,9 @@ export class Repetitions {
                 break;
             }
         }
+        if (result<0) {
+            result = defaultValue;
+        }
         return result;
     }
 
@@ -144,6 +153,9 @@ export class Repetitions {
             if (result>=0){
                 break;
             }
+        }
+        if (result<0) {
+            result = defaultValue;
         }
         return result;
     }
@@ -157,6 +169,9 @@ export class Repetitions {
                 break;
             }
         }
+        if (result<0) {
+            result = defaultValue;
+        }
         return result;
     }
 
@@ -168,6 +183,9 @@ export class Repetitions {
             if (result>=0){
                 break;
             }
+        }
+        if (result<0) {
+            result = defaultValue;
         }
         return result;
     }
