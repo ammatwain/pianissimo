@@ -1,7 +1,8 @@
 import { IExercise } from "../../LibraryCommon";
 import { RepetitionInstruction, RepetitionCalculator, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, SourceMeasure, MusicSheet } from "opensheetmusicdisplay";
 import { Input, NoteMessageEvent } from "../WebMidi";
-import { Repetitions } from "../Repetitions";
+import { Repetitions, SheetFlowCalculator } from "../SheetFlow";
+import { KeyboardInputEvent } from "electron";
 
 export interface IMaestroParams {
     osmd?: OpenSheetMusicDisplay;
@@ -10,6 +11,7 @@ export interface IMaestroParams {
 
 interface IMaestroData extends IMaestroParams{
     repeats: [RepetitionInstruction[],RepetitionInstruction[]][];
+    flow: SheetFlowCalculator;
     midiNotes : boolean[];
     osmdNotes : number[];
     playMeasures : number[];
@@ -24,6 +26,7 @@ interface IMaestroData extends IMaestroParams{
 export class Maestro{
     private data: IMaestroData = {
         repeats : [],
+        flow: null,
         midiNotes : [],
         osmdNotes : [],
         playMeasures : [],
@@ -55,6 +58,7 @@ export class Maestro{
     */
     constructor(params: IMaestroParams){
         this.data.osmd = params.osmd;
+        this.data.flow = new SheetFlowCalculator(this.data.osmd);
         this.data.midiInputs = params.midiInputs;
         if (!(this.osmd.TransposeCalculator && (this.osmd.TransposeCalculator instanceof ExtendedTransposeCalculator))) {
             this.osmd.TransposeCalculator = new ExtendedTransposeCalculator(this.osmd);
@@ -65,7 +69,7 @@ export class Maestro{
         }
         this.clearMidiNotes();
     }
-
+/*
     public calculatePlayerMeasures(): void {
         const sheet: MusicSheet = this.osmd.Sheet;
         this.data.playMeasures = [];
@@ -74,23 +78,17 @@ export class Maestro{
         sheet.SourceMeasures.forEach((m: SourceMeasure, index: number)=>{
             if(latest<index) {
                 tmp.push(index);
-                /*
-                m.FirstRepetitionInstructions.forEach((ri: RepetitionInstruction)=>{
+                // le istruzioni di salto sono a fine misura, vanno scodate
+                const lri: RepetitionInstruction[] = m.LastRepetitionInstructions;
+                for(let i: number = lri.length-1; i >= 0 ; i--) {
+                    let ri: RepetitionInstruction = lri[i];
                     const repetitions: Repetitions = new Repetitions(ri.type, sheet.SourceMeasures, index);
                     const array: number[] = repetitions.array;
                     array.forEach((n: number)=>{
                         tmp.push(n);
                     });
-                });
-                */
-                // le istruzioni di salto sono a fine misura
-                m.LastRepetitionInstructions.forEach((ri: RepetitionInstruction)=>{
-                    const repetitions: Repetitions = new Repetitions(ri.type, sheet.SourceMeasures, index);
-                    const array: number[] = repetitions.array;
-                    array.forEach((n: number)=>{
-                        tmp.push(n);
-                    });
-                });
+
+                }
                 latest = tmp[tmp.length-1];
             }
         });
@@ -102,37 +100,16 @@ export class Maestro{
         }
         this.data.playMeasures.push(-1);
     }
-
-/*
-    public calculatePlayerMeasures2(): void {
-      this.fillRepeats();
-      console.log(this.data.repeats);
-      this.data.playMeasures = [];
-      const starts: number[] = [];
-      this.osmd.Sheet.SourceMeasures.forEach((m: SourceMeasure ,index:number)=>{
-        this.data.playMeasures.push(index);
-        if ((m.FirstRepetitionInstructions.length + m.LastRepetitionInstructions.length)>0) {
-          if (m.FirstRepetitionInstructions.length>0){
-            starts.unshift(index);
-          }
-          if (m.LastRepetitionInstructions.length){
-            if(starts.length===0){
-              starts.push(0);
-            }
-            if(starts[0]<=index) {
-              for (let i= starts[0] ; i<=index ; i++){
-                this.data.playMeasures.push(i);
-              };
-            }
-          }
-        }
-      });
-      this.data.playMeasures.push(-1);
-    }
 */
     public get OSMD():OpenSheetMusicDisplay  {
       return this.osmd;
     };
+
+    public allNotesUnderCursorArePlayedDebug():boolean{
+        this.clearMidiNotes();
+        this.clearSheetNotes();
+        return true;
+    }
 
     public allNotesUnderCursorArePlayedFacile():boolean{
       // ciclo 1
@@ -305,6 +282,7 @@ export class Maestro{
             }
 
             this.osmd.cursor.update();
+            console.log(this.osmd.cursor.Iterator.CurrentRepetition);
             if (this.playerMeasureIndex>=this.playerMeasures.length) {
                 this.playerMeasureIndex = this.playerMeasures.length-1;
             }
@@ -339,7 +317,12 @@ export class Maestro{
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    public loadSheet(exercise: IExercise = null, transposeValue: number = 0, beforeStart: Function = null, afterEnd: Function = null):void{
+    public loadSheet(
+        exercise: IExercise = null,
+        transposeValue: number = 0,
+        beforeStart: Function = null,
+        afterEnd: Function = null
+    ): void {
         if (exercise===null) {
             exercise = this.getRandomExercise();
         }
@@ -351,7 +334,7 @@ export class Maestro{
                 this.osmd.TransposeCalculator.Options.transposeToHalftone(0);
                 this.playerMeasures = [];
                 this.playerMeasureIndex = 0;
-                this.calculatePlayerMeasures();
+                this.playerMeasures = this.flow.calculatePlayerMeasures();
                 console.log(this.data.playMeasures);
                 this.osmd.Sheet.Transpose = transposeValue;
                 this.osmd.zoom = 1.0;
@@ -361,7 +344,7 @@ export class Maestro{
                 this.osmd.render();
                 this.reset();
                 this.osmd.cursor.show();
-                this.test();
+                //this.test();
                 console.log(this.data.repeats);
                 if(afterEnd!==null && typeof afterEnd === 'function'){
                     afterEnd();
@@ -393,10 +376,37 @@ export class Maestro{
                 }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
 
             });
+
+            document.addEventListener(
+                "keydown",
+                (event: KeyboardEvent) => {
+                    if (event.key==="ArrowRight") {
+                        if(this.allNotesUnderCursorArePlayedDebug()){
+                            this.next();
+                        }
+                    }
+                },
+                false,
+            );
+              
+              document.addEventListener(
+                "keyup",
+                (event: KeyboardEvent) => {
+                    if (event.key==="ArrowRight") {
+
+                    }
+                },
+                false,
+              );
         }
     }
+
     public get osmd(): OpenSheetMusicDisplay {
         return this.data.osmd;
+    }
+
+    public get flow(): SheetFlowCalculator {
+        return this.data.flow;
     }
 
     public get midiInputs(): Input[] {

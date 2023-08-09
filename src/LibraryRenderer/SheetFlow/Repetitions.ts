@@ -1,7 +1,7 @@
 //https://www.myriad-online.com/resources/docs/melody/italiano/breaks.htm
 /*
-0  0 StartLine,      // linea |             = Indica la prima battuta del brano da suonare.
-0  1 ForwardJump,    // linea |:            = Inizio di un gruppo di battute che vanno suonate più volte.
+0  0 StartLine,      // linea |:            = Inizio di un gruppo di battute che vanno suonate più volte.
+0  1 ForwardJump,    // ??                 = Inizio di un gruppo di battute che vanno suonate più volte.
 1  2 BackJumpLine,   // linea :|            = Fine di un gruppo di battute che vanno suonate più volte.
 1  3 Ending,         // linea |             = Indica l'ultima battuta del brano da suonare.
 1  4 DaCapo,         // Salto               = D.C. Salta all'inizio del brano.
@@ -64,20 +64,86 @@ export class Repetitions {
         return measure;
     }
 
-    signInMeasure(sign: RepetitionInstructionEnum, measure: number): number {
+    signInFirst(sign: RepetitionInstructionEnum, measure: number): number {
         measure = this.validateMeasureIndex(measure);
         const m: SourceMeasure = this.measures[measure];
         let result: number = measure;
+        console.log(m.FirstRepetitionInstructions);
         let index: number = m.FirstRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
-            return r.type === sign;
+            return Number(r.type) === Number(sign);
         });
-        if (index<0) {
-            index = m.LastRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
-                return r.type === sign;
-            });
-        }
         if (index<0){
             result = -1;
+        }
+        return result;
+    }
+
+    signInLast(sign: RepetitionInstructionEnum, measure: number): number {
+        measure = this.validateMeasureIndex(measure);
+        const m: SourceMeasure = this.measures[measure];
+        let result: number = measure;
+        console.log(m.LastRepetitionInstructions);
+        let index: number = m.LastRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
+            return Number(r.type) === Number(sign);
+        });
+        if (index<0){
+            result = -1;
+        }
+        return result;
+    }
+
+    signInBoth(sign: RepetitionInstructionEnum, measure: number): number {
+        let result: number = this.signInFirst(sign, measure);
+        if (result<0) {
+            let result: number = this.signInLast(sign, measure);
+        }
+        return result;
+    }
+
+    findInFirstBackward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex ): number {
+        startMeasure = this.validateMeasureIndex(startMeasure);
+        let result: number = defaultValue;
+        for (let i = startMeasure; i >=0; i--) {
+            result = this.signInFirst(sign, i);
+            if (result>=0){
+                break;
+            }
+        }
+        return result;
+    }
+
+    findInFirstForward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex): number {
+        startMeasure = this.validateMeasureIndex(startMeasure);
+        let result: number = defaultValue;
+        for (let i = startMeasure; i < this.measures.length; i++) {
+            result = this.signInFirst(sign, i);
+            if (result>=0){
+                break;
+            }
+        }
+        return result;
+    }
+
+    findInLastBackward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex ): number {
+        startMeasure = this.validateMeasureIndex(startMeasure);
+        let result: number = defaultValue;
+        for (let i = startMeasure; i >=0; i--) {
+            result = this.signInLast(sign, i);
+            if (result>=0){
+                break;
+            }
+        }
+        return result;
+    }
+
+    findInLastForward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex): number {
+        startMeasure = this.validateMeasureIndex(startMeasure);
+        let result: number = defaultValue;
+        for (let i = startMeasure; i < this.measures.length; i++) {
+            result = this.signInLast(sign, i);
+            if (result>=0){
+                break;
+            }
         }
         return result;
     }
@@ -86,7 +152,7 @@ export class Repetitions {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
         for (let i = startMeasure; i >=0; i--) {
-            result = this.signInMeasure(sign, i);
+            result = this.signInBoth(sign, i);
             if (result>=0){
                 break;
             }
@@ -98,10 +164,7 @@ export class Repetitions {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
         for (let i = startMeasure; i < this.measures.length; i++) {
-            result = this.signInMeasure(sign, i);
-            if(sign === RepetitionInstructionEnum.Fine) {
-                console.log(i, result);
-            }
+            result = this.signInBoth(sign, i);
             if (result>=0){
                 break;
             }
@@ -118,28 +181,71 @@ export class Repetitions {
         }
         return array;
     }
+/*
+    findStartEndings(startMeasure: number, endMeasure: number): number {
+        for(let i: number = startMeasure; i <= endMeasure ; ++ ){
+
+        }
+    }
+*/
+    existsInitialEndingIndexInMeasure(index: 1 | 2 | 3, measureIndex: number): boolean{
+        const measure: SourceMeasure = this.measures[this.validateMeasureIndex(measureIndex)];
+        const repeatInstruction = measure.FirstRepetitionInstructions.find((ri: RepetitionInstruction)=>{
+            return ri.type === RepetitionInstructionEnum.Ending;
+        });
+        if (repeatInstruction) {
+            return repeatInstruction.endingIndices.includes(index) || false;
+        }
+        return false;
+    }
+
+    existsFinalEndingIndexInMeasure(index: 1 | 2 | 3, measureIndex: number): boolean{
+        const measure: SourceMeasure = this.measures[this.validateMeasureIndex(measureIndex)];
+        const repeatInstruction = measure.LastRepetitionInstructions.find((ri: RepetitionInstruction)=>{
+            return ri.type === RepetitionInstructionEnum.Ending;
+        });
+        if (repeatInstruction) {
+            return repeatInstruction.endingIndices.includes(index) || false;
+        }
+        return false;
+    }
+
+    findInitialEndingIndex(index: 1 | 2 | 3 , startMeasure: number, endMeasure: number): number {
+        for(let i: number = startMeasure; i<=endMeasure; i++){
+            if (this.existsInitialEndingIndexInMeasure(index,i)){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    findFinalEndingIndex(index: 1 | 2 | 3 , startMeasure: number, endMeasure: number): number {
+        for(let i: number = startMeasure; i<=endMeasure; i++){
+            if (this.existsFinalEndingIndexInMeasure(index,i)){
+                return i;
+            }
+        }
+        return -1;
+    }
 
     public get array(): number[]{
         let start: number;
         let end: number;
-        let array: number[];
+        let array: number[] = [];
         switch(this.sign){
-            case RepetitionInstructionEnum.StartLine : {
-                array = [];
-                break;
-            }
-            case RepetitionInstructionEnum.ForwardJump : {
-                array = [];
-                break;
-            }
             case RepetitionInstructionEnum.BackJumpLine : {
-                start = this.findBackward(RepetitionInstructionEnum.ForwardJump, 0);
+                let initialEnding1: number;
+                let finalEnding1: number;
+                start = this.findBackward(RepetitionInstructionEnum.StartLine, 0);
                 end = this.measureIndex;
+                initialEnding1 = this.findInitialEndingIndex(1, start, this.measureIndex);
+                if (initialEnding1 > start && initialEnding1 <= this.measureIndex) {
+                    finalEnding1 = this.findFinalEndingIndex(1, start, this.measureIndex);
+                    if (finalEnding1 >= initialEnding1 && finalEnding1 === this.measureIndex) {
+                        end = initialEnding1-1;
+                    }
+                }
                 array = this.sequenceArray(start,end);
-                break;
-            }
-            case RepetitionInstructionEnum.Ending : {
-                array = [];
                 break;
             }
             case RepetitionInstructionEnum.DaCapo : {
@@ -152,14 +258,6 @@ export class Repetitions {
                 start = this.findBackward(RepetitionInstructionEnum.Segno, -1);
                 end = this.measureIndex;
                 array = this.sequenceArray(start,end);
-                break;
-            }
-            case RepetitionInstructionEnum.Fine : {
-                array = [];
-                break;
-            }
-            case RepetitionInstructionEnum.ToCoda : {
-                array = [];
                 break;
             }
             case RepetitionInstructionEnum.DalSegnoAlFine : {
@@ -181,9 +279,6 @@ export class Repetitions {
                 start = 0;
                 end = this.findForward(RepetitionInstructionEnum.Fine, -1, start);
                 array = this.sequenceArray(start,end);
-                console.log(">>>", start, end);
-                console.log(">",array);
-                console.log("DA CAPO AL FINE", array);
                 if (array.length>0){
                     array.push(-1);
                 }
@@ -257,16 +352,7 @@ export class Repetitions {
                 }
                 break;
             }
-            case RepetitionInstructionEnum.Coda : {
-                array = [];
-                break;
-            }
-            case RepetitionInstructionEnum.Segno : {
-                array = [];
-                break;
-            }
             default: {
-                array = [];
                 break;
             }
         }
