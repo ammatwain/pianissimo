@@ -1,8 +1,8 @@
 import { IExercise } from "../../LibraryCommon";
-import { RepetitionInstruction, RepetitionCalculator, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, SourceMeasure, MusicSheet } from "opensheetmusicdisplay";
+import { RepetitionInstruction, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, SourceMeasure, MusicSheet } from "opensheetmusicdisplay";
 import { Input, NoteMessageEvent } from "../WebMidi";
-import { Repetitions, SheetFlowCalculator } from "../SheetFlow";
-import { KeyboardInputEvent } from "electron";
+import { SheetFlowCalculator } from "../SheetFlow";
+//import { KeyboardInputEvent } from "electron";
 
 export interface IMaestroParams {
     osmd?: OpenSheetMusicDisplay;
@@ -388,7 +388,7 @@ export class Maestro{
                 },
                 false,
             );
-              
+
               document.addEventListener(
                 "keyup",
                 (event: KeyboardEvent) => {

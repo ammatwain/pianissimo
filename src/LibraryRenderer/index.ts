@@ -1,5 +1,4 @@
 export * from './EventBuilder';
-export * from EventBuilder
 export { WebMidi } from './WebMidi';
 export * from './Arbor';
 export * from './SheetFlow';
