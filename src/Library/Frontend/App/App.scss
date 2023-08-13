@@ -34,11 +34,11 @@ w-main{
       grid-template: none / auto max-content ;
       #arbor {
         overflow: auto;
-        max-height: 40vh;
+        height: 40vh;
       }
       #tree {
         overflow: auto;
-        max-height: 40vh;
+        height: 40vh;
       }
     }
 }
@@ -47,14 +47,14 @@ w-main{
     /* The height is greater than the width  */
     w-main{
          w-splitter {
-            grid-template: auto auto / none;
+            grid-template: auto max-content / none;
             #arbor {
                 overflow: auto;
-                max-height: 20vh;
+                height: 20vh;
             }
             #tree {
                 overflow: auto;
-                max-height: 20vh;
+                height: 20vh;
             }
         }
     }

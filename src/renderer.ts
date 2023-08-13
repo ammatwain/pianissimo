@@ -25,36 +25,8 @@
  *  });
  * ```
  */
-import { App } from './LibraryRenderer';
+import { App } from './Library/Frontend';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const app: App = new App("osmd");
 
-/*
-const arborData: IArborBranch[] = [
-    {
-        id: '0',
-        caption: 'branch-0',
-        children: [
-            {
-                id: '0-0',
-                caption: 'branch-0-0',
-                children: [
-                    {id: '0-0-0', caption: 'branch-0-0-0', percent: 0},
-                    {id: '0-0-1', caption: 'branch-0-0-1', percent: 0},
-                    {id: '0-0-2', caption: 'branch-0-0-2', percent: 0},
-                ],
-            },
-            {id: '0-1', caption: 'branch-0-1', percent: 0},
-        ],
-    },
-    {
-        id: '1',
-        caption: 'branch-1',
-        children: [
-            {id: '1-0', caption: 'branch-1-0', percent: 0},
-            {id: '1-1', caption: 'branch-1-1', percent: 0}
-        ],
-    },
-];
-*/
