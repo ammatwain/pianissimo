@@ -78,12 +78,8 @@ export class App {
             }});
             this.data.tree = new Tree(`#${this.data.treeDivID}`, {closeDepth:1, onChange: ()=>{
                 const values: string[] = this.tree.getValues();
-                if (values.length>0){
-                    this.maestro.exercises = [];
-                    values.forEach((id: string)=>{
-                        this.maestro.exercises.push(this.tree.getLeafById(id));
-                    });
-                    this.maestro.loadSheet(null, 3);
+                if (values.length===1) {
+                    console.log(this.tree.getLeafById(values[0]));
                 }
             }});
             this.setListeners();
@@ -97,12 +93,19 @@ export class App {
             }
         });
 
+        window.electron.ipcRenderer.on("response-sheet-list", (arg: any) => {
+            if (this.tree){
+                this.tree.initialize(arg);
+            }
+        });
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
             console.log(arg);
         });
 
         window.electron.ipcRenderer.sendMessage('request-dir-listing', {});
+        window.electron.ipcRenderer.sendMessage('request-sheet-list', {});
 
         this.maestro.setListeners();
 

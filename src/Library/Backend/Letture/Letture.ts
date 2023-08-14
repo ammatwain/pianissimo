@@ -1,5 +1,5 @@
 import  { Store, StoreOptions } from "../Store";
-import  { IEntry, IBookEntry, ISheetEntry, ISectionEntry } from "../../";
+import  { IEntry, IBookEntry, ISheetEntry, ISectionEntry, SheetFlowCalculator } from "../../";
 
 
 export class Letture extends Store {
@@ -135,6 +135,7 @@ ORDER BY bookorder,sheetorder,"order";`
             book.type = "book";
             book.checked = false;
             book.children = [];
+            book.custom = JSON.parse(<string>book.custom) || {};
             const booksArray: string[] = book.path.split("/") || [];
             book.name = booksArray[booksArray.length-1];
             if (booksArray.length>0 && booksArray.length<16){
@@ -146,6 +147,23 @@ ORDER BY bookorder,sheetorder,"order";`
             sheet.type = "sheet";
             sheet.checked = false;
             sheet.children = [];
+
+            if (typeof sheet.keys === "string") {
+                sheet.keys = JSON.parse(sheet.keys) || [];
+            }
+            
+            if (typeof sheet.shot === "string") {
+                sheet.shot = JSON.parse(sheet.shot) || [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,];
+            }
+
+            if (typeof sheet.done === "string") {
+                sheet.done = JSON.parse(sheet.done) || [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,];
+            }
+
+            if (typeof sheet.custom === "string") {
+                sheet.custom = JSON.parse(<string>sheet.custom) || {};
+            }
+
             const booksArray: string[] = sheet.path.split("/") || [];
             if (booksArray.length>0 && booksArray.length<16){
                 levels[booksArray.length+1].push(sheet);
@@ -154,6 +172,27 @@ ORDER BY bookorder,sheetorder,"order";`
 
         dbSectionResult.forEach((section: ISectionEntry) => {
             section.type = "section";
+
+            if (typeof section.keys === "string") {
+                section.keys = JSON.parse(section.keys) || [];
+            }
+            
+            if (typeof section.shot === "string") {
+                section.shot = JSON.parse(section.shot) || [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,];
+            }
+
+            if (typeof section.done === "string") {
+                section.done = JSON.parse(section.done) || [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,];
+            }
+
+            if (typeof section.custom === "string") {
+                section.custom = JSON.parse(<string>section.custom) || {};
+            }
+
+            if (typeof section.measures === "string") {
+                section.measures = JSON.parse(<string>section.measures) || [];
+            }
+
             const booksArray: string[] = section.path.split("/") || [];
             if (booksArray.length>0 && booksArray.length<16){
                 levels[booksArray.length+2].push(section);
@@ -172,7 +211,8 @@ ORDER BY bookorder,sheetorder,"order";`
                                     entry.type === "section" &&
                                     parentBook.type === "sheet" &&
                                     parentBook.sheetid === entry.sheetid &&
-                                    entry.path === parentBook.path
+                                    entry.path.startsWith(`${parentBook.path}/`)
+                                    //entry.path === parentBook.path
                                 )
                                 ||
                                 (
@@ -196,8 +236,10 @@ ORDER BY bookorder,sheetorder,"order";`
                                 entry.id = `${parent.id}-${entry.bookid}`;
                             } else if (entry.type === "sheet") {
                                 entry.id = `${parent.id}-${entry.sheetid}`;
+                                entry.path += `/${entry.name}`;
                             } else if (entry.type === "section") {
                                 entry.id = `${parent.id}-${entry.sectionid}`;
+                                entry.path += `/${parent.path}`;
                             }
                             parent.children.push(entry);
                         }

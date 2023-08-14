@@ -241,18 +241,19 @@ export class Tree {
             defaultValues: [],
             defaultDisables: [],
         }
+
         const walkTree = function(branches: ITreeBranch[], parent: any = null) {
-          branches.forEach((branch: ITreeBranch)  => {
-            treeData.branchesById[branch.id] = branch;
-            if (branch.checked) treeData.defaultValues.push(String(branch.id));
-            if (branch.disabled) treeData.defaultDisables.push(String(branch.id));
-            if (parent) branch.parent = parent;
-            if (branch.children && branch.children.length) {
-              walkTree(branch.children, branch);
-            } else {
-                treeData.leafBranchesById[branch.id] = branch;
-            }
-          });
+            branches.forEach((branch: ITreeBranch)  => {
+                treeData.branchesById[branch.id] = branch;
+                if (branch.checked) treeData.defaultValues.push(String(branch.id));
+                if (branch.disabled) treeData.defaultDisables.push(String(branch.id));
+                if (parent) branch.parent = parent;
+                if (branch.children && branch.children.length) {
+                    walkTree(branch.children, branch);
+                } else {
+                    treeData.leafBranchesById[branch.id] = branch;
+                }
+            });
         };
         walkTree(treeData.treeBranches);
         return treeData;
