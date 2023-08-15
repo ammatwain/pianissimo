@@ -183,7 +183,7 @@ export class Maestro{
     }
 
     public allNotesUnderCursorArePlayed():boolean{
-        return this.allNotesUnderCursorArePlayedAdattato();
+        return this.allNotesUnderCursorArePlayedMedio();
     }
 
     public fillOsmdNotes(){
@@ -361,7 +361,7 @@ export class Maestro{
 
                 input.addListener("noteon",(e: NoteMessageEvent)=>{
                     console.log(e.note.number);
-                  this.setMidiNoteOn(e.note.number);
+                    this.setMidiNoteOn(e.note.number);
                     if(this.allNotesUnderCursorArePlayed()){
                           this.next();
                     }
