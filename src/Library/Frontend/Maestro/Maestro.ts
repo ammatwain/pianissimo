@@ -69,38 +69,7 @@ export class Maestro{
         }
         this.clearMidiNotes();
     }
-/*
-    public calculatePlayerMeasures(): void {
-        const sheet: MusicSheet = this.osmd.Sheet;
-        this.data.playMeasures = [];
-        const tmp: number[] = [];
-        let latest: number = -1;
-        sheet.SourceMeasures.forEach((m: SourceMeasure, index: number)=>{
-            if(latest<index) {
-                tmp.push(index);
-                // le istruzioni di salto sono a fine misura, vanno scodate
-                const lri: RepetitionInstruction[] = m.LastRepetitionInstructions;
-                for(let i: number = lri.length-1; i >= 0 ; i--) {
-                    let ri: RepetitionInstruction = lri[i];
-                    const repetitions: Repetitions = new Repetitions(ri.type, sheet.SourceMeasures, index);
-                    const array: number[] = repetitions.array;
-                    array.forEach((n: number)=>{
-                        tmp.push(n);
-                    });
 
-                }
-                latest = tmp[tmp.length-1];
-            }
-        });
-        for(let i: number = 0 ; i < tmp.length; i++) {
-            if (tmp[i] === -1) {
-                break;
-            }
-            this.data.playMeasures.push(tmp[i]);
-        }
-        this.data.playMeasures.push(-1);
-    }
-*/
     public get OSMD():OpenSheetMusicDisplay  {
       return this.osmd;
     };
@@ -316,7 +285,6 @@ export class Maestro{
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
     public loadSheet(
         exercise: IExercise = null,
         transposeValue: number = 0,
@@ -340,6 +308,40 @@ export class Maestro{
                 this.osmd.zoom = 1.0;
                 //this.osmd.FollowCursor = true;
                 this.osmd.Sheet.Title.text = exercise.caption;
+                this.osmd.updateGraphic();
+                this.osmd.render();
+                this.reset();
+                this.osmd.cursor.show();
+                //this.test();
+                console.log(this.data.repeats);
+                if(afterEnd!==null && typeof afterEnd === 'function'){
+                    afterEnd();
+                }
+            });
+        }
+    }
+
+    public loadXmSheet(
+        xml: string,
+        transposeValue: number = 0,
+        beforeStart: Function = null,
+        afterEnd: Function = null
+    ): void {
+        if (xml && typeof xml === "string"){
+            if(beforeStart!==null && typeof beforeStart === 'function'){
+                beforeStart();
+            }
+            console.log(xml)
+            this.osmd.load(xml).then(()=>{
+                this.osmd.TransposeCalculator.Options.transposeToHalftone(0);
+                this.playerMeasures = [];
+                this.playerMeasureIndex = 0;
+                this.playerMeasures = this.flow.calculatePlayerMeasures();
+                console.log(this.data.playMeasures);
+                this.osmd.Sheet.Transpose = transposeValue;
+                this.osmd.zoom = 1.0;
+                //this.osmd.FollowCursor = true;
+                this.osmd.Sheet.Title.text = "TEST";
                 this.osmd.updateGraphic();
                 this.osmd.render();
                 this.reset();
@@ -393,7 +395,7 @@ export class Maestro{
                 "keyup",
                 (event: KeyboardEvent) => {
                     if (event.key==="ArrowRight") {
-
+                        //
                     }
                 },
                 false,

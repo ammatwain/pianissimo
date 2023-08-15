@@ -1,9 +1,9 @@
 import './App.scss';
-import { Arbor } from "../Arbor";
 import { Tree } from "../Tree";
 import { WebMidi, Input } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { Maestro } from '../Maestro';
+import { WTabContainer } from '../WTabs';
 
 declare global {
     interface Window {
@@ -12,8 +12,7 @@ declare global {
 }
 
 interface IAppData {
-    arborDivID?: string;
-    arbor?: Arbor;
+    tabs?: WTabContainer;
     treeDivID?: string;
     tree?: Tree;
     errorTdId?: string;
@@ -31,14 +30,12 @@ export class App {
     private data: IAppData = {};
     constructor (
         osmdDivId: string = "osmd",
-        arborDivID: string = "arbor",
         treeDivID: string = "tree",
         errorTdId: string = "error-td",
         errorTrId: string = "error-tr"
     ) {
         this.data.errorTdId = errorTdId;
         this.data.errorTrId = errorTrId;
-        this.data.arborDivID = arborDivID;
         this.data.treeDivID = treeDivID;
         this.data.osmdDivId = osmdDivId;
         document.addEventListener("DOMContentLoaded",() => {
@@ -49,6 +46,8 @@ export class App {
     domContentLoaded(): void {
         this.data.errorTd = document.querySelector(`#${this.data.errorTdId}`);
         this.data.errorTr = document.querySelector(`#${this.data.errorTrId}`);
+        this.data.tabs = new WTabContainer(document.querySelector("w-tab-container"));
+
         console.log(this.data.errorTdId, this.data.errorTdId);
         // webmidi
         WebMidi.enable().then(() => {
@@ -65,20 +64,11 @@ export class App {
             //maestro
             this.data.maestro = new Maestro({osmd: this.osmd, midiInputs: this.midiInputs});
             console.log("Maestro has been enabled!");
-            //arbor
-            this.data.arbor = new Arbor(`#${this.data.arborDivID}`, {closeDepth:1, onChange: ()=>{
-                const values: string[] = this.arbor.getValues();
-                if (values.length>0){
-                    this.maestro.exercises = [];
-                    values.forEach((id: string)=>{
-                        this.maestro.exercises.push(this.arbor.getLeafById(id));
-                    });
-                    this.maestro.loadSheet(null, 3);
-                }
-            }});
+
             this.data.tree = new Tree(`#${this.data.treeDivID}`, {closeDepth:1, onChange: ()=>{
                 const values: string[] = this.tree.getValues();
                 if (values.length===1) {
+                    window.electron.ipcRenderer.sendMessage('request-sheet', values[0]);
                     console.log(this.tree.getLeafById(values[0]));
                 }
             }});
@@ -88,9 +78,7 @@ export class App {
 
     setListeners() {
         window.electron.ipcRenderer.on("response-dir-listing", (arg: any) => {
-            if (this.arbor){
-                this.arbor.initialize(arg);
-            }
+            //
         });
 
         window.electron.ipcRenderer.on("response-sheet-list", (arg: any) => {
@@ -101,7 +89,8 @@ export class App {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
-            console.log(arg);
+            this.maestro.loadXmSheet(arg);
+            console.log(typeof arg);
         });
 
         window.electron.ipcRenderer.sendMessage('request-dir-listing', {});
@@ -112,23 +101,12 @@ export class App {
         // this.test();
     }
 
-    test(){
-        window.setInterval(()=>{
-            const node = this.arbor.randomBranch;
-            this.arbor.setPercent(node, (node.percent || 0) + 50);
-        },100);
-    }
-
     public get osmd(): OpenSheetMusicDisplay {
         return this.data.osmd || null;
     }
 
     public get midiInputs(): Input[] {
         return this.data.midiInput || null;
-    }
-
-    public get arbor(): Arbor {
-        return this.data.arbor || null;
     }
 
     public get tree(): Tree {

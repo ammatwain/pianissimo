@@ -5,22 +5,31 @@
         <title>Hello World!</title>
     </head>
     <body>
-        <w-main>
-          <w-splitter>
-            <div id="osmd-container">
-                <div id="osmd"></div>
-            </div>
-            <div id="arbor"></div>
-            <div id="tree"></div>
-          </w-splitter>
-        </w-main>
-        <div>
-            <table cellspacing="0">
-                <tr id="error-tr">
-                    <td></td>
-                    <td id="error-td"></td>
-                </tr>
-            </table>
-          </div>
+        <w-tab-container>
+            <w-tabs>
+                <w-tab class="active">Home</w-tab>
+                <w-tab class="">Profile</w-tab>
+                <w-tab class="">MessagesMessages </w-tab>
+            </w-tabs>
+            <w-tab-panels>
+                <w-tab-panel class="active">
+                    <div id="tree"></div>
+                </w-tab-panel>
+                <w-tab-panel class="">
+                    <div id="osmd-container">
+                        <div id="osmd"></div>
+                    </div>
+                    <div style="display: none;">
+                        <table cellspacing="0">
+                            <tr id="error-tr">
+                                <td></td>
+                                <td id="error-td"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </w-tab-panel>
+                <w-tab-panel class="" >message in a bottle</w-tab-panel>
+            </w-tab-panels>
+        </w-tab-container>
       </body>
 </html>

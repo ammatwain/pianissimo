@@ -59,7 +59,7 @@ function collapseFromLeaf(tree: Tree, leafBranch: ITreeBranch) {
   try {
     const branchListItemElement: HTMLLIElement = tree.liElementsById[leafBranch.parent.id];
     if(!branchListItemElement.classList.contains('_close')) {
-        (<HTMLSpanElement>branchListItemElement.querySelector('switcher')).click();
+        (<HTMLDivElement>branchListItemElement.querySelector('switcher')).click();
     }
   } catch (error) {
     return;
@@ -72,7 +72,7 @@ function collapseFromLeaf(tree: Tree, leafBranch: ITreeBranch) {
 function expandFromRoot(tree: Tree, root: ITreeBranch) {
     const branchListItemElement = tree.liElementsById[root.id];
     if(branchListItemElement.classList.contains('_close')) {
-        (<HTMLSpanElement>branchListItemElement.querySelector('switcher')).click();
+        (<HTMLDivElement>branchListItemElement.querySelector('switcher')).click();
     }
     if('children' in root) {
         for(let child of root.children) {
@@ -311,8 +311,8 @@ export class Tree {
         if (!prevDisabled) {
             branch.disabled = true;
             this.markWillUpdateBranch(branch);
-            this.walkUp(branch, 'disabled');
-            this.walkDown(branch, 'disabled');
+            this.walkOut(branch, 'disabled');
+            this.walkIn(branch, 'disabled');
         }
     };
 
@@ -363,21 +363,21 @@ export class Tree {
             'click', (e: Event) => {
                 const target: HTMLElement  = <HTMLElement>e.target;
                 if (
-                    target.nodeName === 'SPAN' &&
+                    target.nodeName === 'DIV' &&
                     (
                         target.classList.contains('checkbox')
                         ||
                         target.classList.contains('label')
                     )
                 ) {
-                    this.onItemClick(target.parentNode.branchId);
+                    this.onItemClick(target.closest("li").branchId);
                 } else if (
                     target.nodeName === 'LI' &&
                     target.classList.contains('branch')
                 ) {
                     this.onItemClick(target.branchId);
                 } else if (
-                    target.nodeName === 'SPAN' &&
+                    target.nodeName === 'DIV' &&
                     (
                         target.classList.contains('switcher')
                         ||
@@ -412,23 +412,20 @@ export class Tree {
         const status = prevStatus === 1 || prevStatus === 2 ? 0 : 2;
         branch.status = status;
         this.markWillUpdateBranch(branch);
-        this.walkUp(branch, 'status');
-        this.walkDown(branch, 'status');
+        this.walkOut(branch, 'status');
+        this.walkIn(branch, 'status');
     };
-    setPercentLinearGradient(span: HTMLSpanElement, value: number = null) {
+    setPercentLinearGradient(div: HTMLDivElement, value: number = null) {
         value = value || 0;
-//        span.style.background = `linear-gradient(to right, #3333cc ${value}%, #788898 ${value}%)`;
-//        span.style.color = "#ffffff";
-        span.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${value}%, rgba(0,0,0,0.333) ${value}%)`;
-        //span.style.color = "#ffffff";
-        span.innerHTML = `${(value || 0 ).toFixed(0)}%`;
+        div.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${value}%, rgba(0,0,0,0.333) ${value}%)`;
+        div.innerHTML = `${(value || 0 ).toFixed(0)}%`;
     }
     setPercent(branch: ITreeBranch, value: number): void{
         if (!branch.children || branch.children.length===0){
             branch.percent = value;
             const li = this.liElementsById[branch.id];
-            const percentSpan: HTMLSpanElement = li.querySelector(".percent");
-            this.setPercentLinearGradient(percentSpan, branch.percent);
+            const percentDiv: HTMLDivElement = li.querySelector(".percent");
+            this.setPercentLinearGradient(percentDiv, branch.percent);
 
             if (branch.parent){
                 this.updatePercents(branch.parent);
@@ -451,8 +448,8 @@ export class Tree {
         }
         branch.percent = (((childrenPercent / thisPercent) * 100) || 0);
         const li = this.liElementsById[branch.id];
-        const percentSpan: HTMLSpanElement = li.querySelector(".percent");
-        this.setPercentLinearGradient(percentSpan, branch.percent);
+        const percentDiv: HTMLDivElement = li.querySelector(".percent");
+        this.setPercentLinearGradient(percentDiv, branch.percent);
 
         if (branch.parent){
             this.updatePercents(branch.parent);
@@ -498,11 +495,11 @@ export class Tree {
     };
 
     onSwitcherClick(target: HTMLElement) {
-        const liEle: HTMLElement = <HTMLElement>target.parentNode;
+        const liEle: HTMLElement = <HTMLElement>target.closest("li");
         const ele: HTMLElement = <HTMLElement>liEle.lastChild;
         const height = ele.scrollHeight;
         if (liEle.classList.contains('_close')) {
-            animation(150, {
+            animation(10, {
                 enter: function(): void {
                     ele.style.height = "0";
                     ele.style.opacity = "0";
@@ -536,7 +533,7 @@ export class Tree {
         }
     };
 
-    walkUp = function(branch: ITreeBranch, changeState: string) {
+    public walkOut(branch: ITreeBranch, changeState: string) {
         const {parent} = branch;
         if (parent) {
             if (changeState === 'status') {
@@ -564,11 +561,11 @@ export class Tree {
                 parent.disabled = pDisabled;
             }
             this.markWillUpdateBranch(parent);
-            this.walkUp(parent, changeState);
+            this.walkOut(parent, changeState);
         }
     }
 
-    walkDown(branch: ITreeBranch, changeState: any) {
+    walkIn(branch: ITreeBranch, changeState: any) {
         if (branch.children && branch.children.length) {
             branch.children.forEach((child: ITreeBranch) => {
                 if (changeState === 'status') {
@@ -582,7 +579,7 @@ export class Tree {
                     child.disabled = branch.disabled;
                 }
                 this.markWillUpdateBranch(child);
-                this.walkDown(child, changeState);
+                this.walkIn(child, changeState);
             });
         }
     }
@@ -644,40 +641,56 @@ export class Tree {
     }
     createListItemElement(branch: ITreeBranch, closed: boolean, level: number): HTMLLIElement {
         const li: HTMLLIElement = document.createElement('li');
+        let spacerWidth: number = 0;
+        const switcherWidth: number = 20;
+        const checkboxWidth: number = 20;
+        let outerLabelWidth: number = 0;
+        const percentWidth: number = 100;
+
         li.classList.add('branch');
+        const divline: HTMLDivElement = document.createElement('div');
 
-        const percent = document.createElement('span');
-        percent.innerHTML="0%";
-        percent.classList.add('percent');
-        li.appendChild(percent);
+        divline.classList.add("divline");
 
-        const spacer = document.createElement('span');
+        const spacer: HTMLDivElement = document.createElement('div');
         spacer.classList.add('spacer');
-        li.appendChild(spacer);
-
-      //  spacer.style.width = `${width + (level * 20)}px`;
+        divline.appendChild(spacer);
 
         if (closed) li.classList.add('_close');
         if (branch.children && branch.children.length) {
-          percent.style.width = `${100 + (level * 20)}px`;
-//          spacer.style.width = `${level * 20}px`;
-          const switcher = document.createElement('span');
+          spacerWidth = level * 20;
+          spacer.style.width = `${spacerWidth}px`;
+          const switcher:HTMLDivElement = document.createElement('div');
           switcher.classList.add('switcher');
-          li.appendChild(switcher);
+          divline.appendChild(switcher);
         } else {
-          percent.style.width = `${100 + ((level+1) * 20)}px`;
-//          spacer.style.width = `${(level+1) * 20}px`;
+          spacerWidth = (level+1) * 20;
+          spacer.style.width = `${spacerWidth}px`;
           li.classList.add('placeholder');
         }
-        const checkbox = document.createElement('span');
+        const checkbox: HTMLDivElement = document.createElement('div');
         checkbox.classList.add('checkbox');
-        li.appendChild(checkbox);
-        const label = document.createElement('span');
+        divline.appendChild(checkbox);
+        const label: HTMLDivElement = document.createElement('div');
         label.classList.add('label');
-        const name = document.createTextNode(branch.name);
-        label.appendChild(name);
-        li.appendChild(label);
+        label.innerHTML = branch.name
+        divline.appendChild(label);
         li.branchId = branch.id;
+
+        const percent: HTMLDivElement = document.createElement('div');
+        percent.innerHTML="0%";
+        percent.classList.add('percent');
+        percent.style.width = `${percentWidth}px`;
+        divline.appendChild(percent);
+        outerLabelWidth = spacerWidth + switcherWidth + checkboxWidth + percentWidth + 12;
+        this.container.clientWidth
+        const labelWidth: string = `${this.container.clientWidth - outerLabelWidth}px`;
+        label.style.width = labelWidth;
+        label.style.minWidth = labelWidth;
+        label.style.maxWidth = labelWidth;
+        divline.style.gridTemplateColumns = `${spacerWidth}px ${switcherWidth}px ${checkboxWidth}px ${labelWidth} ${percentWidth}px`;
+
+        li.appendChild(divline);
         return li;
     };
 

@@ -98,6 +98,9 @@ ipcMain.on("request-sheet-list", async (event) => {
 });
 
 ipcMain.on("request-sheet", async (event,sheet) => {
-  event.reply("response-sheet", encodeURIComponent(FS.readFileSync(sheet).toString()));
-  //console.log(sheet);
+  //event.reply("response-sheet", encodeURIComponent(FS.readFileSync(sheet).toString()));
+  const sheetId: number = Number(sheet.split("-").slice(-1));
+  const xml: string = (<Buffer>letture.prepare(`SELECT DOWNLOADFILE("sheet") FROM SHEETS WHERE "sheetid"=${sheetId};`).pluck().get()).toString();
+  event.reply("response-sheet", xml);
+  console.log(xml);
 });
