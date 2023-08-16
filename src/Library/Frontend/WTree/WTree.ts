@@ -1,6 +1,13 @@
-import { default as ajax } from './Ajax';
-import './style/style.scss';
-import { ITreeBranch, ITreeStore } from "../../Common";
+import { default as wTreeAjax } from "./WTreeAjax";
+import { WPropertyEditor } from "../WPropertyEditor";
+import "./style/style.scss";
+import STYLE from "./style/variables.module.scss";
+
+//const { moduleSize } = STYLE;
+const $moduleSize: number  =  Number(parseInt(STYLE.moduleSize));
+
+import { IEntry, ITreeBranch, ITreeStore } from "../../Common";
+
 declare global {
     interface ParentNode {
         branchId: string;
@@ -55,7 +62,7 @@ function animation(duration: number, callback: ICallbackAnimation): void {
   });
 }
 
-function collapseFromLeaf(tree: Tree, leafBranch: ITreeBranch) {
+function collapseFromLeaf(tree: WTree, leafBranch: ITreeBranch) {
   try {
     const branchListItemElement: HTMLLIElement = tree.liElementsById[leafBranch.parent.id];
     if(!branchListItemElement.classList.contains('_close')) {
@@ -69,7 +76,7 @@ function collapseFromLeaf(tree: Tree, leafBranch: ITreeBranch) {
   }
 }
 
-function expandFromRoot(tree: Tree, root: ITreeBranch) {
+function expandFromRoot(tree: WTree, root: ITreeBranch) {
     const branchListItemElement = tree.liElementsById[root.id];
     if(branchListItemElement.classList.contains('_close')) {
         (<HTMLDivElement>branchListItemElement.querySelector('switcher')).click();
@@ -95,27 +102,31 @@ interface ITreeOptions {
     // eslint-disable-next-line @typescript-eslint/ban-types
     beforeLoad?: Function;
     // eslint-disable-next-line @typescript-eslint/ban-types
-    loaded?: Function;
+    afterLoad?: Function;
 }
 
-export class Tree {
+export class WTree extends HTMLElement{
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     private initcount: number = 0;
     private defaultOptions: ITreeOptions = {
         selectMode: 'checkbox',
         values: [],
         disables: [],
-        beforeLoad: null,
-        loaded: null,
+        beforeLoad: Function,
+        afterLoad: Function,
+        onChange: Function,
         url: null,
         method: 'GET',
         closeDepth: null,
     }
     private treeStore: ITreeStore = {};
+    private treeContainer: HTMLDivElement = null;
+    private propContainer: HTMLDivElement = null;
+    private propEditor: WPropertyEditor = null;
+
     public liElementsById: {[index: string]: HTMLLIElement} = {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private willUpdateBranchesById: any = {};
-    private container: HTMLElement = null;
     private options: ITreeOptions;
     get values() {
         return this.getValues();
@@ -129,6 +140,15 @@ export class Tree {
     set disables (values) {
         this.setDisables(uniq(values));
     }
+
+    get onChange(): Function {
+        return this.options.onChange || null;
+    }
+
+    set onChange(func: Function) {
+        this.options.onChange = func;
+    }
+
     get selectedBranches(): ITreeBranch[] {
         const branches: ITreeBranch[] = [];
         const branchesById: {[index: string]: ITreeBranch} = this.treeStore.branchesById;
@@ -145,6 +165,14 @@ export class Tree {
         }
         return branches;
     }
+
+    fillPropertyEditor(id: string) {
+        const ele: IEntry = Object.assign({},this.treeStore.branchesById[id]);
+        delete ele.parent;
+        delete ele.children;
+        this.propEditor.properties = ele;
+    }
+
     get disabledBranches(): ITreeBranch[] {
         const branches: ITreeBranch[] = [];
         const branchesById: {[index: string]: ITreeBranch} = this.treeStore.branchesById;
@@ -162,14 +190,20 @@ export class Tree {
         return this.treeStore.leafBranchesById[id] || null;
     }
 
-    constructor(container: HTMLElement | string, options: ITreeOptions ) {
-        if (container instanceof HTMLElement ) {
-            this.container = container;
-        } else {
-            this.container = document.querySelector(String(container));
-        }
-        this.container.classList.add("tree-container");
+    constructor(options: ITreeOptions ) {
+        super();
         this.options = Object.assign(this.defaultOptions, options);
+    }
+
+    connectedCallback(){
+        this.treeContainer = document.createElement("div");
+        this.treeContainer.classList.add("tree-container");
+        this.appendChild(this.treeContainer);
+        this.propContainer = document.createElement("div");
+        this.propContainer.classList.add("prop-container");
+        this.propEditor = document.createElement("w-property-editor");
+        this.propContainer.appendChild(this.propEditor);
+        this.appendChild(this.propContainer);
         if (this.options.url) {
             this.load((data: ITreeBranch[]) => {
               this.initialize(data);
@@ -202,7 +236,7 @@ export class Tree {
         });
     };
 
-    emptyBranchesDisable = function(): void {
+    emptyBranchesDisable(): void {
         this.willUpdateBranchesById = this.getDisabledBranchesById();
         Object.values(this.willUpdateBranchesById).forEach((branch: ITreeBranch) => {
           branch.disabled = false;
@@ -215,7 +249,7 @@ export class Tree {
 //        console.time('init');
         this.treeStore = this.parseTreeData(data);
         this.render(this.treeStore.treeBranches);
-        const {values, disables, loaded} = this.options;
+        const {values, disables, afterLoad} = this.options;
 
         if (values && values.length) {
             this.treeStore.defaultValues = values;
@@ -228,7 +262,7 @@ export class Tree {
 
         this.treeStore.defaultDisables.length && this.setDisables(this.treeStore.defaultDisables);
         this.updateAllPercents();
-        loaded && loaded.call(this);
+        afterLoad && afterLoad.call(this);
 //        console.timeEnd('init');
     };
 
@@ -259,12 +293,12 @@ export class Tree {
         return treeData;
     };
 
-    render = function(treeBranches : ITreeBranch[]) {
+    render(treeBranches : ITreeBranch[]) {
         const treeElement = this.createRootElement();
         treeElement.appendChild(this.buildTree(treeBranches, 0));
         this.bindEvent(treeElement);
-        empty(this.container);
-        this.container.appendChild(treeElement);
+        empty(this.treeContainer);
+        this.treeContainer.appendChild(treeElement);
         treeElement.addEventListener("click",(e: Event)=>{
 
             Object.values(this.liElementsById).forEach((element: HTMLLIElement)=>{
@@ -642,10 +676,10 @@ export class Tree {
     createListItemElement(branch: ITreeBranch, closed: boolean, level: number): HTMLLIElement {
         const li: HTMLLIElement = document.createElement('li');
         let spacerWidth: number = 0;
-        const switcherWidth: number = 20;
-        const checkboxWidth: number = 20;
+        const switcherWidth: number = $moduleSize;
+        const checkboxWidth: number = $moduleSize;
         let outerLabelWidth: number = 0;
-        const percentWidth: number = 100;
+        const percentWidth: number = $moduleSize * 5;
 
         li.classList.add('branch');
         const divline: HTMLDivElement = document.createElement('div');
@@ -658,13 +692,13 @@ export class Tree {
 
         if (closed) li.classList.add('_close');
         if (branch.children && branch.children.length) {
-          spacerWidth = level * 20;
+          spacerWidth = level * $moduleSize;
           spacer.style.width = `${spacerWidth}px`;
           const switcher:HTMLDivElement = document.createElement('div');
           switcher.classList.add('switcher');
           divline.appendChild(switcher);
         } else {
-          spacerWidth = (level+1) * 20;
+          spacerWidth = (level+1) * $moduleSize;
           spacer.style.width = `${spacerWidth}px`;
           li.classList.add('placeholder');
         }
@@ -683,8 +717,7 @@ export class Tree {
         percent.style.width = `${percentWidth}px`;
         divline.appendChild(percent);
         outerLabelWidth = spacerWidth + switcherWidth + checkboxWidth + percentWidth + 12;
-        this.container.clientWidth
-        const labelWidth: string = `${this.container.clientWidth - outerLabelWidth}px`;
+        const labelWidth: string = `${this.treeContainer.clientWidth - outerLabelWidth}px`;
         label.style.width = labelWidth;
         label.style.minWidth = labelWidth;
         label.style.maxWidth = labelWidth;
@@ -695,10 +728,10 @@ export class Tree {
     };
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    load = function(callback: Function) {
+    load(callback: Function) {
 //        console.time('load');
         const {url, method, beforeLoad} = this.options;
-        ajax({
+        wTreeAjax({
             url,
             method,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -713,3 +746,6 @@ export class Tree {
         });
     };
 }
+
+
+customElements.define("w-tree", WTree);

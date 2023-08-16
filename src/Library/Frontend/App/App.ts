@@ -1,5 +1,5 @@
 import './App.scss';
-import { Tree } from "../Tree";
+import { WTree } from "../WTree";
 import { WebMidi, Input } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { Maestro } from '../Maestro';
@@ -14,7 +14,7 @@ declare global {
 interface IAppData {
     tabs?: WTabContainer;
     treeDivID?: string;
-    tree?: Tree;
+    tree?: WTree;
     errorTdId?: string;
     errorTd?: HTMLTableCellElement;
     errorTrId?: string;
@@ -65,13 +65,14 @@ export class App {
             this.data.maestro = new Maestro({osmd: this.osmd, midiInputs: this.midiInputs});
             console.log("Maestro has been enabled!");
 
-            this.data.tree = new Tree(`#${this.data.treeDivID}`, {closeDepth:1, onChange: ()=>{
-                const values: string[] = this.tree.getValues();
+            this.data.tree = <WTree>document.querySelector("#tree");
+            this.data.tree.onChange = ()=>{
+                const values: string[] = this.data.tree.getValues();
                 if (values.length===1) {
                     window.electron.ipcRenderer.sendMessage('request-sheet', values[0]);
-                    console.log(this.tree.getLeafById(values[0]));
+                    console.log(this.data.tree.getLeafById(values[0]));
                 }
-            }});
+            };
             this.setListeners();
         });
     }
@@ -82,14 +83,15 @@ export class App {
         });
 
         window.electron.ipcRenderer.on("response-sheet-list", (arg: any) => {
-            if (this.tree){
+            if (this.tree && this.tree instanceof WTree){
                 this.tree.initialize(arg);
             }
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
-            this.maestro.loadXmSheet(arg);
+            this.tree.fillPropertyEditor(arg.id);
+            //this.maestro.loadXmSheet(arg.xml);
             console.log(typeof arg);
         });
 
@@ -109,7 +111,7 @@ export class App {
         return this.data.midiInput || null;
     }
 
-    public get tree(): Tree {
+    public get tree(): WTree {
         return this.data.tree || null;
     }
 

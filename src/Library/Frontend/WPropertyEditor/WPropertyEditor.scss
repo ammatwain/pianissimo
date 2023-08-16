@@ -1,0 +1,29 @@
+$module-size: 10px;
+w-property-editor {
+    font-size: $module-size;
+    table, tr, td, th {
+        border: calc($module-size * 0.1) solid #ccc;
+        border-spacing: 0px;
+        border-collapse: collapse;
+        padding: 0px;
+        vertical-align: middle;
+    }
+    table {
+        width: 100%;
+        tr {
+            td {
+                input {
+                    border: none;
+                    width: 100%;
+                }
+                &.key {
+                    padding: calc($module-size * 0.2);
+                    width:min-content;
+                }
+                &.value {
+                    width:100%;
+                }
+            }
+        }
+    }
+}

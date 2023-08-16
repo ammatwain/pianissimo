@@ -14,7 +14,8 @@ const config: ForgeConfig = {
     asar: false,
   },
   rebuildConfig: {},
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+//  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerDeb({})],
   plugins: [
     //new AutoUnpackNativesPlugin({}),
     new WebpackPlugin({

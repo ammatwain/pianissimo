@@ -1,0 +1,273 @@
+@import "variables.module.scss";
+
+$color-disable: #d4d4d4;
+$bgcolor-disable: #f5f5f5;
+$greyborder: #c9c9c9;
+//$checkbox-selected: #1890ff;
+$checkbox-selected: #666;
+//$module-size: 20px;
+w-tree {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    width: 100%;
+    height: 100%;
+    .tree-container {
+        width: 100%;
+        height: 100%;
+        overflow-y: scroll;
+        vertical-align: top;
+        .tree {
+            font-size: calc($module-size * 0.5);
+            *:after,
+            *:before {
+                box-sizing: border-box;
+            }
+
+            .branches {
+                margin: 0px;
+                list-style: none;
+        //    padding-left: $module-size;
+                padding-left: 0px;
+                overflow: hidden;
+                transition: height 150ms ease-out, opacity 150ms ease-out;
+
+                .branch {
+                    position: relative;
+                    margin:0px;
+                    border:0px;
+                    padding:0px;
+                    cursor: pointer;
+                    overflow: hidden;
+                    color: rgba(0, 0, 0, 0.65);
+                    &.placeholder {
+                        //      padding-left: $module-size;
+                        padding-left: 0px;
+                    }
+                    > .divline {
+                        display: grid;
+                        justify-items: stretch;
+                        min-height: calc($module-size * 1.05);
+                        max-height: calc($module-size * 1.05);
+                        &:hover{
+                            border-radius: calc($module-size * 0.45);
+                            background-color: rgba(0, 0, 100, 0.1);
+                        }
+                        .percent {
+                            cursor: pointer;
+                            display: inline-block;
+                            color:#fff;
+                            box-sizing: border-box;
+                            border-radius: calc($module-size * 0.45);
+                            margin: calc($module-size * 0.05);
+                            text-align: center;
+                            font-family: sans-serif;
+                            vertical-align: middle;
+                            line-height: $module-size;
+                            max-height: $module-size;
+                            position: absolute;
+                            right:0px;
+                            transition: transform 150ms ease-out;
+                            //mix-blend-mode: difference;
+                        }
+
+                        .spacer {
+                            display: inline-block;
+                            vertical-align: middle;
+                            height: $module-size;
+                            cursor: pointer;
+                            position: relative;
+                            transition: transform 150ms ease-out;
+                        }
+
+                        .switcher {
+                            display: inline-block;
+                            vertical-align: middle;
+                            width: $module-size;
+                            height: $module-size;
+                            cursor: pointer;
+                            position: relative;
+                            transition: transform 150ms ease-out;
+
+                            &:before {
+                                position: absolute;
+                                top: calc($module-size * 0.4);
+                                left: calc($module-size * 0.3);
+                                display: block;
+                                content: ' ';
+                                border: calc($module-size * 0.3) solid transparent;
+                                border-top: calc($module-size * 0.3) solid rgba(0, 0, 0, 0.4);
+                                transition: border-color 150ms;
+                            }
+                            &:hover:before {
+                                border-top: calc($module-size * 0.3) solid rgba(0, 0, 0, 0.65);
+                            }
+                        }
+
+                        .checkbox {
+                            display: inline-block;
+                            vertical-align: middle;
+                            width: $module-size;
+                            height: $module-size;
+                            cursor: pointer;
+                            position: relative;
+
+                            &:before {
+                                transition: all 0.3s;
+                                cursor: pointer;
+                                position: absolute;
+                                top: calc($module-size * 0.1);
+                                content: ' ';
+                                display: block;
+                                width: calc($module-size * 0.8);
+                                height: calc($module-size * 0.8);
+                                border: calc($module-size * 0.1) solid $greyborder;
+                                border-radius: calc($module-size * 0.1);
+                            }
+                            &:hover {
+                                &:before {
+                                    box-shadow: 0 0 calc($module-size * 0.1) calc($module-size * 0.05) $checkbox-selected;
+                                }
+                            }
+                        }
+                        .label {
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            line-height: $module-size;
+                            padding-left: calc($module-size * 0.25);
+                            padding-right: calc($module-size * 0.25);
+                        }
+                    }
+
+                    &._selected {
+                        > .divline{
+                            font-weight: bold;
+                            color: rgba(0, 0, 0, 1);
+                            li{
+                                font-weight: normal;
+                                color: rgba(0, 0, 0, 0.65);
+                            }
+                        }
+                    }
+                    &._close {
+                        > .divline{
+                            > .switcher {
+                                top: calc($module-size * 0.1);
+                                transform: rotate(-90deg);
+                            }
+                        }
+                        > .branches {
+                            height: 0;
+                        }
+                    }
+
+                    &._checked {
+                        > .divline{
+                            & > .checkbox {
+                                &:before {
+                                    background-color: $checkbox-selected;
+                                    border-color: $checkbox-selected;
+                                }
+                                &:after {
+                                    position: absolute;
+                                    content: ' ';
+                                    display: block;
+                                    top: calc($module-size * 0.2);
+                                    left: calc($module-size * 0.3);
+                                    width: calc($module-size * 0.25);
+                                    height: calc($module-size * 0.45);
+                                    border: calc($module-size * 0.1) solid #fff;
+                                    border-top: none;
+                                    border-left: none;
+                                    transform: rotate(45deg);
+                                }
+                            }
+                        }
+                    }
+
+                    &._halfchecked {
+                        > .divline{
+                            & > .checkbox {
+                                &:before {
+                                    background-color: $checkbox-selected;
+                                    border-color: $checkbox-selected;
+                                }
+                                &:after {
+                                    position: absolute;
+                                    content: ' ';
+                                    display: block;
+                                    top: calc($module-size * 0.45);
+                                    left: calc($module-size * 0.15);
+                                    width: calc($module-size * 0.5);
+                                    height: calc($module-size * 0.1);
+                                    background-color: #fff;
+                                }
+                            }
+                        }
+                    }
+
+                    &._disabled {
+                        cursor: not-allowed;
+                        color: rgba(0, 0, 0, 0.25);
+                        > .divline {
+                            .checkbox {
+                                cursor: not-allowed;
+                                &:before {
+                                    cursor: not-allowed;
+                                    border-color: $greyborder !important;
+                                    background-color: $bgcolor-disable !important;
+                                }
+                                &:hover:before {
+                                    box-shadow: none !important;
+                                }
+                            }
+
+                            ._checked {
+                                & > .checkbox {
+                                    &:after {
+                                        border-color: $greyborder;
+                                    }
+                                }
+                            }
+
+                            ._halfchecked {
+                                & > .checkbox {
+                                    &:after {
+                                        background-color: $greyborder;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    &._disabled {
+                        > .divline {
+                            &._checked {
+                                & > .checkbox {
+                                    &:after {
+                                        border-color: $greyborder;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    &._disabled {
+                        > .divline {
+                            &._halfchecked {
+                                & > .checkbox {
+                                    &:after {
+                                        background-color: $greyborder;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .prop-container{
+
+    }
+}
