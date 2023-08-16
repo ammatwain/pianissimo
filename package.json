@@ -1,8 +1,8 @@
 {
-    "name": "pianopiano",
-    "productName": "pianopiano",
-    "version": "1.0.4",
-    "description": "pianopiano",
+    "name": "pianissimo",
+    "productName": "pianissimo",
+    "version": "1.0.33",
+    "description": "pianissimo",
     "main": ".webpack/main",
     "scripts": {
         "version-patch": "npx auto-version --patch",
@@ -51,6 +51,7 @@
     },
     "dependencies": {
         "better-sqlite3": "^8.5.0",
+        "browser-or-node": "^2.1.1",
         "electron-squirrel-startup": "^1.0.0",
         "opensheetmusicdisplay": "github:ammatwain/osmd-extended-transpose-calculator"
     }

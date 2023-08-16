@@ -1,3 +1,4 @@
+export * from "../Common";
 export { WebMidi } from "./WebMidi";
 export * from "./Arbor";
 export * from "./WTabs";

@@ -78,8 +78,8 @@ export class App {
     }
 
     setListeners() {
-        window.electron.ipcRenderer.on("response-dir-listing", (arg: any) => {
-            //
+        window.electron.ipcRenderer.on("alert-trait-changed", (arg: any) => {
+            alert(arg);
         });
 
         window.electron.ipcRenderer.on("response-sheet-list", (arg: any) => {
@@ -91,7 +91,7 @@ export class App {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
             this.tree.fillPropertyEditor(arg.id);
-            //this.maestro.loadXmSheet(arg.xml);
+            this.maestro.loadXmSheet(arg.xml);
             console.log(typeof arg);
         });
 
