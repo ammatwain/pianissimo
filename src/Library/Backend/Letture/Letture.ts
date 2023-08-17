@@ -1,5 +1,8 @@
 import  { Store, StoreOptions } from "../Store";
 import  { IEntry, IBookEntry, ISheetEntry, ISectionEntry, SheetFlowCalculator } from "../../";
+import  OS from "os";
+import  PATH from "path";
+import  FS from "fs";
 
 
 export class Letture extends Store {
@@ -110,7 +113,18 @@ WHERE sectionid IS NOT NULL
 ORDER BY bookorder,sheetorder,"order";`
         );
     }
-
+    
+    registerSheetTable() {
+        this.Db.table('HOME', {
+            columns: ['filename', 'data'],
+            rows: function* () {
+                for (const filename of FS.readdirSync(PATH.resolve(OS.homedir(),"./pianissimo")) {
+                    const data = FS.readFileSync(filename);
+                    yield { filename, data };
+                }
+            },
+        });
+    }
 
     rootBookEntry(): IBookEntry{
         const dbBookResult: IBookEntry[] = <IBookEntry[]>this.prepare(`SELECT * FROM "books" ORDER BY "order";`).all();

@@ -4,6 +4,9 @@ import { WebMidi, Input } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { Maestro } from '../Maestro';
 import { WTabContainer } from '../WTabs';
+/*
+import { electronHandler } from "../";
+*/
 
 declare global {
     interface Window {
@@ -78,14 +81,14 @@ export class App {
     }
 
     setListeners() {
-        window.electron.ipcRenderer.on("alert-trait-changed", (arg: any) => {
-            alert(arg);
-        });
 
         window.electron.ipcRenderer.on("response-sheet-list", (arg: any) => {
             if (this.tree && this.tree instanceof WTree){
                 this.tree.initialize(arg);
             }
+            window.electron.ipcRenderer.invoke("request-dir-listing","../").then((result: any)=>{
+                console.log(result);
+            });
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

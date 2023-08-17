@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-import { contextBridge, ipcRenderer /*, IpcRendererEvent */} from 'electron';
-import {readdirSync} from "fs";
 
+//import { contextBridge, ipcRenderer /*, IpcRendererEvent */} from 'electron';
+/*
 export const electronHandler = {
   ipcRenderer: {
     sendMessage(channel: any, ...args: any[]) {
@@ -21,9 +18,11 @@ export const electronHandler = {
     once(channel: any, func: any) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
-    invoke: ipcRenderer.invoke,
   },
 };
 
-
-contextBridge.exposeInMainWorld('electron', electronHandler);
+export const appContextBridge = contextBridge;
+export type ElectronHandler = typeof electronHandler;
+*/
+export const dummy: any = {};
+ 
