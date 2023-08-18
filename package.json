@@ -1,7 +1,7 @@
 {
     "name": "pianissimo",
     "productName": "pianissimo",
-    "version": "1.0.66",
+    "version": "1.0.78",
     "description": "pianissimo",
     "main": ".webpack/main",
     "scripts": {
@@ -52,6 +52,7 @@
     "dependencies": {
         "better-sqlite3": "^8.5.0",
         "browser-or-node": "^2.1.1",
+        "directory-tree": "^3.5.1",
         "electron-squirrel-startup": "^1.0.0",
         "opensheetmusicdisplay": "github:ammatwain/osmd-extended-transpose-calculator"
     }

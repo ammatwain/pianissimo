@@ -113,7 +113,7 @@ WHERE sectionid IS NOT NULL
 ORDER BY bookorder,sheetorder,"order";`
         );
     }
-    
+    /*
     registerSheetTable() {
         this.Db.table('HOME', {
             columns: ['filename', 'data'],
@@ -125,7 +125,7 @@ ORDER BY bookorder,sheetorder,"order";`
             },
         });
     }
-
+    */
     rootBookEntry(): IBookEntry{
         const dbBookResult: IBookEntry[] = <IBookEntry[]>this.prepare(`SELECT * FROM "books" ORDER BY "order";`).all();
         const dbSheetResult: ISheetEntry[] = <ISheetEntry[]>this.prepare("SELECT * FROM view_sheets;").all();

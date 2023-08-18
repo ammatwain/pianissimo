@@ -1,129 +1,115 @@
-import { IInfoFile, IWorkItem } from '../../Common/Interfaces';
-import FS from 'fs';
-import PATH from 'path';
-import { app } from 'electron';
+import FS from "fs";
+import PATH from "path";
 
-function safeReadDirSync (path: string): string[] {
-    let dirData: string[];
-    try {
-      dirData = FS.readdirSync(path);
-    } catch(ex) {
-      if (ex.code == "EACCES" || ex.code == "EPERM") {
-        //User does not have permissions, ignore directory
-        return null;
-      }
-      else throw ex;
-    }
-    return dirData;
+import directoryTree, { DirectoryTree } from "directory-tree";
+
+interface IBranch {
+    $id?: number;
+    parentid?: number;
+    sequence?: number;
+    status?: number;
+    type?: "book"|"sheet";
+    name?: string;
+    data?: any;
+    $path?: string;
+    $children?: IBranch[];
 }
 
-export function checkArrayInInfo(info: IInfoFile): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-    let ok: boolean = true;
-    if (!('keys' in info)) {
-        info.keys = [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false];
-        ok = false;
-    }
-    if (!('shot' in info)) {
-        info.shot = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-        ok = false;
-    }
-    if (!('done' in info)) {
-        info.done = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-        ok = false;
-    }
-    if (!('fail' in info)) {
-        info.fail = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-        ok = false;
-    }
-    return ok;
-}
+export class Walk{
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function readInfo(dir: string): IInfoFile {
-    //const removePath = PATH.resolve(__dirname,'../renderer/main_window');
-    const removePath = PATH.resolve(__dirname, dir).split('/Letture/')[0];
-    const dirBasename: string = PATH.basename(dir,'.jmxl');
-    const isJmxl: boolean = PATH.extname(dir) === '.jmxl';
-    const jsonFile: string = PATH.resolve(dir,'info.json');
-    const mxlFile: string = PATH.resolve(dir,'sheet.mxl');
-    //console.log(removePath, jsonFile, mxlFile);
-    let infoFile: IInfoFile;
-    if (FS.existsSync(jsonFile)) {
-        infoFile = <IInfoFile>JSON.parse(FS.readFileSync(jsonFile).toString('utf8'));
-    } else {
-        infoFile = {
-            caption:  dirBasename,
-            keys: [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],
-            shot: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            done: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            fail: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-            type: null,
-            info: null,
+    constructor(dir: string = "./"){
+        this.dir = dir;
+        this.tree = this.postwalk(null,null,dir);
+    }
+
+    private dir: string;
+    private nextuid: number = 1;
+    private tree: IBranch[] = [];
+    private linear: IBranch[] = [];
+    
+    private prewalk(dir: string): DirectoryTree {
+        return directoryTree(dir, {
+            attributes:['type', 'atime', 'extension'],
+            extensions: /\.(xml|musicxml|mxl)$/,
+        });
+    }
+    
+    private postwalk(treeNode: DirectoryTree | DirectoryTree []= null, parentid: number = null, dir: string = null): IBranch[] {
+        const jsonChildren: IBranch[] = [];
+        let nodes: DirectoryTree[] = [];
+    
+        if (treeNode===null && dir!==null){
+            this.linear = [];
+            this.nextuid = 1;
+            treeNode = this.prewalk(dir);
         }
-        if (isJmxl){
-            infoFile.type = 'sheet';
-            infoFile.practice = false;
-            if (FS.existsSync(mxlFile)){
-                infoFile.sheet = 'sheet.mxl';
-            }
+    
+        if (!Array.isArray(treeNode)) {
+            nodes = [treeNode];
         } else {
-            infoFile.type = 'book';
+            nodes = treeNode;
         }
-        FS.writeFileSync(jsonFile,JSON.stringify(infoFile));
-    }
-    if (!checkArrayInInfo(infoFile)) {
-        FS.writeFileSync(jsonFile,JSON.stringify(infoFile));
-    }
-    infoFile.info = jsonFile;
-    return infoFile;
-}
 
-// eslint-disable-next-line @typescript-eslint/no-inferrable-types
-export const walk = function(dir: string, id: string = '') {
-    //const removePath = PATH.resolve(__dirname,'../renderer');
-    //const removePath = PATH.resolve(__dirname,'../renderer/main_window');
-    const removePath = PATH.resolve(__dirname, dir).split('/Letture/')[0];
-    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-    let level: number = 0;
-    let idStr: string = id;
-    if (id!=='') {
-        level = (id.split('-').length) || 0 ;
-    }
-    if (level) {
-        idStr = id + '-';
-    }
-    // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-    let idNum: number = 0;
-    dir = PATH.resolve(__dirname, dir);
-    const results: IWorkItem[] = [];
-    const list = safeReadDirSync(dir);
-    list.forEach(function(file: string) {
-        file = dir + '/' + file;
-        let removedPath: string = '';
-        const stat = FS.statSync(file);
-        if (app.isPackaged) {
-            removedPath = file.replace(removePath,'.');
-        } else {
-            removedPath = file.replace(removePath,'./main_window');
-        }
-        const workItem: IWorkItem = {
-            id: idStr + idNum,
-//            path: file.replace(removePath,'.'),
-            path: removedPath,
-            name: PATH.basename(file),
-            level: level,
-        }
-        if (stat && stat.isDirectory()) {
-            /* Recurse into a subdirectory */
-            if (PATH.extname(file)!=='.jmxl') {
-                workItem.children = walk(file, workItem.id);
+        nodes.forEach((node: DirectoryTree)=>{
+
+            if (node.name.startsWith("§")){
+                const tmp: string[] = node.name.split('.',3);
+                if (tmp.length===3) {
+                    node.name = `${tmp[2]};${tmp[1]}`;
+                }
             }
-            Object.assign(workItem,readInfo(file));
-            results.push(workItem);
-            idNum++;
-        }
-    });
-    return results;
-}
 
+            const jsonChild: IBranch = {
+                $id: this.nextuid,
+                sequence: this.nextuid++,
+                parentid: parentid,
+                status: 1,
+                type: null,
+                name: node.name.replaceAll('_',' '),
+                data: null,
+                $path: node.path,
+                $children: [],
+            };
+    
+            jsonChildren.push(jsonChild);
+            if(node.type === "directory" && node.children && node.children.length ) {
+                jsonChild.type = "book";
+                jsonChild.$children = this.postwalk(node.children, jsonChild.$id);
+            } else if(node.type === "file" && node.extension === '.musicxml'){
+                jsonChild.name = PATH.basename(jsonChild.name,".musicxml");
+                jsonChild.type = "sheet";
+            }
+
+            const jsonLeveled: IBranch = {};
+            Object.assign(jsonLeveled,jsonChild);
+            delete jsonLeveled.$children;
+            this.linear.push(jsonLeveled);
+        });
+        return jsonChildren;
+    }
+
+    public get Tree(): IBranch[] {
+        return this.tree;
+    } 
+
+    public get Linear(): IBranch[] {
+        return this.linear.sort((a: IBranch, b: IBranch)=>{
+            return a.$id - b.$id;
+        });
+    }
+
+    public get TreeAsJSONString(): string {
+        return JSON.stringify(this.Tree,null,2);
+    } 
+
+    public get LinearAsJSONString(): string {
+        return JSON.stringify(this.Linear,null,2);
+    }
+
+}
+/*
+const walk = new Walk("./Letture");
+
+FS.writeFileSync("./walk1.json", walk.TreeAsJSONString);
+FS.writeFileSync("./walk2.json", walk.LinearAsJSONString);
+*/

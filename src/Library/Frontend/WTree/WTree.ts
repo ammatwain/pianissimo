@@ -425,6 +425,11 @@ export class WTree extends HTMLElement{
             },
             false
         );
+        /*
+        ele.addEventListener("resize",(e)=>{
+
+        })
+        */
     };
 
     onItemClick(id: string): void {
@@ -673,6 +678,13 @@ export class WTree extends HTMLElement{
         } while (branch.children && branch.children.length);
         return branch;
     }
+/*
+    resizeLabel(ele: HTMLLIElement){
+        outerLabelWidth = spacerWidth + switcherWidth + checkboxWidth + percentWidth + 12;
+        const labelWidth: string = `${this.treeContainer.clientWidth - outerLabelWidth}px`;
+        label.style.width = labelWidth;
+    }
+*/
     createListItemElement(branch: ITreeBranch, closed: boolean, level: number): HTMLLIElement {
         const li: HTMLLIElement = document.createElement('li');
         let spacerWidth: number = 0;

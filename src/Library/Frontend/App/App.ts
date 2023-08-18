@@ -86,10 +86,18 @@ export class App {
             if (this.tree && this.tree instanceof WTree){
                 this.tree.initialize(arg);
             }
+/*
             window.electron.ipcRenderer.invoke("request-dir-listing","../").then((result: any)=>{
-                console.log(result);
+                console.log("DIR-LISTING", result);
             });
+*/
+
+            window.electron.ipcRenderer.invoke("request-package-info","../").then((result: any)=>{
+                console.log("PACKAGE-INFO", result);
+            });
+
         });
+
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
