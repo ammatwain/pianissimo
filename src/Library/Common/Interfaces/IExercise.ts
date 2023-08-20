@@ -1,3 +1,1 @@
-import { IArborBranch } from "./IArborBranch";
-
-export type IExercise = IArborBranch;
+export type IExercise = any;

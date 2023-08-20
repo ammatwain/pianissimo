@@ -71,22 +71,6 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
-
-  FS.writeFileSync(
-    "./test2.json",
-    JSON.stringify(
-      letture.getTreeLibrary(),
-      (key: string,value: any)=>{
-        if (key==="$parent") {
-          return undefined;
-        }
-        return value;
-      },
-      1
-    )
-  );
-
-
 };
 
 // This method will be called when Electron has finished
