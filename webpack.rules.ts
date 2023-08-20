@@ -1,4 +1,5 @@
 import type { ModuleOptions } from 'webpack';
+import { Constants } from "./src/Library/Common/Constants";
 
 export const rules: Required<ModuleOptions>['rules'] = [
     // Add support for native node modules
@@ -36,7 +37,12 @@ export const rules: Required<ModuleOptions>['rules'] = [
             // Translates CSS into CommonJS
             "css-loader",
             // Compiles Sass to CSS
-            "sass-loader",
+            {
+                "loader":"sass-loader",
+                options: {
+                    additionalData: `$module-size: ${Constants.scss.$moduleSize}px;`,
+                },
+            }
         ],
     },
 ];

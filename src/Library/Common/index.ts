@@ -1,3 +1,3 @@
 export * from "./Interfaces";
 export * from "./ElectronHandler";
-export * from "./Trait";
+export * from "./Constants";

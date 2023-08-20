@@ -3,6 +3,7 @@ export { WebMidi } from "./WebMidi";
 export * from "./Arbor";
 export * from "./WTabs";
 export * from "./WPropertyEditor";
+export * from "./BranchClass";
 export * from "./WTree";
 export * from "./SheetFlow";
 export * from "./Maestro";

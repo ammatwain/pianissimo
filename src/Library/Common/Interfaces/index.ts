@@ -1,3 +1,7 @@
+export * from "./IBranchType";
+export * from "./IBranchCustom";
+export * from "./IBranchObject";
+export * from "./IWalk";
 export * from "./IEntry";
 export * from "./IInfoFile";
 export * from "./IWorkItem";

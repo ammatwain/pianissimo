@@ -1,9 +1,12 @@
-import { ITreeBranch } from "./ITreeBranch";
-
+import { BranchClass } from "../../../Frontend";
+import { IBranchObject } from "../IBranchObject";
+export type BranchClassCollectionItem = {[index: number]: BranchClass };
 export interface ITreeStore {
-    treeBranches?: ITreeBranch[];
-    branchesById?: {[index: string]: ITreeBranch };
-    leafBranchesById?: {[index: string]: ITreeBranch };
+    treeBranchesObject?: IBranchObject[];
+    treeBranchesClass?: BranchClass[];
+    linearBranchesClass?: BranchClass[];
+    branchesById?: BranchClassCollectionItem;
+    leafBranchesById?: BranchClassCollectionItem;
     defaultValues?: string[];
     defaultDisables?: any[];
 }

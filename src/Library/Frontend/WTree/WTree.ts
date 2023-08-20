@@ -1,12 +1,13 @@
 import { default as wTreeAjax } from "./WTreeAjax";
 import { WPropertyEditor } from "../WPropertyEditor";
+import { BranchClass } from "../BranchClass";
+import { BranchClassCollectionItem, Constants, IBranchObject, ITreeStore } from "../";
 import "./style/style.scss";
-import STYLE from "./style/variables.module.scss";
 
 //const { moduleSize } = STYLE;
-const $moduleSize: number  =  Number(parseInt(STYLE.moduleSize));
+const $moduleSize: number  = Constants.scss.$moduleSize;
 
-import { IEntry, ITreeBranch, ITreeStore } from "../../Common";
+import { IEntry, ITreeBranch} from "../../Common";
 
 declare global {
     interface ParentNode {
@@ -210,7 +211,9 @@ export class WTree extends HTMLElement{
             });
         } else if (this.options.data){
             this.initialize(this.options.data);
-        } else {
+        }
+        /*
+        else {
             this.initialize(
                 [
                     {
@@ -221,6 +224,7 @@ export class WTree extends HTMLElement{
                 ]
             );
         }
+        */
     }
 
     createRootElement(): HTMLDivElement {
@@ -269,7 +273,7 @@ export class WTree extends HTMLElement{
     parseTreeData(data: ITreeBranch[]): ITreeStore {
 
         const treeData: ITreeStore = {
-            treeBranches: deepClone(data),
+            treeBranches: data, //deepClone(data),
             branchesById: {},
             leafBranchesById: {},
             defaultValues: [],

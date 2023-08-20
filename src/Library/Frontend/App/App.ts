@@ -4,6 +4,8 @@ import { WebMidi, Input } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { Maestro } from '../Maestro';
 import { WTabContainer } from '../WTabs';
+import { IBranchObject } from '..';
+import { Walk } from '../../Backend/Walk/Walk';
 /*
 import { electronHandler } from "../";
 */
@@ -15,6 +17,7 @@ declare global {
 }
 
 interface IAppData {
+    test?: HTMLElement;
     tabs?: WTabContainer;
     treeDivID?: string;
     tree?: WTree;
@@ -47,6 +50,7 @@ export class App {
     }
 
     domContentLoaded(): void {
+        this.data.test = document.querySelector("#test");
         this.data.errorTd = document.querySelector(`#${this.data.errorTdId}`);
         this.data.errorTr = document.querySelector(`#${this.data.errorTrId}`);
         this.data.tabs = new WTabContainer(document.querySelector("w-tab-container"));
@@ -82,20 +86,22 @@ export class App {
 
     setListeners() {
 
-        window.electron.ipcRenderer.on("response-sheet-list", (arg: any) => {
+        window.electron.ipcRenderer.on("response-sheet-list", (arg: IBranchObject[]) => {
+            const walk = new Walk(arg);
             if (this.tree && this.tree instanceof WTree){
-                this.tree.initialize(arg);
+                console.log(walk.TreeClasses);
+                this.tree.initialize(walk.TreeClasses);
             }
 /*
             window.electron.ipcRenderer.invoke("request-dir-listing","../").then((result: any)=>{
                 console.log("DIR-LISTING", result);
             });
 */
-
+/*
             window.electron.ipcRenderer.invoke("request-package-info","../").then((result: any)=>{
                 console.log("PACKAGE-INFO", result);
             });
-
+*/
         });
 
 
@@ -108,7 +114,11 @@ export class App {
 
         window.electron.ipcRenderer.sendMessage('request-dir-listing', {});
         window.electron.ipcRenderer.sendMessage('request-sheet-list', {});
-
+        this.data.test.addEventListener("click",()=>{
+            window.electron.ipcRenderer.invoke("request-dir-listing","../Letture/Letture").then((result: any)=>{
+                console.log("DIR-LISTING", result);
+            });
+        });
         this.maestro.setListeners();
 
         // this.test();
