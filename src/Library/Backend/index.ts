@@ -1,4 +1,3 @@
-export * from "../Common";
 export * from "./Package";
 export * from "./Config";
 export * from "./Store";

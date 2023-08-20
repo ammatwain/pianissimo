@@ -1,5 +1,6 @@
 //import FS from "fs";
-import { IBranchObject, IWalk } from "..";
+import { IWalk } from "../../Common/Interfaces";
+import { IBranchObject } from "../../Common";
 import PATH from "path";
 import directoryTree, { DirectoryTree } from "directory-tree";
 

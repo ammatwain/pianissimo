@@ -126,6 +126,11 @@ w-tree {
                                     box-shadow: 0 0 calc($module-size * 0.1) calc($module-size * 0.05) $checkbox-selected;
                                 }
                             }
+                            &.radio{
+                                &:before {
+                                    border-radius: 50%;
+                                }
+                            }
                         }
                         .label {
                             overflow: hidden;

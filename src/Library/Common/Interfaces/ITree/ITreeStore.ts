@@ -5,6 +5,6 @@ export interface ITreeStore {
     linearBranches?: BranchClass[];
     branchesById?: BranchClassCollectionItem;
     leafBranchesById?: BranchClassCollectionItem;
-    defaultValues?: string[];
-    defaultDisables?: any[];
+    defaultValues?: number[];
+    defaultDisables?: number[];
 }

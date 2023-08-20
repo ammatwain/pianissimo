@@ -4,8 +4,9 @@ import { WebMidi, Input } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { Maestro } from '../Maestro';
 import { WTabContainer } from '../WTabs';
-import { IBranchObject } from '..';
-import { Walk } from '../../Backend/Walk/Walk';
+import { BranchClass } from '..';
+import { IBranchObject } from "../../Common";
+
 /*
 import { electronHandler } from "../";
 */
@@ -63,6 +64,7 @@ export class App {
             this.data.osmd = new OpenSheetMusicDisplay(this.data.osmdDivId, {
                 backend: "svg",
                 drawTitle: true,
+                drawSubtitle: true,
                 disableCursor:false,
                 followCursor:true,
             });
@@ -74,7 +76,7 @@ export class App {
 
             this.data.tree = <WTree>document.querySelector("#tree");
             this.data.tree.onChange = ()=>{
-                const values: string[] = this.data.tree.getValues();
+                const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
                     window.electron.ipcRenderer.sendMessage('request-sheet', values[0]);
                     console.log(this.data.tree.getLeafById(values[0]));
@@ -108,8 +110,10 @@ export class App {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
+            const branch: BranchClass = this.tree.getLeafById(arg.id);
+
             this.tree.fillPropertyEditor(arg.id);
-            this.maestro.loadXmSheet(arg.xml);
+            this.maestro.loadXmSheet(arg.xml, branch);
             console.log(typeof arg);
         });
 

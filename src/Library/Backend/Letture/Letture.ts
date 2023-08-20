@@ -1,6 +1,7 @@
 import  { Store, StoreOptions } from "../Store";
-import  { IBranchObject, Walk } from "../../Backend";
+import  { Walk } from "../../Backend";
 import  { SqlQuery } from "./Queries";
+import { IBranchObject } from "../../Common";
 
 export class Letture extends Store {
 
@@ -10,7 +11,14 @@ export class Letture extends Store {
     }
 
     getLinearLibrary(): IBranchObject[] {
+        const library: IBranchObject[] = <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
+        library.forEach((branch: IBranchObject)=>{
+            if (typeof branch.custom === "string") {
+                branch.custom = JSON.parse(branch.custom) || {};
+            }
+        });
         return <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
+
     }
 
     getTreeLibrary(): IBranchObject[] {

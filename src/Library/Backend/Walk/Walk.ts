@@ -1,5 +1,5 @@
 import { BranchClass } from "../../../Library/Frontend/BranchClass";
-import { IBranchObject, IWalk } from "..";
+import { IBranchObject, IWalk} from "../../Common";
 
 export class Walk implements IWalk{
 

@@ -1,4 +1,4 @@
-import { IBranchCustom } from "./IBranchCustom";
+//import { IBranchCustom } from "./IBranchCustom";
 import { IBranchType } from "./IBranchType";
 
 export interface IBranchObject {
@@ -7,7 +7,7 @@ export interface IBranchObject {
     sequence?: number;
     type?: IBranchType;
     name?: string;
-    custom?: IBranchCustom;
+    custom?: any;
     data?: Buffer;
     //
     $parent?: IBranchObject;

@@ -1,7 +1,9 @@
-import { RepetitionInstruction, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { RepetitionInstruction, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, ColoringModes } from "opensheetmusicdisplay";
 import { Input, NoteMessageEvent } from "../WebMidi";
 import { SheetFlowCalculator } from "../SheetFlow";
-import { IExercise } from "../../";
+import { BranchClass } from "../../";
+import { IExercise } from "../../Common";
+
 //import { KeyboardInputEvent } from "electron";
 
 export interface IMaestroParams {
@@ -288,8 +290,8 @@ export class Maestro{
     public loadSheet(
         exercise: IExercise = null,
         transposeValue: number = 0,
-        beforeStart: Function = null,
-        afterEnd: Function = null
+        beforeStart: ()=>void  = null,
+        afterEnd: ()=>void = null
     ): void {
         if (exercise===null) {
             exercise = this.getRandomExercise();
@@ -323,9 +325,10 @@ export class Maestro{
 
     public loadXmSheet(
         xml: string,
+        sheet: BranchClass,
         transposeValue: number = 0,
-        beforeStart: Function = null,
-        afterEnd: Function = null
+        beforeStart: ()=>void = null,
+        afterEnd: ()=>void = null
     ): void {
         if (xml && typeof xml === "string"){
             if(beforeStart!==null && typeof beforeStart === 'function'){
@@ -334,14 +337,24 @@ export class Maestro{
             console.log(xml)
             this.osmd.load(xml).then(()=>{
                 this.osmd.TransposeCalculator.Options.transposeToHalftone(0);
+                sheet.mainKey = this.osmd.TransposeCalculator.Options.MainKey
                 this.playerMeasures = [];
                 this.playerMeasureIndex = 0;
                 this.playerMeasures = this.flow.calculatePlayerMeasures();
-                console.log(this.data.playMeasures);
                 this.osmd.Sheet.Transpose = transposeValue;
+                console.log(sheet.branchObject);
+                console.log(this.data.playMeasures);
+
                 this.osmd.zoom = 1.0;
                 //this.osmd.FollowCursor = true;
-                this.osmd.Sheet.Title.text = "TEST";
+                const titleSplitted: string[] = sheet.name.split(";");
+                if(titleSplitted.length==2){
+                    this.osmd.Sheet.TitleString = titleSplitted[0];
+                    this.osmd.Sheet.SubtitleString = titleSplitted[1];
+
+                } else {
+                    this.osmd.Sheet.TitleString = sheet.name;
+                }
                 this.osmd.updateGraphic();
                 this.osmd.render();
                 this.reset();
