@@ -86,11 +86,12 @@ export class App {
 
     setListeners() {
 
-        window.electron.ipcRenderer.on("response-sheet-list", (arg: IBranchObject[]) => {
-            const walk = new Walk(arg);
+        window.electron.ipcRenderer.on("response-sheet-list", (sheetLibrary: IBranchObject[]) => {
+            //const walk = new Walk(sheetLibrary);
             if (this.tree && this.tree instanceof WTree){
-                console.log(walk.TreeClasses);
-                this.tree.initialize(walk.TreeClasses);
+                //console.log(walk.TreeClasses);
+//                this.tree.initialize(walk.TreeClasses);
+                this.tree.initialize(sheetLibrary);
             }
 /*
             window.electron.ipcRenderer.invoke("request-dir-listing","../").then((result: any)=>{
