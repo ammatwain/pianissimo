@@ -3,5 +3,5 @@ export * from "./IBranchCustom";
 export * from "./IBranchObject";
 export * from "./IWalk";
 export * from "./IExercise";
-export * from "./ITree";
+export * from "./ITreeStore";
 
