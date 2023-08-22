@@ -4,7 +4,6 @@ export class BranchClass{
     private _parent: BranchClass;
     private _children: BranchClass[];
     private _branchObject: IBranchObject;
-    private _bookPercent: number = 0;
 
     rnd(max: number): number  {
         return Math.floor(Math.random() * max);
@@ -13,11 +12,13 @@ export class BranchClass{
     constructor(branch: IBranchObject, parent: BranchClass = null) {
         this.parent =  parent;
         this._branchObject = branch;
+        
         // in questo momento custom dovrebbe essere una stringa;
         if (typeof this._branchObject.custom === "string") {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
         }
-        if (this.type==="sheet"){
+       if (this.type==="section"){
+            this.activeKeys=[-2, +1, +5];
             let r: number = this.rnd(10);
             if (r<5) {
                 r = r +1;
@@ -28,7 +29,6 @@ export class BranchClass{
                     }
                 }
             }
-                this.activeKeys = [-2, +1, +4];
             this.shot = [
                 this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
                 this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
@@ -39,7 +39,6 @@ export class BranchClass{
                 this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
                 this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
             ];
-
         }
     }
 
@@ -163,7 +162,7 @@ export class BranchClass{
         let shot: number = 0;
         let done: number = 0;
         //let fail: number = 0;
-        if (this.type === "sheet") {
+        if (this.type === "section") {
             this.activeKeys.forEach((key: number)=>{
                 if (key >= -7 && key <= 7) {
                     shot += this.shot[key+7];

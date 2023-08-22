@@ -344,7 +344,11 @@ export class Maestro{
                 this.osmd.Sheet.Transpose = transposeValue;
                 console.log(sheet.branchObject);
                 console.log(this.data.playMeasures);
-
+                this.osmd.setOptions({
+                    drawFromMeasureNumber: 2,
+                    drawUpToMeasureNumber: 2,
+                    defaultColorMusic: "#cccccc",
+                });
                 this.osmd.zoom = 1.0;
                 //this.osmd.FollowCursor = true;
                 const titleSplitted: string[] = sheet.name.split(";");

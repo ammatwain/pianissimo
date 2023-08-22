@@ -1,1 +1,1 @@
-export type IBranchType = "book" | "sheet";
+export type IBranchType = "book" | "sheet" | "section";

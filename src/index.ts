@@ -42,6 +42,15 @@ if(!(app.isPackaged && FS.existsSync(Config.Database))) {
     });
     letture.Db.close();
     */
+    /*
+    make sections
+    const letture: Letture = new Letture(PATH.resolve(__dirname,"Data/Letture.db"),null);
+    const sheets: {id:number}[] = <{id:number}[]>letture.prepare(`SELECT id FROM "library" WHERE "type"='sheet';`).all();
+    sheets.forEach((n: {id:number})=>{
+        letture.exec(`INSERT INTO "library" ("parentid","type","sequence","name") VALUES (${n.id},'section','-1.0','Default');`);
+    });
+    letture.Db.close();
+    */
     FS.copyFileSync(
         PATH.resolve(__dirname,"Data/Letture.db"),
         Config.Database
