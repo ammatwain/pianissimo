@@ -18,14 +18,14 @@ export class FSWalk implements IWalk{
 
     private prewalk(dir: string): DirectoryTree {
         return directoryTree(dir, {
-            attributes:['type', 'atime', 'extension'],
+            attributes:["type", "atime", "extension"],
             extensions: /\.(xml|musicxml|mxl)$/,
         });
     }
 
     private postwalk(treeNode: DirectoryTree | DirectoryTree []= null, parentid: number = 0, dir: string = null): IBranchObject[] {
         parentid = parentid || 0;
-        let sequence = 0;
+        let sequence: number = 0;
         const jsonChildren: IBranchObject[] = [];
         let nodes: DirectoryTree[] = [];
 
@@ -42,7 +42,7 @@ export class FSWalk implements IWalk{
         }
 
         nodes.forEach((node: DirectoryTree)=>{
-            const tmp: string[] = PATH.basename(node.name,".musicxml").split('.',3);
+            const tmp: string[] = PATH.basename(node.name,".musicxml").split(".",3);
             if (tmp.length===3) {
                 if (tmp[0].startsWith("§")){
                     node.name = `${tmp[2]};${tmp[1]}`;
@@ -56,7 +56,7 @@ export class FSWalk implements IWalk{
                 sequence: sequence++,
                 parentid: parentid,
                 type: null,
-                name: node.name.replaceAll('_',' '),
+                name: node.name.replaceAll("_"," "),
                 data: null,
                 $path: node.path,
                 $children: [],
@@ -69,7 +69,7 @@ export class FSWalk implements IWalk{
                 //for (let i: number = 0; i < jsonChild.$children.length; i++){
                 //    jsonChild.$children[i].sequence = i;
                 //}
-            } else if(node.type === "file" && node.extension === '.musicxml'){
+            } else if(node.type === "file" && node.extension === ".musicxml"){
                 jsonChild.name = PATH.basename(jsonChild.name,".musicxml");
                 jsonChild.type = "sheet";
             }
@@ -83,7 +83,7 @@ export class FSWalk implements IWalk{
     }
 
     private jsonStringifyReplacer(key: string, value: any): any{
-        if (key==='$parent') {
+        if (key==="$parent") {
             return undefined;
         }
         return value;

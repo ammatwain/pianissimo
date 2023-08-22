@@ -69,7 +69,7 @@ export class Repetitions {
         const m: SourceMeasure = this.measures[measure];
         let result: number = measure;
         console.log(m.FirstRepetitionInstructions);
-        let index: number = m.FirstRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
+        const index: number = m.FirstRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
             return r.type === sign;
         });
         if (index<0){
@@ -83,7 +83,7 @@ export class Repetitions {
         const m: SourceMeasure = this.measures[measure];
         let result: number = measure;
         console.log(m.LastRepetitionInstructions);
-        let index: number = m.LastRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
+        const index: number = m.LastRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
             return r.type === sign;
         });
         if (index<0){
@@ -103,7 +103,7 @@ export class Repetitions {
     findInFirstBackward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex ): number {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
-        for (let i = startMeasure; i >=0; i--) {
+        for (let i: number = startMeasure; i >=0; i--) {
             result = this.signInFirst(sign, i);
             if (result>=0){
                 break;
@@ -118,7 +118,7 @@ export class Repetitions {
     findInFirstForward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex): number {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
-        for (let i = startMeasure; i < this.measures.length; i++) {
+        for (let i: number = startMeasure; i < this.measures.length; i++) {
             result = this.signInFirst(sign, i);
             if (result>=0){
                 break;
@@ -133,7 +133,7 @@ export class Repetitions {
     findInLastBackward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex ): number {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
-        for (let i = startMeasure; i >=0; i--) {
+        for (let i: number = startMeasure; i >=0; i--) {
             result = this.signInLast(sign, i);
             if (result>=0){
                 break;
@@ -148,7 +148,7 @@ export class Repetitions {
     findInLastForward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex): number {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
-        for (let i = startMeasure; i < this.measures.length; i++) {
+        for (let i: number = startMeasure; i < this.measures.length; i++) {
             result = this.signInLast(sign, i);
             if (result>=0){
                 break;
@@ -163,7 +163,7 @@ export class Repetitions {
     findBackward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex ): number {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
-        for (let i = startMeasure; i >=0; i--) {
+        for (let i: number = startMeasure; i >=0; i--) {
             result = this.signInBoth(sign, i);
             if (result>=0){
                 break;
@@ -178,7 +178,7 @@ export class Repetitions {
     findForward(sign: RepetitionInstructionEnum, defaultValue: number = -1, startMeasure: number = this.measureIndex): number {
         startMeasure = this.validateMeasureIndex(startMeasure);
         let result: number = defaultValue;
-        for (let i = startMeasure; i < this.measures.length; i++) {
+        for (let i: number = startMeasure; i < this.measures.length; i++) {
             result = this.signInBoth(sign, i);
             if (result>=0){
                 break;
@@ -208,7 +208,7 @@ export class Repetitions {
 */
     existsInitialEndingIndexInMeasure(index: 1 | 2 | 3, measureIndex: number): boolean{
         const measure: SourceMeasure = this.measures[this.validateMeasureIndex(measureIndex)];
-        const repeatInstruction = measure.FirstRepetitionInstructions.find((ri: RepetitionInstruction)=>{
+        const repeatInstruction: RepetitionInstruction = measure.FirstRepetitionInstructions.find((ri: RepetitionInstruction)=>{
             return ri.type === RepetitionInstructionEnum.Ending;
         });
         if (repeatInstruction) {
@@ -219,7 +219,7 @@ export class Repetitions {
 
     existsFinalEndingIndexInMeasure(index: 1 | 2 | 3, measureIndex: number): boolean{
         const measure: SourceMeasure = this.measures[this.validateMeasureIndex(measureIndex)];
-        const repeatInstruction = measure.LastRepetitionInstructions.find((ri: RepetitionInstruction)=>{
+        const repeatInstruction: RepetitionInstruction = measure.LastRepetitionInstructions.find((ri: RepetitionInstruction)=>{
             return ri.type === RepetitionInstructionEnum.Ending;
         });
         if (repeatInstruction) {
@@ -252,11 +252,10 @@ export class Repetitions {
         let array: number[] = [];
         switch(this.sign){
             case RepetitionInstructionEnum.BackJumpLine : {
-                let initialEnding1: number;
                 let finalEnding1: number;
                 start = this.findBackward(RepetitionInstructionEnum.StartLine, 0);
                 end = this.measureIndex;
-                initialEnding1 = this.findInitialEndingIndex(1, start, this.measureIndex);
+                const initialEnding1: number = this.findInitialEndingIndex(1, start, this.measureIndex);
                 if (initialEnding1 > start && initialEnding1 <= this.measureIndex) {
                     finalEnding1 = this.findFinalEndingIndex(1, start, this.measureIndex);
                     if (finalEnding1 >= initialEnding1 && finalEnding1 === this.measureIndex) {
@@ -316,7 +315,7 @@ export class Repetitions {
                     max = Math.max(max, start);
                     end = this.findForward(RepetitionInstructionEnum.ToCoda, -1, start);
                     if (end < 0) {
-                        end = this.findBackward(RepetitionInstructionEnum.ToCoda, -1), start;
+                        end = this.findBackward(RepetitionInstructionEnum.ToCoda, -1, start);
                     }
                     if (end>=0){
                         max = Math.max(max, end);
@@ -330,10 +329,10 @@ export class Repetitions {
                                 end = Math.max(max, start);
                                 tmp2 = this.sequenceArray(start,end);
                                 tmp1.forEach((n: number)=>{
-                                    array.push(n)
+                                    array.push(n);
                                 });
                                 tmp2.forEach((n: number)=>{
-                                    array.push(n)
+                                    array.push(n);
                                 });
                             }
                         }
@@ -360,10 +359,10 @@ export class Repetitions {
                             end = Math.max(max, start);
                             tmp2 = this.sequenceArray(start,end);
                             tmp1.forEach((n: number)=>{
-                                array.push(n)
+                                array.push(n);
                             });
                             tmp2.forEach((n: number)=>{
-                                array.push(n)
+                                array.push(n);
                             });
                         }
                     }

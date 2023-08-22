@@ -17,7 +17,7 @@ export class Walk implements IWalk{
 
 
     private jsonStringifyReplacer(key: string, value: any): any{
-        if (key==='$parent') {
+        if (key==="$parent") {
             return undefined;
         }
         return value;
@@ -50,7 +50,7 @@ export class Walk implements IWalk{
         }).forEach((branch: IBranchObject)=>{
             const branchClass: BranchClass = new BranchClass(branch, parentBranchClass);
             if (branch.$children && branch.$children.length) {
-                branchClass.children = this.genealogicalTreeClasses(branch.$children, branchClass)
+                branchClass.children = this.genealogicalTreeClasses(branch.$children, branchClass);
             }
             result.push(branchClass);
             this.linearClasses.push(branchClass);

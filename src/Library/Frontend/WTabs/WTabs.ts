@@ -1,4 +1,4 @@
-import './style/style.scss';
+import "./style/style.scss";
 
 class WawaDiv{
     private tag: string;
@@ -29,7 +29,7 @@ class WawaDiv{
         return (<HTMLElement>this.$.element);
     }
 
-    public get param() {
+    public get param(): any {
         return this.$.params;
     }
 
@@ -37,7 +37,7 @@ class WawaDiv{
         this.$.params = params;
     }
 
-    public get prop() {
+    public get prop(): any {
         return this.$.prop;
     }
 
@@ -46,14 +46,14 @@ class WawaDiv{
     }
 
     public get connected(): boolean {
-        return document.body.contains(this.element)
+        return document.body.contains(this.element);
     }
 
     public get disconnected(): boolean {
         return !this.connected;
     }
 
-    connect(){
+    connect(): void {
         //
     }
 }
@@ -68,10 +68,10 @@ export class WTabContainer extends WawaDiv{
         this.connect();
     }
     connect(): boolean {
-        this.element.querySelectorAll('w-tab').forEach((tab: HTMLElement)=>{
+        this.element.querySelectorAll("w-tab").forEach((tab: HTMLElement)=>{
             this.tabs.push(tab);
         });
-        this.element.querySelectorAll('w-tab-panel').forEach((panel: HTMLElement)=>{
+        this.element.querySelectorAll("w-tab-panel").forEach((panel: HTMLElement)=>{
             this.panels.push(panel);
         });
 //        document.addEventListener("DOMContentLoaded",()=>{
@@ -84,19 +84,19 @@ export class WTabContainer extends WawaDiv{
         return true;
     }
 
-    activate(index: number) {
+    activate(index: number): void {
         this.tabs.forEach((tab: HTMLElement,i: number) => {
             if (i !== index) {
-                tab.classList.remove('active');
+                tab.classList.remove("active");
             } else {
-                tab.classList.add('active');
+                tab.classList.add("active");
             }
         });
         this.panels.forEach((panel: HTMLElement,i: number) => {
             if (i !== index) {
-                panel.classList.remove('active');
+                panel.classList.remove("active");
             } else {
-                panel.classList.add('active');
+                panel.classList.add("active");
             }
         });
     }

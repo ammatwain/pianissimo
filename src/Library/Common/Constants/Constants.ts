@@ -12,4 +12,4 @@ export const Constants: any = {
     scss: {
         $moduleSize: 20,
     }
-}
+};

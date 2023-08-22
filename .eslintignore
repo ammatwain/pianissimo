@@ -1,0 +1,8 @@
+node_modules
+dist
+build
+bin
+demo
+src/VexFlowPatch
+forge.config.ts
+webpack*.ts

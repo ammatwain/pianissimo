@@ -14,9 +14,9 @@ export interface IMaestroParams {
 interface IMaestroData extends IMaestroParams{
     repeats: [RepetitionInstruction[],RepetitionInstruction[]][];
     flow: SheetFlowCalculator;
-    midiNotes : boolean[];
-    osmdNotes : number[];
-    playMeasures : number[];
+    midiNotes: boolean[];
+    osmdNotes: number[];
+    playMeasures: number[];
     playMeasureIndex: number;
     exercises: IExercise[];
     current: IExercise;
@@ -38,7 +38,7 @@ export class Maestro{
         notesToPlay: 0,
         playedNotes: 0,
         errors: 0,
-    }
+    };
 
     //https://www.myriad-online.com/resources/docs/melody/italiano/breaks.htm
     /*
@@ -66,30 +66,30 @@ export class Maestro{
             this.osmd.TransposeCalculator = new ExtendedTransposeCalculator(this.osmd);
          }
         this.sheetNotes = [];
-        for (let i=0;i<128;i++){
+        for (let i: number = 0 ; i < 128; i++){
             this.data.midiNotes.push(false);
         }
         this.clearMidiNotes();
     }
 
-    public get OSMD():OpenSheetMusicDisplay  {
+    public get OSMD(): OpenSheetMusicDisplay  {
       return this.osmd;
     };
 
-    public allNotesUnderCursorArePlayedDebug():boolean{
+    public allNotesUnderCursorArePlayedDebug(): boolean{
         this.clearMidiNotes();
         this.clearSheetNotes();
         return true;
     }
 
-    public allNotesUnderCursorArePlayedFacile():boolean{
+    public allNotesUnderCursorArePlayedFacile(): boolean{
       // ciclo 1
       // controlla se le note grafiche sono suonate.
-      let ok:boolean=false;
+      let ok: boolean=false;
       console.log("sheet",this.data.osmdNotes);
       console.log("midi",this.data.midiNotes);
-      for(let i=0 ; i<this.sheetNotes.length; i++) {
-        if(this.getMidiNote(this.sheetNotes[i])) ok = true;
+      for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
+        if(this.getMidiNote(this.sheetNotes[i])) {ok = true;}
       }
       if (ok) {
         this.clearMidiNotes();
@@ -98,12 +98,12 @@ export class Maestro{
       return ok;
     }
 
-    public allNotesUnderCursorArePlayedAdattato():boolean{
+    public allNotesUnderCursorArePlayedAdattato(): boolean{
         // ciclo 1
         // controlla se le note grafiche sono suonate.
-        let ok:boolean=true;
+        let ok: boolean=true;
         const midiNotes: number[] = [];
-        for (let i=0;i<128;i++){
+        for (let i: number = 0; i < 128 ; i++){
             if(this.data.midiNotes[i]) {
                 midiNotes.push(i%12);
                 this.data.playedNotes++;
@@ -112,7 +112,7 @@ export class Maestro{
 
         console.log("sheet", this.data.osmdNotes);
         console.log("midi" , midiNotes);
-        for(let i=0 ; i<this.sheetNotes.length; i++) {
+        for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
             if (midiNotes.length>0) {
                 const index: number = midiNotes.indexOf(this.sheetNotes[i] % 12 );
                 if (index > -1) {
@@ -134,19 +134,19 @@ export class Maestro{
         return ok;
     }
 
-    public allNotesUnderCursorArePlayedMedio():boolean{
+    public allNotesUnderCursorArePlayedMedio(): boolean{
         // ciclo 1
         // controlla se le note grafiche sono suonate.
-        let ok:boolean=true;
+        let ok: boolean=true;
         const midiNotes: number[] = [];
-        for (let i=0;i<128;i++){
-            if(this.data.midiNotes[i]) midiNotes.push(i);
+        for (let i: number = 0; i < 128 ; i++ ){
+            if(this.data.midiNotes[i]) {midiNotes.push(i);}
         }
 
         console.log("sheet",this.data.osmdNotes);
         console.log("midi",midiNotes);
-        for(let i=0 ; i<this.sheetNotes.length; i++) {
-            if(!this.getMidiNote(this.sheetNotes[i])) ok = false;
+        for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
+            if(!this.getMidiNote(this.sheetNotes[i])) {ok = false;}
         }
         if (ok) {
             this.clearMidiNotes();
@@ -155,19 +155,19 @@ export class Maestro{
         return ok;
     }
 
-    public allNotesUnderCursorArePlayedDifficile():boolean{
+    public allNotesUnderCursorArePlayedDifficile(): boolean{
         // ciclo 1
         // controlla se le note grafiche sono suonate.
-        let ok:boolean=true;
+        let ok: boolean=true;
         console.log("sheet",this.data.osmdNotes);
         console.log("midi",this.data.midiNotes);
-        for(let i=0 ; i<this.sheetNotes.length; i++) {
-            if(!this.getMidiNote(this.sheetNotes[i])) ok = false;
+        for(let i: number = 0 ; i<this.sheetNotes.length; i++) {
+            if(!this.getMidiNote(this.sheetNotes[i])) {ok = false;}
         }
         // ciclo 2
         // se il ciclo 1 è ok, controlla se ci sono stecche.
         //if (ok){
-            for(let i=0 ; i<this.data.midiNotes.length; i++) {
+            for(let i: number = 0 ; i<this.data.midiNotes.length; i++) {
             if(this.data.midiNotes[i]===true){
                 if(!this.data.osmdNotes.includes(i)) {
                 this.setMidiNoteOff(i);
@@ -184,15 +184,15 @@ export class Maestro{
         return ok;
     }
 
-    public allNotesUnderCursorArePlayed():boolean{
+    public allNotesUnderCursorArePlayed(): boolean{
         return this.allNotesUnderCursorArePlayedMedio();
     }
 
-    public fillOsmdNotes(){
+    public fillOsmdNotes(): void {
         this.sheetNotes = [];
         this.osmd.cursor.NotesUnderCursor().forEach((osmdNote: Note)=>{
-            if (osmdNote.halfTone!=0) {
-                if (!('tie' in osmdNote && osmdNote.NoteTie.Notes[0] != osmdNote)){
+            if (osmdNote.halfTone!==0) {
+                if (!("tie" in osmdNote && osmdNote.NoteTie.Notes[0] !== osmdNote)){
                     this.data.osmdNotes.push(osmdNote.halfTone);
                     this.data.notesToPlay++;
                 }
@@ -207,7 +207,7 @@ export class Maestro{
         }
     }
 
-    public next(){
+    public next(): void {
         this.data.osmdNotes = [];
         this.clearMidiNotes();
         //let expectedMeasureIndex:number = this.playerMeasures[this.playerMeasureIndex];
@@ -217,7 +217,7 @@ export class Maestro{
             this.data.osmdNotes.length<1
 //            !this.osmd.cursor.Iterator.EndReached &&
         ) {
-            this.osmd.cursor.Iterator.moveToNextVisibleVoiceEntry(false)
+            this.osmd.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
             this.osmd.cursor.update();
 
     //      expectedMeasureIndex = this.playerMeasures[this.playerMeasureIndex];
@@ -272,7 +272,7 @@ export class Maestro{
         }
     }
 
-    public reset(){
+    public reset(): void {
         this.data.notesToPlay = 0;
         this.data.playedNotes = 0;
         this.data.errors = 0;
@@ -290,14 +290,14 @@ export class Maestro{
     public loadSheet(
         exercise: IExercise = null,
         transposeValue: number = 0,
-        beforeStart: ()=>void  = null,
-        afterEnd: ()=>void = null
+        beforeStart: () => void  = null,
+        afterEnd: () => void = null
     ): void {
         if (exercise===null) {
             exercise = this.getRandomExercise();
         }
         if (exercise!==null){
-            if(beforeStart!==null && typeof beforeStart === 'function'){
+            if(beforeStart!==null && typeof beforeStart === "function"){
                 beforeStart();
             }
             this.osmd.load(`${exercise.path}/${exercise.sheet}`).then(()=>{
@@ -316,7 +316,7 @@ export class Maestro{
                 this.osmd.cursor.show();
                 //this.test();
                 console.log(this.data.repeats);
-                if(afterEnd!==null && typeof afterEnd === 'function'){
+                if(afterEnd!==null && typeof afterEnd === "function"){
                     afterEnd();
                 }
             });
@@ -327,17 +327,17 @@ export class Maestro{
         xml: string,
         sheet: BranchClass,
         transposeValue: number = 0,
-        beforeStart: ()=>void = null,
-        afterEnd: ()=>void = null
+        beforeStart: () => void = null,
+        afterEnd: () => void = null
     ): void {
         if (xml && typeof xml === "string"){
-            if(beforeStart!==null && typeof beforeStart === 'function'){
+            if(beforeStart!==null && typeof beforeStart === "function"){
                 beforeStart();
             }
-            console.log(xml)
+            console.log(xml);
             this.osmd.load(xml).then(()=>{
                 this.osmd.TransposeCalculator.Options.transposeToHalftone(0);
-                sheet.mainKey = this.osmd.TransposeCalculator.Options.MainKey
+                sheet.mainKey = this.osmd.TransposeCalculator.Options.MainKey;
                 this.playerMeasures = [];
                 this.playerMeasureIndex = 0;
                 this.playerMeasures = this.flow.calculatePlayerMeasures();
@@ -352,7 +352,7 @@ export class Maestro{
                 this.osmd.zoom = 1.0;
                 //this.osmd.FollowCursor = true;
                 const titleSplitted: string[] = sheet.name.split(";");
-                if(titleSplitted.length==2){
+                if(titleSplitted.length===2){
                     this.osmd.Sheet.TitleString = titleSplitted[0];
                     this.osmd.Sheet.SubtitleString = titleSplitted[1];
 
@@ -365,7 +365,7 @@ export class Maestro{
                 this.osmd.cursor.show();
                 //this.test();
                 console.log(this.data.repeats);
-                if(afterEnd!==null && typeof afterEnd === 'function'){
+                if(afterEnd!==null && typeof afterEnd === "function"){
                     afterEnd();
                 }
             });
@@ -437,11 +437,11 @@ export class Maestro{
     }
 
     public set playerMeasureIndex(value: number){
-        if (value>=this.playerMeasures.length) value = 0;
+        if (value>=this.playerMeasures.length) {value = 0;}
         this.data.playMeasureIndex = value;
     }
 
-    public get playerMeasures():number[]{
+    public get playerMeasures(): number[]{
         return this.data.playMeasures;
     }
 
@@ -453,11 +453,11 @@ export class Maestro{
         return this.playerMeasures[this.playerMeasureIndex];
     }
 
-    public get sheetNotes():number[]{
+    public get sheetNotes(): number[]{
         return this.data.osmdNotes;
     }
 
-    public set sheetNotes(arrayOfvalues:number[]){
+    public set sheetNotes(arrayOfvalues: number[]){
         this.data.osmdNotes = arrayOfvalues;
     }
 
@@ -469,8 +469,8 @@ export class Maestro{
         return this.data.midiNotes;
     }
 
-    public clearMidiNotes():void{
-        for (let i = 0 ; i < this.midiNotes.length ; i++){
+    public clearMidiNotes(): void{
+        for (let i: number = 0 ; i < this.midiNotes.length ; i++){
             this.midiNotes[i]=false;
         }
     }

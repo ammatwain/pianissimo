@@ -1,10 +1,10 @@
-import './App.scss';
+import "./App.scss";
 import { WTree } from "../WTree";
 import { WebMidi, Input } from "../WebMidi";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { Maestro } from '../Maestro';
-import { WTabContainer } from '../WTabs';
-import { BranchClass } from '..';
+import { Maestro } from "../Maestro";
+import { WTabContainer } from "../WTabs";
+import { BranchClass } from "..";
 import { IBranchObject } from "../../Common";
 
 /*
@@ -27,8 +27,8 @@ interface IAppData {
     errorTrId?: string;
     errorTr?: HTMLTableRowElement;
     osmdDivId?: string;
-    osmd? : OpenSheetMusicDisplay;
-    midiInput? : Input[];
+    osmd?: OpenSheetMusicDisplay;
+    midiInput?: Input[];
     maestro?: Maestro;
     selectSample?: string;
 }
@@ -75,10 +75,10 @@ export class App {
             console.log("Maestro has been enabled!");
 
             this.data.tree = <WTree>document.querySelector("#tree");
-            this.data.tree.onChange = ()=>{
+            this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
-                    window.electron.ipcRenderer.sendMessage('request-sheet', values[0]);
+                    window.electron.ipcRenderer.sendMessage("request-sheet", values[0]);
                     console.log(this.data.tree.getLeafById(values[0]));
                 }
             };
@@ -86,12 +86,12 @@ export class App {
         });
     }
 
-    setListeners() {
+    setListeners(): void {
 
         window.electron.ipcRenderer.on("response-sheet-list", (sheetLibrary: IBranchObject[]) => {
             //const walk = new Walk(sheetLibrary);
             if (this.tree && this.tree instanceof WTree){
-                //console.log(walk.TreeClasses);
+                console.log(sheetLibrary);
 //                this.tree.initialize(walk.TreeClasses);
                 this.tree.initialize(sheetLibrary);
             }
@@ -109,16 +109,15 @@ export class App {
 
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        window.electron.ipcRenderer.on('response-sheet', (arg: any) => {
+        window.electron.ipcRenderer.on("response-sheet", (arg: any) => {
             const branch: BranchClass = this.tree.getLeafById(arg.id);
-
             this.tree.fillPropertyEditor(arg.id);
             this.maestro.loadXmSheet(arg.xml, branch);
             console.log(typeof arg);
         });
 
-        window.electron.ipcRenderer.sendMessage('request-dir-listing', {});
-        window.electron.ipcRenderer.sendMessage('request-sheet-list', {});
+        window.electron.ipcRenderer.sendMessage("request-dir-listing", {});
+        window.electron.ipcRenderer.sendMessage("request-sheet-list", {});
         this.data.test.addEventListener("click",()=>{
             window.electron.ipcRenderer.invoke("request-dir-listing","../Letture/Letture").then((result: any)=>{
                 console.log("DIR-LISTING", result);
@@ -145,18 +144,18 @@ export class App {
         return this.data.maestro || null;
     }
 
-    disable() {
+    disable(): void {
         document.body.style.opacity = String(0.1);
         //setDisabledForControls("disabled");
     }
 
-    enable() {
+    enable(): void {
         document.body.style.opacity = String(1);
         //setDisabledForControls("");
         //logCanvasSize();
     }
 
-    error(errString: string = "") {
+    error(errString: string = ""): void {
         if (!errString) {
             this.data.errorTr.style.display = "none";
         } else {
@@ -168,7 +167,7 @@ export class App {
         }
     }
 
-    selectSampleOnChange(sample = "", title = "") {
+    selectSampleOnChange(sample = "", title = ""): void {
         this.error();
         this.disable();
         if (this.data.selectSample !== sample) {

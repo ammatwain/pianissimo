@@ -22,7 +22,7 @@ export class Letture extends Store {
     }
 
     getTreeLibrary(): IBranchObject[] {
-        const walk = new Walk(this.getLinearLibrary()).TreeObjects;
+        const walk: IBranchObject[] = new Walk(this.getLinearLibrary()).TreeObjects;
         return walk;
     }
 

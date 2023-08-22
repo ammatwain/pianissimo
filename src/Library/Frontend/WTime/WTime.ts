@@ -8,7 +8,7 @@ export class WTime extends HTMLParsedElement {
       super();
     }
 
-    connectedCallback() {
+    connectedCallback(): void {
       this.style.zIndex = "99999999999";
       this.style.backgroundColor = "white";
       this.style.color = "black";
@@ -25,17 +25,17 @@ export class WTime extends HTMLParsedElement {
       }, 1000);
     }
 
-    updateTimer() {
+    updateTimer(): void {
 
-      let now = new Date().getTime();
+      const now: number = new Date().getTime();
 
-      let hours = Math.floor(
+      const hours: number = Math.floor(
         (now % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
       );
-      let minutes = Math.floor((now % (1000 * 60 * 60)) / (1000 * 60));
-      let seconds = Math.floor((now % (1000 * 60)) / 1000);
+      const minutes: number = Math.floor((now % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds: number = Math.floor((now % (1000 * 60)) / 1000);
       this.innerHTML = `ZULU ${hours}:${minutes}:${seconds}`;
     }
   }
-  
+
   customElements.define("w-time", WTime);

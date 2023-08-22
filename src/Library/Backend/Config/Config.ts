@@ -17,13 +17,13 @@ class _Config {
 
     }
 
-    private static configDefault: any = {
+    private static configDefault: {[index: string]: any} = {
         database: `./${Package.name}.db`,
     };
 
     private config: any = {};
 
-    public saveConfig(){
+    public saveConfig(): void {
         FS.writeFileSync(this.ConfigFile, JSON.stringify(this.config, null, 2));
     }
 
@@ -39,7 +39,7 @@ class _Config {
         return this.config[key] || _Config.configDefault[key];
     }
 
-    private setKeyValue(key: string, value: any) {
+    private setKeyValue(key: string, value: any): void {
         if (this.config[key] !== value) {
             this.config[key] = value;
             this.saveConfig();
@@ -58,4 +58,4 @@ class _Config {
     }
 }
 
-export const Config = new _Config();
+export const Config: _Config  = new _Config();

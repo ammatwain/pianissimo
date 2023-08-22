@@ -12,7 +12,7 @@ export class BranchClass{
     constructor(branch: IBranchObject, parent: BranchClass = null) {
         this.parent =  parent;
         this._branchObject = branch;
-        
+
         // in questo momento custom dovrebbe essere una stringa;
         if (typeof this._branchObject.custom === "string") {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
@@ -130,7 +130,7 @@ export class BranchClass{
         }
     }
 
-    public setCustom(key: string, value: any) {
+    public setCustom(key: string, value: any): void {
         this._branchObject.custom[key] = value;
     }
 

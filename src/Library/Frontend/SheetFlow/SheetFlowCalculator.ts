@@ -16,18 +16,18 @@ export class SheetFlowCalculator {
 
     public calculatePlayerMeasures(): number[] {
         const sheet: MusicSheet = this.data.osmd.Sheet;
-        let playMeasures : number[] = [];
-        let playMeasureIndex: number = -1;
+        const playMeasures: number[] = [];
+        const playMeasureIndex: number = -1;
         const temporaryPlayMeasures: number[] = [];
         let latestPlayMeasureIndex: number = -1;
-    
+
         sheet.SourceMeasures.forEach((m: SourceMeasure, currentPlayMeasureIndex: number)=>{
             if(latestPlayMeasureIndex < currentPlayMeasureIndex) {
                 temporaryPlayMeasures.push(currentPlayMeasureIndex);
                 // le istruzioni di salto sono a fine misura, vanno scodate
                 const lri: RepetitionInstruction[] = m.LastRepetitionInstructions;
                 for(let i: number = lri.length-1; i >= 0 ; i--) {
-                    let ri: RepetitionInstruction = lri[i];
+                    const ri: RepetitionInstruction = lri[i];
                     const repetitions: Repetitions = new Repetitions(ri.type, sheet.SourceMeasures, currentPlayMeasureIndex);
                     const array: number[] = repetitions.array;
                     array.forEach((n: number)=>{

@@ -12,13 +12,13 @@ export class WPropertyEditor extends HTMLElement{
         super();
     }
 
-    connectedCallback(){
+    connectedCallback(): void{
         this.table = <HTMLTableElement>document.createElement("table");
         this.appendChild(this.table);
     }
 
     set template(templateData: any) {
-        this.templateData = templateData; 
+        this.templateData = templateData;
     }
 
     set properties(props: any) {
@@ -26,15 +26,15 @@ export class WPropertyEditor extends HTMLElement{
             this.table.innerHTML = "";
             Object.keys(props).sort().forEach((key: string)=>{
                 if (Object.keys(this.templateData).length === 0 || key in this.templateData){
-                    const input = document.createElement("input");
-                    const tdKey = document.createElement("td");
+                    const input: HTMLInputElement = document.createElement("input");
+                    const tdKey: HTMLTableCellElement = document.createElement("td");
                     tdKey.classList.add("key");
-                    const tdValue = document.createElement("td");
+                    const tdValue: HTMLTableCellElement = document.createElement("td");
                     tdValue.classList.add("value");
                     tdKey.innerHTML = key;
                     tdValue.appendChild(input);
                     input.placeholder = String(props[key]);
-                    const tr = document.createElement("tr");
+                    const tr: HTMLTableRowElement = document.createElement("tr");
                     tr.appendChild(tdKey);
                     tr.appendChild(tdValue);
                     this.table.appendChild(tr);
@@ -43,7 +43,7 @@ export class WPropertyEditor extends HTMLElement{
         }
     }
 
-    setProperty(input: HTMLInputElement, key: string, value: any) {
+    setProperty(input: HTMLInputElement, key: string, value: any): void {
         if (Object.keys(this.templateData).length === 0 || key in this.templateData){
             input.value = value;
         }

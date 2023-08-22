@@ -56,7 +56,7 @@ declare namespace WebMidiApi {
     onstatechange(e: MIDIConnectionEvent): void;
 
     addEventListener(
-      type: 'statechange',
+      type: "statechange",
       listener: (this: this, e: MIDIConnectionEvent) => any,
       options?: boolean | AddEventListenerOptions,
     ): void;
@@ -73,11 +73,11 @@ declare namespace WebMidiApi {
     sysexEnabled: boolean;
   }
 
-  type MIDIPortType = 'input' | 'output';
+  type MIDIPortType = "input" | "output";
 
-  type MIDIPortDeviceState = 'disconnected' | 'connected';
+  type MIDIPortDeviceState = "disconnected" | "connected";
 
-  type MIDIPortConnectionState = 'open' | 'closed' | 'pending';
+  type MIDIPortConnectionState = "open" | "closed" | "pending";
 
   interface MIDIPort extends EventTarget {
     /**
@@ -124,7 +124,7 @@ declare namespace WebMidiApi {
     onstatechange(e: MIDIConnectionEvent): void;
 
     addEventListener(
-      type: 'statechange',
+      type: "statechange",
       listener: (this: this, e: MIDIConnectionEvent) => any,
       options?: boolean | AddEventListenerOptions,
     ): void;
@@ -162,16 +162,16 @@ declare namespace WebMidiApi {
   }
 
   interface MIDIInput extends MIDIPort {
-    type: 'input';
+    type: "input";
     onmidimessage(e: MIDIMessageEvent): void;
 
     addEventListener(
-      type: 'midimessage',
+      type: "midimessage",
       listener: (this: this, e: MIDIMessageEvent) => any,
       options?: boolean | AddEventListenerOptions,
     ): void;
     addEventListener(
-      type: 'statechange',
+      type: "statechange",
       listener: (this: this, e: MIDIConnectionEvent) => any,
       options?: boolean | AddEventListenerOptions,
     ): void;
@@ -183,7 +183,7 @@ declare namespace WebMidiApi {
   }
 
   interface MIDIOutput extends MIDIPort {
-    type: 'output';
+    type: "output";
 
     /**
      * Enqueues the message to be sent to the corresponding MIDI port.
@@ -852,7 +852,7 @@ export class Enumerations {
    * @static
    * @since 3.1
    */
-  static get CONTROL_CHANGE_MESSAGES():object[]
+  static get CONTROL_CHANGE_MESSAGES(): object[];
 
   /**
    * Enumeration of all MIDI registered parameters and their associated pair of numerical values.
@@ -2683,7 +2683,7 @@ export class Output extends EventEmitter {
 
   /**
    * Sends a MIDI [**system exclusive**]{@link
-    * https://www.midi.org/specifications-old/item/table-4-universal-system-exclusive-messages}
+   * https://www.midi.org/specifications-old/item/table-4-universal-system-exclusive-messages}
    * (*sysex*) message. There are two categories of system exclusive messages: manufacturer-specific
    * messages and universal messages. Universal messages are further divided into three subtypes:
    *

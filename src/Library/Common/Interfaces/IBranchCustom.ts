@@ -3,7 +3,7 @@ export type IFixedCOFNumberArray = [number,number,number,number,number,number,nu
 
 export interface IBranchCustom{
     checked?: boolean;
-    disabled?: boolean,
+    disabled?: boolean;
     status?: number;
     mainKey?: number;
     activeKeys?: IVariableCOFNumberArray;

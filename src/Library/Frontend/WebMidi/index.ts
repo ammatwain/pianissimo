@@ -1,1 +1,1 @@
-export * from './webmidi.cjs.js';
+export * from "./webmidi.cjs.js";

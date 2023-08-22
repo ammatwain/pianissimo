@@ -52,10 +52,12 @@ if(!(app.isPackaged && FS.existsSync(Config.Database))) {
     });
     letture.Db.close();
     */
+    /*
     const letture: Letture = new Letture(PATH.resolve(__dirname,"Data/Letture.db"),null);
-    const sheets: {id:number}[] = <{id:number}[]>letture.prepare(`SELECT id FROM "library" WHERE "type"='sheet';`).all();
-    sheets.forEach((n: {id:number})=>{
-        const xmlBuffer: Buffer = (<Buffer>letture.prepare(`SELECT DOWNLOADFILE("data") FROM "library" WHERE "type"='sheet' AND "id"=${n.id} LIMIT 1;`).pluck().get());
+    const sheets: {id: number}[] = <{id: number}[]>letture.prepare("SELECT id FROM \"library\" WHERE \"type\"='sheet';").all();
+    sheets.forEach((n: {id: number})=>{
+        const xmlBuffer: Buffer =
+         (<Buffer>letture.prepare(`SELECT DOWNLOADFILE("data") FROM "library" WHERE "type"='sheet' AND "id"=${n.id} LIMIT 1;`).pluck().get());
         if (xmlBuffer) {
             const tw: MUX.ScoreTimewise = MUX.serializeScore(xmlBuffer
                 .toString("utf8").trim());
@@ -63,7 +65,7 @@ if(!(app.isPackaged && FS.existsSync(Config.Database))) {
     });
 
     letture.Db.close();
-
+    */
     FS.copyFileSync(
         PATH.resolve(__dirname,"Data/Letture.db"),
         Config.Database
@@ -77,9 +79,9 @@ if (require("electron-squirrel-startup")) {
     app.quit();
 }
 
-const createWindow = (): void => {
+const createWindow: () => void = (): void => {
     // Create the browser window.
-    const mainWindow = new BrowserWindow({
+    const mainWindow: BrowserWindow = new BrowserWindow({
         width: 1800,
         height: 1000,
         title: `${Package.name.charAt(0).toUpperCase() + Package.name.slice(1)} - v${Package.version}`,
@@ -122,19 +124,19 @@ app.on("activate", () => {
 
 ipcMain.on("_request-dir-listing", async (event: Electron.IpcMainEvent,dir: string) => {
     console.log(event);
-    const walk = new FSWalk(dir);
+    const walk: FSWalk = new FSWalk(dir);
     event.reply("response-dir-listing", walk.TreeObjects);
     //event.reply("response-dir-listing", walk("../renderer/main_window/Letture"));
 });
 
-ipcMain.handle('request-dir-listing', async (event: Electron.IpcMainEvent, dir: string) => {
+ipcMain.handle("request-dir-listing", async (event: Electron.IpcMainEvent, dir: string) => {
     console.log(event);
-    const fswalk = new FSWalk(dir);
-    const walk = new Walk(fswalk.LinearObjects);
+    const fswalk: FSWalk = new FSWalk(dir);
+    const walk: Walk = new Walk(fswalk.LinearObjects);
     return { linear: walk.LinearObjects,  tree: walk.TreeObjects };
 });
 
-ipcMain.handle('request-package-info', async (event: Electron.IpcMainEvent) => {
+ipcMain.handle("request-package-info", async (event: Electron.IpcMainEvent) => {
     console.log(event);
     return Package;
 });

@@ -10,7 +10,7 @@ CreateTableLibrary: `CREATE TABLE IF NOT EXISTS "library" (
     "data" BLOB DEFAULT NULL
 );`,
 
-SelectTableLibrary: `SELECT "id", "parentid", "sequence", "type", "name", "custom" FROM "library";`,
+SelectTableLibrary: "SELECT \"id\", \"parentid\", \"sequence\", \"type\", \"name\", \"custom\" FROM \"library\";",
 
 };
 

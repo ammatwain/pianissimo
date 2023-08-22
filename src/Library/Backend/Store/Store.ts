@@ -15,13 +15,13 @@ export class Store {
     }
 
     private registerFunctionParse(): void {
-        this.Db.function('PARSE', (stringified: string): any => {
+        this.Db.function("PARSE", (stringified: string): any => {
             return JSON.parse(stringified) || null;
         });
     }
 
     private registerFunctionStringify(): void {
-        this.Db.function('STRINGIFY', (parsed: any): string => {
+        this.Db.function("STRINGIFY", (parsed: any): string => {
             return JSON.stringify(parsed) || null;
         });
     }
@@ -30,7 +30,7 @@ export class Store {
         //var deflated = zlib.deflateSync(input).toString('base64');
         //var inflated = zlib.inflateSync(new Buffer(deflated, 'base64')).toString();
 
-        this.Db.function('UPLOADFILE', (filename: string): Buffer => {
+        this.Db.function("UPLOADFILE", (filename: string): Buffer => {
             if (FS.existsSync(filename)){
                 return zlib.deflateRawSync(FS.readFileSync(filename));
             }
@@ -42,7 +42,7 @@ export class Store {
         //var deflated = zlib.deflateSync(input).toString('base64');
         //var inflated = zlib.inflateSync(new Buffer(deflated, 'base64')).toString();
 
-        this.Db.function('DOWNLOADFILE', (data: Buffer): Buffer => {
+        this.Db.function("DOWNLOADFILE", (data: Buffer): Buffer => {
             return zlib.inflateRawSync(data);
         });
     }

@@ -1,1 +1,1 @@
-export * from "./WTime"
+export * from "./WTime";

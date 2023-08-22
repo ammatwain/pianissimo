@@ -1,19 +1,22 @@
 {
     "name": "pianissimo",
     "productName": "pianissimo",
-    "version": "0.1.227",
+    "version": "0.1.298",
     "description": "pianissimo",
     "main": ".webpack/main",
     "scripts": {
-        "version-patch": "npx auto-version --patch",
-        "version-minor": "npx auto-version --minor",
-        "version-major": "npx auto-version --major",
-        "start": "npm run version-patch && electron-forge start",
+        "build": "npm run version-patch && npm-run-all lint package",
+        "build:webpack": "webpack --progress --config webpack.main.config.ts",
+        "eslint": "eslint -c .eslintrc.js --ext .ts .",
+        "lint": "npm run eslint",
+        "start": "npm run version-patch && npm run lint && electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",
         "postinstall": "electron-rebuild",
-        "lint": "eslint --ext .ts,.tsx ."
+        "version-patch": "npx auto-version --patch",
+        "version-minor": "npx auto-version --minor",
+        "version-major": "npx auto-version --major"
     },
     "keywords": [],
     "author": {
@@ -41,6 +44,8 @@
         "electron": "25.4.0",
         "eslint": "^8.46.0",
         "eslint-plugin-import": "^2.28.0",
+        "eslint-plugin-jsdoc": "^46.5.0",
+        "eslint-plugin-no-null": "^1.0.2",
         "fork-ts-checker-webpack-plugin": "^7.3.0",
         "node-loader": "^2.0.0",
         "sass": "^1.64.2",
@@ -48,7 +53,8 @@
         "style-loader": "^3.3.3",
         "ts-loader": "^9.4.4",
         "ts-node": "^10.9.1",
-        "typescript": "~4.5.4"
+        "typescript": "~4.5.4",
+        "webpack-cli": "^5.1.4"
     },
     "dependencies": {
         "better-sqlite3": "^8.5.0",
@@ -56,6 +62,7 @@
         "directory-tree": "^3.5.1",
         "electron-squirrel-startup": "^1.0.0",
         "musicxml-interfaces": "github:ammatwain/musicxml-interfaces",
+        "npm-run-all": "^4.1.5",
         "opensheetmusicdisplay": "github:ammatwain/osmd-extended-transpose-calculator"
     }
 }

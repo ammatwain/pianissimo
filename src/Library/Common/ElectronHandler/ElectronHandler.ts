@@ -25,4 +25,3 @@ export const appContextBridge = contextBridge;
 export type ElectronHandler = typeof electronHandler;
 */
 export const dummy: any = {};
- 
