@@ -7,7 +7,7 @@ export interface IBranchCustom{
     status?: number;
     mainKey?: number;
     activeKeys?: IVariableCOFNumberArray;
-    shot?: IFixedCOFNumberArray;
-    done?: IFixedCOFNumberArray;
+    shot?: [IFixedCOFNumberArray,IFixedCOFNumberArray];
+    done?: [IFixedCOFNumberArray,IFixedCOFNumberArray];
     percent?: number;
 }

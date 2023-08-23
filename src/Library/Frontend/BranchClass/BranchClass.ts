@@ -1,4 +1,6 @@
-import { IVariableCOFNumberArray, IFixedCOFNumberArray, IBranchObject, IBranchType } from "../../Common";
+import { IVariableCOFNumberArray, IFixedCOFNumberArray, IBranchObject, IBranchType, IBranchCustom } from "../../Common";
+
+type KOC = keyof IBranchCustom;
 
 export class BranchClass{
     private _parent: BranchClass;
@@ -8,17 +10,18 @@ export class BranchClass{
     rnd(max: number): number  {
         return Math.floor(Math.random() * max);
     }
-
     constructor(branch: IBranchObject, parent: BranchClass = null) {
         this.parent =  parent;
         this._branchObject = branch;
 
-        // in questo momento custom dovrebbe essere una stringa;
+        // in questo momento custom potrebbe essere una stringa;
         if (typeof this._branchObject.custom === "string") {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
         }
-       if (this.type==="section"){
+        if (this.type==="sheet") {
             this.activeKeys=[-2, +1, +5];
+        }
+        if (this.type==="section"){
             let r: number = this.rnd(10);
             if (r<5) {
                 r = r +1;
@@ -29,12 +32,22 @@ export class BranchClass{
                     }
                 }
             }
-            this.shot = [
+            this.shot[0] = [
                 this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
                 this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
                 this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
             ];
-            this.done = [
+            this.shot[1] = [
+                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+            ];
+            this.done[0] = [
+                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+            ];
+            this.done[1] = [
                 this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
                 this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
                 this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
@@ -165,8 +178,10 @@ export class BranchClass{
         if (this.type === "section") {
             this.activeKeys.forEach((key: number)=>{
                 if (key >= -7 && key <= 7) {
-                    shot += this.shot[key+7];
-                    done += this.done[key+7];
+                    shot += this.shot[0][key+7];
+                    shot += this.shot[1][key+7];
+                    done += this.done[0][key+7];
+                    done += this.done[1][key+7];
                     //fail += (shot-done);
                 }
             });
@@ -186,35 +201,65 @@ export class BranchClass{
     }
 
     public get mainKey(): number {
-        return this.getCustom("mainKey") || false;
+        if (this.type==="sheet") {
+            return this.getCustom("mainKey") || null;
+        } else if (this.type==="section" && this.parent.type==="sheet") {
+            return this.parent.mainKey;
+        } else {
+            return null;
+        }
     }
 
     public set mainKey(value: number) {
-        this.setCustom("mainKey", value);
+        if (this.type==="sheet") {
+            this.setCustom("mainKey", value);
+        }
     }
 
     public get activeKeys(): IVariableCOFNumberArray {
-        return this.getCustom("activeKeys") || [];
+        if (this.type==="sheet") {
+            const activeKeys: IVariableCOFNumberArray = this.getCustom("activeKeys") || [];
+            if (!activeKeys.length && this.mainKey) {
+                activeKeys.push(this.mainKey);
+            }
+            return activeKeys || [];
+        } else if (this.type==="section" && this.parent.type==="sheet") {
+            return this.parent.activeKeys;
+        } else {
+            return [];
+        }
     }
 
     public set activeKeys(value: IVariableCOFNumberArray) {
         this.setCustom("activeKeys", value);
     }
 
-    public get shot(): IFixedCOFNumberArray {
-        return this.getCustom("shot") || [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    public get shot(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
+        if (this.type === "section") {
+            return this.getCustom("shot") || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+        } else {
+            return null;
+        }
     }
 
-    public set shot(value: IFixedCOFNumberArray) {
-        this.setCustom("shot", value);
+    public set shot(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
+        if (this.type === "section") {
+            this.setCustom("shot", value);
+        }
     }
 
-    public get done(): IFixedCOFNumberArray {
-        return this.getCustom("done") || [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    public get done(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
+        if (this.type === "section") {
+            return this.getCustom("done") || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+        } else {
+            return null;
+        }
     }
 
-    public set done(value: IFixedCOFNumberArray) {
-        this.setCustom("done", value);
+    public set done(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
+        if (this.type === "section") {
+            this.setCustom("done", value);
+        }
     }
 
     public get data(): Buffer {
