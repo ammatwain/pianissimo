@@ -319,7 +319,6 @@ export class WTree extends HTMLElement{
 
         const walkTree: Function = function(branches: BranchClass[], parent: any = null): void {
             branches.forEach((branch: BranchClass)  => {
-                console.log(branch);
                 treeData.branchesById[branch.id] = branch;
                 if (branch.checked) {treeData.defaultValues.push(branch.id);}
                 if (branch.disabled) {treeData.defaultDisables.push(branch.id);}
@@ -509,48 +508,33 @@ export class WTree extends HTMLElement{
         div.innerHTML = `${(value || 0 ).toFixed(0)}%`;
     }
 
-    setPercent(branch: BranchClass, value: number): void{
-        if (!branch.children || branch.children.length===0){
-            branch.percent = value;
-            const li: HTMLLIElement = this.liElementsById[branch.id];
-            const percentDiv: HTMLDivElement = li.querySelector(".percent");
-            this.setPercentLinearGradient(percentDiv, branch.percent);
-
-            if (branch.parent){
-                this.updatePercents(branch.parent);
-            }
-        }
-    }
-
-    updatePercents(branch: BranchClass): void {
-        // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-        let thisPercent: number = 0;
-        // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-        let childrenPercent: number = 0;
-
-        if (branch.children && branch.children.length>0){
-            thisPercent = branch.children.length * 100;
-            branch.children.forEach((n: BranchClass)=>{
-                childrenPercent += (n.percent || 0);
-            });
-        }
-
-        branch.percent = (((childrenPercent / thisPercent) * 100) || 0);
+    updatePercent(branch: BranchClass): void{
         const li: HTMLLIElement = this.liElementsById[branch.id];
         const percentDiv: HTMLDivElement = li.querySelector(".percent");
         this.setPercentLinearGradient(percentDiv, branch.percent);
-
-        if (branch.parent){
-            this.updatePercents(branch.parent);
+        if (branch.children.length){
+            branch.children.forEach((childBranch: BranchClass) => {
+                this.updatePercent(childBranch);
+            });
         }
     }
 
     updateAllPercents(): void {
+        console.log("TREE",this.treeStore.treeBranches);
+        this.treeStore.linearBranches.filter((branch: BranchClass)=>{
+            return branch.parentid === 0;
+        }).forEach((branch: BranchClass)=>{
+            console.log("FAI QUALCOSAAAAA");
+            console.log(branch.percent);
+            this.updatePercent(branch, branch.percent);
+        });
+        /*
         Object.values(this.treeStore.branchesById).forEach((branch: BranchClass)=>{
             if (!(branch.children && branch.children.length)){
                 this.setPercent(branch, branch.percent);
             }
         });
+        */
     }
 
     updateListItemElements(): void {
@@ -727,6 +711,7 @@ export class WTree extends HTMLElement{
 */
     createListItemElement(branch: BranchClass, closed: boolean, level: number): HTMLLIElement {
         const li: HTMLLIElement = document.createElement("li");
+        branch.HTMLLiElement = li;
         let spacerWidth: number = 0;
         const switcherWidth: number = $moduleSize;
         const checkboxWidth: number = $moduleSize;

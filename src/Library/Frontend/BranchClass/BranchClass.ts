@@ -6,10 +6,12 @@ export class BranchClass{
     private _parent: BranchClass;
     private _children: BranchClass[];
     private _branchObject: IBranchObject;
+    private _HTMLLiElement: HTMLLIElement;
 
     rnd(max: number): number  {
         return Math.floor(Math.random() * max);
     }
+
     constructor(branch: IBranchObject, parent: BranchClass = null) {
         this.parent =  parent;
         this._branchObject = branch;
@@ -22,37 +24,73 @@ export class BranchClass{
             this.activeKeys=[-2, +1, +5];
         }
         if (this.type==="section"){
-            let r: number = this.rnd(10);
-            if (r<5) {
-                r = r +1;
-                for (let i: number = 0 ; i<r ; i++) {
-                    const n: number = this.rnd (15) -7;
-                    if (!this.activeKeys.includes(n)) {
-                        this.activeKeys.push(n);
-                    }
-                }
-            }
-            this.shot[0] = [
-                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
-                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
-                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+            this.shot = [
+                [
+                    this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                    this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                    this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                ],[
+                    this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                    this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                    this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
+                ]
             ];
-            this.shot[1] = [
-                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
-                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
-                this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
-            ];
-            this.done[0] = [
-                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
-                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
-                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
-            ];
-            this.done[1] = [
-                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
-                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
-                this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+            this.done = [
+                [
+                    this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                    this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                    this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                ],
+                [
+                    this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                    this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                    this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10), this.rnd(10),
+                ]
             ];
         }
+    }
+
+    public get root(): BranchClass {
+        if(this.parent!== null || this.parentid===0) {
+            return this;
+        } else {
+            return this.parent.root;
+        }
+    }
+
+    public closest(type: IBranchType): BranchClass {
+        if(this.type===type) {
+            return this;
+        } else if (this.parent) {
+            return this.parent.closest(type);
+        } else {
+            return null;
+        }
+    }
+
+    public child(type: IBranchType): BranchClass {
+        let child: BranchClass = null;
+        if(this.type === type) {
+            child = this;
+        } else if (this.children.length) {
+            for(let i: number = 0 ; i < this.children.length; i++) {
+                if (this.children[i].type===type) {
+                    child = this.children[i];
+                    break;
+                } else {
+                    child = this.children[i].child(type);
+                }
+            }
+        }
+        return child;
+    }
+
+    public get HTMLLiElement(): HTMLLIElement {
+        return this._HTMLLiElement;
+    }
+
+    public set HTMLLiElement(value: HTMLLIElement) {
+        this._HTMLLiElement = value;
     }
 
     public get level(): number {
@@ -185,19 +223,14 @@ export class BranchClass{
                     //fail += (shot-done);
                 }
             });
+            return ((done/shot)* 100) || 0;
         } else {
             let percent: number = 0;
             this.children.forEach((branch: BranchClass)=>{
                 percent += branch.percent;
             });
-            return percent / (this.children.length * 100) * 100;
+            return (percent / (this.children.length * 100) * 100) || 0;
         }
-
-        return (done/shot)* 100;
-    }
-
-    public set percent(value: number) {
-        ;
     }
 
     public get mainKey(): number {
@@ -217,12 +250,8 @@ export class BranchClass{
     }
 
     public get activeKeys(): IVariableCOFNumberArray {
-        if (this.type==="sheet") {
-            const activeKeys: IVariableCOFNumberArray = this.getCustom("activeKeys") || [];
-            if (!activeKeys.length && this.mainKey) {
-                activeKeys.push(this.mainKey);
-            }
-            return activeKeys || [];
+         if (this.type==="sheet") {
+            return this.getCustom("activeKeys") || [];
         } else if (this.type==="section" && this.parent.type==="sheet") {
             return this.parent.activeKeys;
         } else {
@@ -244,6 +273,7 @@ export class BranchClass{
 
     public set shot(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
         if (this.type === "section") {
+            console.log(value);
             this.setCustom("shot", value);
         }
     }
