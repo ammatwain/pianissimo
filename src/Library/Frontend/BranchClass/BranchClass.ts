@@ -54,9 +54,11 @@ export class BranchClass{
 
     public save(): IBranchObject {
         if (this.modified) {
-            ;
+            window.electron.ipcRenderer.invoke("request-save-branch", this.branchObject ).then((result: IBranchObject)=>{
+                this.branchObject = result;
+            });
         }
-        return this._branchObject;
+        return this.branchObject;
     }
 
     private get modified(): boolean {
