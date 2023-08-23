@@ -6,7 +6,9 @@ export class BranchClass{
     private _parent: BranchClass;
     private _children: BranchClass[];
     private _branchObject: IBranchObject;
+    private _branchFreezed: string;
     private _HTMLLiElement: HTMLLIElement;
+    private _modified: boolean = false;
 
     rnd(max: number): number  {
         return Math.floor(Math.random() * max);
@@ -15,7 +17,7 @@ export class BranchClass{
     constructor(branch: IBranchObject, parent: BranchClass = null) {
         this.parent =  parent;
         this._branchObject = branch;
-
+        this._branchFreezed = JSON.stringify(this._branchObject);
         // in questo momento custom potrebbe essere una stringa;
         if (typeof this._branchObject.custom === "string") {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
@@ -48,6 +50,18 @@ export class BranchClass{
                 ]
             ];
         }
+    }
+
+    public save(): IBranchObject {
+        if (this.modified) {
+            ;
+        }
+        return this._branchObject;
+    }
+
+    private get modified(): boolean {
+        this._modified = this._modified || (this._branchFreezed !== JSON.stringify(this._branchObject));
+        return this._modified;
     }
 
     public get root(): BranchClass {
