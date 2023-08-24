@@ -17,17 +17,14 @@ export class Walk implements IWalk{
 
 
     private jsonStringifyReplacer(key: string, value: any): any{
-        if (key==="$parent") {
-            return undefined;
-        }
+        //if (key==="EXAMPLE_KEY") {
+        //    return undefined;
+        //}
         return value;
     }
 
     private genealogicalTreeObjects(parentid: number = 0): IBranchObject[] {
         const result: IBranchObject[] = [];
-        const $parent: IBranchObject = this.LinearObjects.find((branch: IBranchObject)=>{
-            return branch.id === parentid;
-        }) || null;
         this.LinearObjects.filter((branch: IBranchObject)=>{
             return branch.parentid === parentid;
         }).sort((a: IBranchObject, b: IBranchObject)=>{
@@ -37,7 +34,6 @@ export class Walk implements IWalk{
             if (children.length) {
                 branch.$children = children;
             }
-            branch.$parent = $parent;
             result.push(branch);
         });
         return result;

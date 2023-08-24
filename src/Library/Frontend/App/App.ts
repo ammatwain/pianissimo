@@ -78,8 +78,10 @@ export class App {
             this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
-                    window.electron.ipcRenderer.sendMessage("request-sheet", values[0]);
-                    console.log(this.data.tree.getLeafById(values[0]));
+                    let sheet = this.data.tree.getLeafById( values[0]).closest("sheet");
+                    if(sheet) {
+                        window.electron.ipcRenderer.sendMessage("request-sheet", sheet.id);
+                    }
                 }
             };
             this.setListeners();
@@ -89,43 +91,27 @@ export class App {
     setListeners(): void {
 
         window.electron.ipcRenderer.on("response-sheet-list", (sheetLibrary: IBranchObject[]) => {
-            //const walk = new Walk(sheetLibrary);
             if (this.tree && this.tree instanceof WTree){
-                console.log(sheetLibrary);
-//                this.tree.initialize(walk.TreeClasses);
                 this.tree.initialize(sheetLibrary);
             }
-/*
-            window.electron.ipcRenderer.invoke("request-dir-listing","../").then((result: any)=>{
-                console.log("DIR-LISTING", result);
-            });
-*/
-/*
-            window.electron.ipcRenderer.invoke("request-package-info","../").then((result: any)=>{
-                console.log("PACKAGE-INFO", result);
-            });
-*/
         });
 
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         window.electron.ipcRenderer.on("response-sheet", (arg: any) => {
-            const branch: BranchClass = this.tree.getLeafById(arg.id);
-            this.tree.fillPropertyEditor(arg.id);
-            this.maestro.loadXmSheet(arg.xml, branch);
-            console.log(typeof arg);
+            const branch: BranchClass = this.tree.getBranchById(arg.id);
+            if (branch.type === "sheet" && arg.sheet!==null) {
+                console.log("RESPONSE-SHEET_BRANCH",arg.id);
+                this.tree.fillPropertyEditor(arg.id);
+                this.maestro.loadXmSheet(arg.xml, branch);
+            }
         });
 
-        window.electron.ipcRenderer.sendMessage("request-dir-listing", {});
         window.electron.ipcRenderer.sendMessage("request-sheet-list", {});
         this.data.test.addEventListener("click",()=>{
             window.electron.ipcRenderer.invoke("request-dir-listing","../Letture/Letture").then((result: any)=>{
-                console.log("DIR-LISTING", result);
+//                console.log("DIR-LISTING", result);
             });
         });
         this.maestro.setListeners();
-
-        // this.test();
     }
 
     public get osmd(): OpenSheetMusicDisplay {

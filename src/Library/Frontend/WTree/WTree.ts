@@ -166,7 +166,6 @@ export class WTree extends HTMLElement{
 
     fillPropertyEditor(id: number): void {
         const ele: IBranchObject = Object.assign({},this.treeStore.branchesById[id].branchObject);
-        delete ele.$parent;
         delete ele.$children;
         this.propEditor.properties = ele;
     }
@@ -186,6 +185,10 @@ export class WTree extends HTMLElement{
 
     public getLeafById(id: number): BranchClass {
         return this.treeStore.leafBranchesById[id] || null;
+    }
+
+    public getBranchById(id: number): BranchClass {
+        return this.treeStore. branchesById[id] || null;
     }
 
     constructor(options: ITreeOptions ) {
@@ -275,11 +278,8 @@ export class WTree extends HTMLElement{
     };
 
     initialize(data: IBranchObject[] ): void {
-
         this.walk = new Walk(data);
-        console.log(this.walk.TreeObjects);
         this.initcount++;
-//        console.log("INIT COUNTER",this.initcount);
 //        console.time('init');
         this.treeStore = this.parseTreeData(this.walk);
         this.render(this.treeStore.treeBranches);
@@ -520,12 +520,9 @@ export class WTree extends HTMLElement{
     }
 
     updateAllPercents(): void {
-        console.log("TREE",this.treeStore.treeBranches);
         this.treeStore.linearBranches.filter((branch: BranchClass)=>{
             return branch.parentid === 0;
         }).forEach((branch: BranchClass)=>{
-            console.log("FAI QUALCOSAAAAA");
-            console.log(branch.percent);
             this.updatePercent(branch, branch.percent);
         });
         /*

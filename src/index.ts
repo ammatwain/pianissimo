@@ -168,8 +168,8 @@ ipcMain.handle("request-save-branch", async (event: Electron.IpcMainEvent, branc
 });
 
 ipcMain.on("request-sheet-list", async (event: Electron.IpcMainEvent) => {
-    console.log(event);
-    event.reply("response-sheet-list", letture.getLinearLibrary());
+    const branchObjects: IBranchObject[] = letture.getLinearLibrary();
+    event.reply("response-sheet-list", branchObjects);
     //event.reply("response-sheet-list", walk.LinearObjects);
 });
 

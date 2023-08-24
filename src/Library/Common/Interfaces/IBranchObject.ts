@@ -10,7 +10,6 @@ export interface IBranchObject {
     custom?: any;
     data?: Buffer;
     //
-    $parent?: IBranchObject;
     $path?: string;
     $children?: IBranchObject[];
 }

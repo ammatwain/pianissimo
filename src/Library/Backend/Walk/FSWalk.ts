@@ -83,7 +83,7 @@ export class FSWalk implements IWalk{
     }
 
     private jsonStringifyReplacer(key: string, value: any): any{
-        if (key==="$parent") {
+        if (key==="EXAMPLE_KEY") {
             return undefined;
         }
         return value;

@@ -12,13 +12,13 @@ export class Letture extends Store {
 
     getLinearLibrary(): IBranchObject[] {
         const library: IBranchObject[] = <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
-        library.forEach((branch: IBranchObject)=>{
-            if (typeof branch.custom === "string") {
-                branch.custom = JSON.parse(branch.custom) || {};
+        library.forEach((branchObject: IBranchObject)=>{
+            if (typeof branchObject.custom === "string") {
+                branchObject.custom = JSON.parse(branchObject.custom) || {};
             }
         });
-        return <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
-
+        return library;
+        //return <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
     }
 
     getTreeLibrary(): IBranchObject[] {

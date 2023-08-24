@@ -289,7 +289,6 @@ export class BranchClass{
 
     public set shot(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
         if (this.type === "section") {
-            console.log(value);
             this.setCustom("shot", value);
         }
     }
