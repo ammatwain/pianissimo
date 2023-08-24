@@ -68,7 +68,7 @@ export class Repetitions {
         measure = this.validateMeasureIndex(measure);
         const m: SourceMeasure = this.measures[measure];
         let result: number = measure;
-        console.log(m.FirstRepetitionInstructions);
+        //console.log(m.FirstRepetitionInstructions);
         const index: number = m.FirstRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
             return r.type === sign;
         });
@@ -82,7 +82,7 @@ export class Repetitions {
         measure = this.validateMeasureIndex(measure);
         const m: SourceMeasure = this.measures[measure];
         let result: number = measure;
-        console.log(m.LastRepetitionInstructions);
+        //console.log(m.LastRepetitionInstructions);
         const index: number = m.LastRepetitionInstructions.findIndex((r: RepetitionInstruction)=>{
             return r.type === sign;
         });

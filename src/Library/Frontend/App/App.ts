@@ -78,7 +78,7 @@ export class App {
             this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
-                    let sheet = this.data.tree.getLeafById( values[0]).closest("sheet");
+                    const sheet: BranchClass = this.data.tree.getLeafById( values[0]).closest("sheet");
                     if(sheet) {
                         window.electron.ipcRenderer.sendMessage("request-sheet", sheet.id);
                     }
@@ -99,7 +99,7 @@ export class App {
         window.electron.ipcRenderer.on("response-sheet", (arg: any) => {
             const branch: BranchClass = this.tree.getBranchById(arg.id);
             if (branch.type === "sheet" && arg.sheet!==null) {
-                console.log("RESPONSE-SHEET_BRANCH",arg.id);
+                //console.log("RESPONSE-SHEET_BRANCH",arg.id);
                 this.tree.fillPropertyEditor(arg.id);
                 this.maestro.loadXmSheet(arg.xml, branch);
             }

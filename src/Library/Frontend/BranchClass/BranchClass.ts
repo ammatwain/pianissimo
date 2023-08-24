@@ -6,9 +6,9 @@ export class BranchClass{
     private _parent: BranchClass;
     private _children: BranchClass[];
     private _branchObject: IBranchObject;
-    private _branchFreezed: string;
+    private _branchCustomFreezed: string;
     private _HTMLLiElement: HTMLLIElement;
-    private _modified: boolean = false;
+    private _customIsModified: boolean = false;
 
     rnd(max: number): number  {
         return Math.floor(Math.random() * max);
@@ -17,7 +17,7 @@ export class BranchClass{
     constructor(branch: IBranchObject, parent: BranchClass = null) {
         this.parent =  parent;
         this._branchObject = branch;
-        this._branchFreezed = JSON.stringify(this._branchObject);
+        this._branchCustomFreezed = JSON.stringify(this._branchObject.custom);
         // in questo momento custom potrebbe essere una stringa;
         if (typeof this._branchObject.custom === "string") {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
@@ -52,18 +52,19 @@ export class BranchClass{
         }
     }
 
-    public save(): IBranchObject {
+    public saveCustom(): IBranchObject {
         if (this.modified) {
-            window.electron.ipcRenderer.invoke("request-save-branch", this.branchObject ).then((result: IBranchObject)=>{
-                this.branchObject = result;
+            window.electron.ipcRenderer.invoke("request-save-branch-custom", this.id, this.branchObject.custom ).then((result: IBranchCustom)=>{
+                this.branchObject.custom = result;
+                console.log(result);
             });
         }
         return this.branchObject;
     }
 
     private get modified(): boolean {
-        this._modified = this._modified || (this._branchFreezed !== JSON.stringify(this._branchObject));
-        return this._modified;
+        this._customIsModified = this._customIsModified || (this._branchCustomFreezed !== JSON.stringify(this._branchObject));
+        return this._customIsModified;
     }
 
     public get root(): BranchClass {

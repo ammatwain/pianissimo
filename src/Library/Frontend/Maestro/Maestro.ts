@@ -334,16 +334,17 @@ export class Maestro{
             if(beforeStart!==null && typeof beforeStart === "function"){
                 beforeStart();
             }
-            console.log(xml);
+            //console.log(xml);
             this.osmd.load(xml).then(()=>{
                 this.osmd.TransposeCalculator.Options.transposeToHalftone(0);
                 sheet.mainKey = this.osmd.TransposeCalculator.Options.MainKey;
+                sheet.saveCustom();
                 this.playerMeasures = [];
                 this.playerMeasureIndex = 0;
                 this.playerMeasures = this.flow.calculatePlayerMeasures();
                 this.osmd.Sheet.Transpose = transposeValue;
-                console.log(sheet.branchObject);
-                console.log(this.data.playMeasures);
+                //console.log(sheet.branchObject);
+                //console.log(this.data.playMeasures);
                 this.osmd.setOptions({
                     drawFromMeasureNumber: 2,
                     drawUpToMeasureNumber: 2,
@@ -364,7 +365,7 @@ export class Maestro{
                 this.reset();
                 this.osmd.cursor.show();
                 //this.test();
-                console.log(this.data.repeats);
+                //console.log(this.data.repeats);
                 if(afterEnd!==null && typeof afterEnd === "function"){
                     afterEnd();
                 }
