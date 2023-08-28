@@ -118,8 +118,8 @@ w-tree {
                                 width: calc($module-size * 0.8);
                                 height: calc($module-size * 0.8);
                                 border: calc($module-size * 0.1) solid $greyborder;
-                                //border-radius: calc($module-size * 0.1);
-                                border-radius: 50%;
+                                border-radius: calc($module-size * 0.1);
+                                //border-radius: 50%;
                             }
                             &:hover {
                                 &:before {

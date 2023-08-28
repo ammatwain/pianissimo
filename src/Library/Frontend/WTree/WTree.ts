@@ -87,7 +87,7 @@ function expandFromRoot(tree: WTree, root: BranchClass): void {
 
 interface ITreeOptions {
     data?: IBranchObject[];
-    selectMode?: string;
+    selectMode?:  "checkbox" | "radio";
     values?: number[];
     url?: string;
     method?: string;
@@ -103,11 +103,17 @@ interface ITreeOptions {
 }
 
 export class WTree extends HTMLElement{
+
+    constructor(options: ITreeOptions ) {
+        super();
+        this.options = Object.assign(this.defaultOptions, options);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types
     private walk: Walk;
     private initcount: number = 0;
     private defaultOptions: ITreeOptions = {
-        selectMode: "checkbox",
+        selectMode: "radio",
         values: [],
         disables: [],
         beforeLoad: null,
@@ -156,8 +162,6 @@ export class WTree extends HTMLElement{
             (branchesById[id].status === 1 || branchesById[id].status === 2)
         ) {
             const branch: BranchClass = branchesById[id];
-            //delete branch.parent;
-            //delete branch.children;
             branches.push(branch);
         }
         }
@@ -176,7 +180,6 @@ export class WTree extends HTMLElement{
         for (const id in branchesById) {
             if (id in branchesById && branchesById[id].disabled) {
                 const branch: BranchClass = branchesById[id];
-                //delete branch.parent;
                 branches.push(branch);
             }
         }
@@ -189,11 +192,6 @@ export class WTree extends HTMLElement{
 
     public getBranchById(id: number): BranchClass {
         return this.treeStore. branchesById[id] || null;
-    }
-
-    constructor(options: ITreeOptions ) {
-        super();
-        this.options = Object.assign(this.defaultOptions, options);
     }
 
     connectedCallback(): void{
@@ -234,30 +232,12 @@ export class WTree extends HTMLElement{
     };
 
     getSelectedBranchesById(): BranchClass[] {
-        /*
-        const brances: BranchClassCollectionItem = {};
-        this.treeStore.linearBranches.forEach((branch: BranchClass)=>{
-            if(branch.status === 1 || branch.status === 2) {
-                brances[branch.id]=branch;
-            }
-        });
-        return brances;
-        */
         return this.treeStore.linearBranches.filter((branch: BranchClass)=>{
             return (branch.status === 1 || branch.status === 2);
         });
     }
 
     getDisabledBranchesById(): BranchClass[] {
-        /*
-        const brances: BranchClassCollectionItem = {};
-        this.treeStore.linearBranches.forEach((branch: BranchClass)=>{
-            if(branch.disabled) {
-                brances[branch.id]=branch;
-            }
-        });
-        return brances;
-        */
         return this.treeStore.linearBranches.filter((branch: BranchClass)=>{
             return (branch.disabled===true);
         });
@@ -432,6 +412,9 @@ export class WTree extends HTMLElement{
                     liEle.appendChild(ulEle);
                 }
                 rootUlEle.appendChild(liEle);
+                if (branch.type==="section" && branch.sequence<0) {
+                    liEle.style.display = "none";
+                }
             });
         }
         return rootUlEle;
@@ -525,13 +508,6 @@ export class WTree extends HTMLElement{
         }).forEach((branch: BranchClass)=>{
             this.updatePercent(branch, branch.percent);
         });
-        /*
-        Object.values(this.treeStore.branchesById).forEach((branch: BranchClass)=>{
-            if (!(branch.children && branch.children.length)){
-                this.setPercent(branch, branch.percent);
-            }
-        });
-        */
     }
 
     updateListItemElements(): void {
@@ -674,12 +650,6 @@ export class WTree extends HTMLElement{
         Object.values(leafBranchesById).forEach((leafBranch: BranchClass )=>{
             collapseFromLeaf(this, leafBranch);
         });
-        /*
-        for(const id in leafBranchesById) {
-            const leafBranch: BranchClass = leafBranchesById[id];
-            collapseFromLeaf(this, leafBranch);
-        }
-        */
     }
 
     expandAll(): void {
@@ -738,9 +708,9 @@ export class WTree extends HTMLElement{
         }
         const checkbox: HTMLDivElement = document.createElement("div");
         checkbox.classList.add("checkbox");
-//        if (this.options.selectMode && this.options.selectMode==="radio"){
-//            checkbox.classList.add('radio');
-//        }
+        if (this.options.selectMode && this.options.selectMode==="radio"){
+            checkbox.classList.add("radio");
+        }
         divline.appendChild(checkbox);
         const label: HTMLDivElement = document.createElement("div");
         label.classList.add("label");

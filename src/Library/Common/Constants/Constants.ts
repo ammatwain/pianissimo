@@ -10,6 +10,6 @@ export const Constants: any = {
         Section:2,
     },
     scss: {
-        $moduleSize: 20,
+        $moduleSize: 40,
     }
 };

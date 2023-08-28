@@ -31,7 +31,7 @@ export class FSWalk implements IWalk{
 
         if (treeNode===null && dir!==null){
             this.linear = [];
-            this.nextuid = 1;
+            this.nextuid = Date.now();
             treeNode = this.prewalk(dir);
         }
 
@@ -42,6 +42,7 @@ export class FSWalk implements IWalk{
         }
 
         nodes.forEach((node: DirectoryTree)=>{
+
             const tmp: string[] = PATH.basename(node.name,".musicxml").split(".",3);
             if (tmp.length===3) {
                 if (tmp[0].startsWith("§")){
@@ -56,7 +57,7 @@ export class FSWalk implements IWalk{
                 sequence: sequence++,
                 parentid: parentid,
                 type: null,
-                name: node.name.replaceAll("_"," "),
+                name: node.name.replaceAll("_"," ").replaceAll("'","''"),
                 data: null,
                 $path: node.path,
                 $children: [],
@@ -74,8 +75,7 @@ export class FSWalk implements IWalk{
                 jsonChild.type = "sheet";
             }
 
-            const jsonLeveled: IBranchObject = {};
-            Object.assign(jsonLeveled,jsonChild);
+            const jsonLeveled: IBranchObject = Object.assign({},jsonChild);
             delete jsonLeveled.$children;
             this.linear.push(jsonLeveled);
         });

@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import PATH from "path";
 import FS from "fs";
-import { Config, Walk, FSWalk , Letture, Package } from "./Library/Backend";
+import { Config, Walk, FSWalk , Letture, Package, MusicXmlRW, PianissimoID } from "./Library/Backend";
 import * as MUX from "musicxml-interfaces";
 import { IBranchCustom, IBranchObject } from "./Library/Common";
 
@@ -13,14 +13,32 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 if(!(app.isPackaged && FS.existsSync(Config.Database))) {
     console.log("First copy of database");
+    const preLetture: Letture = new Letture(PATH.resolve(__dirname,"Data/Letture.db"),null);
+    console.log("TEST", preLetture.prepare("SELECT * from \"homedir\";").all());
     /*
-    const letture: Letture = new Letture(PATH.resolve(__dirname,"Data/Letture.db"),null);
-    const fswalk = new FSWalk(PATH.resolve(__dirname,"Data/Letture"));
+    const fswalk: FSWalk = new FSWalk(PATH.resolve(__dirname,"Data/Letture"));
     console.log(fswalk.LinearAsJSONString);
     fswalk.LinearObjects.forEach((branch: IBranchObject)=>{
         let data: string = "NULL";
+        let ppId: PianissimoID;
+        branch.custom = {};
+
         if(branch.type === "sheet") {
-          data = `UPLOADFILE('${branch.$path}')`;
+            const mmxl: MusicXmlRW = new MusicXmlRW();
+            console.log(branch.$path);
+            mmxl.loadXml(branch.$path);
+            ppId = mmxl.Pianissimo;
+            if (ppId!==null && ppId.id>0) {
+                branch.id = ppId.id;
+            }
+            mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: branch.id};
+            branch.custom.parts = mmxl.PartCount;
+            branch.custom.instruments = mmxl.Instruments;
+            branch.custom.mainKey = mmxl.MainKey;
+            branch.custom.measures = mmxl.MeasureCount;
+            branch.custom.tempo = mmxl.Tempo;
+            mmxl.saveXml(branch.$path);
+            data = `UPLOADFILE('${branch.$path}')`;
         }
         const sql: string = `INSERT INTO "library" (
           "id",
@@ -36,36 +54,20 @@ if(!(app.isPackaged && FS.existsSync(Config.Database))) {
           ${branch.sequence},
           '${branch.type}',
           '${branch.name}',
-          '{}',
+          '${JSON.stringify(branch.custom)}',
           ${data}
-        );`
-        //console.log(sql);
-        letture.exec(sql);
-    });
-    letture.Db.close();
-    */
-    /*
-    make sections
-    const letture: Letture = new Letture(PATH.resolve(__dirname,"Data/Letture.db"),null);
-    const sheets: {id:number}[] = <{id:number}[]>letture.prepare(`SELECT id FROM "library" WHERE "type"='sheet';`).all();
-    sheets.forEach((n: {id:number})=>{
-        letture.exec(`INSERT INTO "library" ("parentid","type","sequence","name") VALUES (${n.id},'section','-1.0','Default');`);
-    });
-    letture.Db.close();
-    */
-    /*
-    const letture: Letture = new Letture(PATH.resolve(__dirname,"Data/Letture.db"),null);
-    const sheets: {id: number}[] = <{id: number}[]>letture.prepare("SELECT id FROM \"library\" WHERE \"type\"='sheet';").all();
-    sheets.forEach((n: {id: number})=>{
-        const xmlBuffer: Buffer =
-         (<Buffer>letture.prepare(`SELECT DOWNLOADFILE("data") FROM "library" WHERE "type"='sheet' AND "id"=${n.id} LIMIT 1;`).pluck().get());
-        if (xmlBuffer) {
-            const tw: MUX.ScoreTimewise = MUX.serializeScore(xmlBuffer
-                .toString("utf8").trim());
+        );`;
+        try {
+            preLetture.exec(sql);
+        } catch {
+            console.log(sql);
         }
     });
-
-    letture.Db.close();
+    const sheets: {id: number}[] = <{id: number}[]>preLetture.prepare("SELECT id FROM \"library\" WHERE \"type\"='sheet';").all();
+    sheets.forEach((n: {id: number})=>{
+        preLetture.exec(`INSERT INTO "library" ("parentid","type","sequence","name") VALUES (${n.id},'section','-1.0','Default');`);
+    });
+    preLetture.Db.close();
     */
     FS.copyFileSync(
         PATH.resolve(__dirname,"Data/Letture.db"),
