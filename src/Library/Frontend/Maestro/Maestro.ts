@@ -146,7 +146,9 @@ export class Maestro{
         console.log("sheet",this.data.osmdNotes);
         console.log("midi",midiNotes);
         for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
-            if(!this.getMidiNote(this.sheetNotes[i])) {ok = false;}
+            if(!this.getMidiNote(this.sheetNotes[i])) {
+                ok = false;
+            }
         }
         if (ok) {
             this.clearMidiNotes();
@@ -186,18 +188,6 @@ export class Maestro{
 
     public allNotesUnderCursorArePlayed(): boolean{
         return this.allNotesUnderCursorArePlayedMedio();
-    }
-
-    public fillOsmdNotes(): void {
-        this.sheetNotes = [];
-        this.osmd.cursor.NotesUnderCursor().forEach((osmdNote: Note)=>{
-            if (osmdNote.halfTone!==0) {
-                if (!("tie" in osmdNote && osmdNote.NoteTie.Notes[0] !== osmdNote)){
-                    this.data.osmdNotes.push(osmdNote.halfTone);
-                    this.data.notesToPlay++;
-                }
-            }
-        });
     }
 
     public test(): void {
@@ -262,6 +252,11 @@ export class Maestro{
                 this.expectedMeasureIndex<0
             ) {
                 console.log("END REACHED");
+                // QUI CALCOLEREMO SUCCESSI E FALLIMENTI
+                console.log("NOTES TO PLAY", this.data.notesToPlay);
+                console.log("PLAYED NOTES", this.data.playedNotes);
+                this.data.notesToPlay = 0;
+                this.data.playedNotes = 0;
                 //1
                 this.osmd.cursor.reset();
                 this.playerMeasureIndex = 0;
@@ -378,15 +373,15 @@ export class Maestro{
             this.midiInputs.forEach((input: Input)=>{
 
                 input.addListener("noteon",(e: NoteMessageEvent)=>{
-                    console.log(e.note.number);
+                    console.log(e.note.number, e.timestamp, e);
                     this.setMidiNoteOn(e.note.number);
+                    this.data.playedNotes++;
                     if(this.allNotesUnderCursorArePlayed()){
                           this.next();
                     }
                 }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
 
                 input.addListener("noteoff",(e: NoteMessageEvent)=>{
-                    console.log(e.note.number);
                     this.setMidiNoteOff(e.note.number);
                 }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
 
@@ -464,6 +459,18 @@ export class Maestro{
 
     public get isPlaying(): boolean {
         return this.data.playedNotes>0;
+    }
+
+    public fillOsmdNotes(): void {
+        //this.data.notesToPlay++;
+        this.osmd.cursor.NotesUnderCursor().forEach((osmdNote: Note)=>{
+            if (osmdNote.halfTone!==0) {
+                if (!("tie" in osmdNote && osmdNote.NoteTie.Notes[0] !== osmdNote)){
+                    this.data.osmdNotes.push(osmdNote.halfTone);
+                    this.data.notesToPlay++;
+                }
+            }
+        });
     }
 
     public get midiNotes(): boolean[]{
