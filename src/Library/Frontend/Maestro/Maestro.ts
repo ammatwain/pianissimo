@@ -377,7 +377,7 @@ export class Maestro{
             this.midiInputs.forEach((input: Input)=>{
 
                 input.addListener("noteon",(e: NoteMessageEvent)=>{
-                    console.log(e.note.number, e.timestamp, e);
+                    //console.log(e.note.number, e.timestamp, e);
                     this.setMidiNoteOn(e.note.number);
                     this.data.playedNotes++;
                     if(this.allNotesUnderCursorArePlayed()){
