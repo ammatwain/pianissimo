@@ -143,8 +143,8 @@ export class Maestro{
             if(this.data.midiNotes[i]) {midiNotes.push(i);}
         }
 
-        console.log("sheet",this.data.osmdNotes);
-        console.log("midi",midiNotes);
+//        console.log("sheet",this.data.osmdNotes);
+//        console.log("midi",midiNotes);
         for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
             if(!this.getMidiNote(this.sheetNotes[i])) {
                 ok = false;
@@ -170,13 +170,13 @@ export class Maestro{
         // se il ciclo 1 è ok, controlla se ci sono stecche.
         //if (ok){
             for(let i: number = 0 ; i<this.data.midiNotes.length; i++) {
-            if(this.data.midiNotes[i]===true){
-                if(!this.data.osmdNotes.includes(i)) {
-                this.setMidiNoteOff(i);
-                ok = false;
-                console.log("hai steccato!");
-                }
-            };
+                if(this.data.midiNotes[i]===true){
+                    if(!this.data.osmdNotes.includes(i)) {
+                    this.setMidiNoteOff(i);
+                    ok = false;
+                    console.log("hai steccato!");
+                    }
+                };
             }
         //}
         if (ok) {
@@ -255,6 +255,10 @@ export class Maestro{
                 // QUI CALCOLEREMO SUCCESSI E FALLIMENTI
                 console.log("NOTES TO PLAY", this.data.notesToPlay);
                 console.log("PLAYED NOTES", this.data.playedNotes);
+
+                const success: number = (this.data.notesToPlay / this.data.playedNotes ) * 100;
+                console.log("SUCCESS:", `${success.toFixed(2)}%` );
+
                 this.data.notesToPlay = 0;
                 this.data.playedNotes = 0;
                 //1
@@ -340,11 +344,11 @@ export class Maestro{
                 this.osmd.Sheet.Transpose = transposeValue;
                 //console.log(sheet.branchObject);
                 //console.log(this.data.playMeasures);
-                this.osmd.setOptions({
-                    drawFromMeasureNumber: 2,
-                    drawUpToMeasureNumber: 2,
-                    defaultColorMusic: "#cccccc",
-                });
+                // this.osmd.setOptions({
+                //     drawFromMeasureNumber: 2,
+                //     drawUpToMeasureNumber: 2,
+                //     defaultColorMusic: "#cccccc",
+                // });
                 this.osmd.zoom = 1.0;
                 //this.osmd.FollowCursor = true;
                 const titleSplitted: string[] = sheet.name.split(";");
