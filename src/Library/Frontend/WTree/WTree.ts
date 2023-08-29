@@ -1,8 +1,10 @@
-import { default as wTreeAjax } from "./WTreeAjax";
-import { WPropertyEditor } from "../WPropertyEditor";
-import { BranchClass } from "../BranchClass";
+import { STR } from "../../Global";
 import { BranchClassCollectionItem, Constants, IBranchObject, ITreeStore } from "../../Common";
-import { Walk } from "../../Backend/Walk/Walk";
+import { BranchClass } from "../../Frontend/BranchClass";
+import { WPropertyEditor } from "../../Frontend/WPropertyEditor";
+import { Walk } from  "../../Backend/Walk/Walk";
+import { default as wTreeAjax } from "./WTreeAjax";
+//
 import "./WTree.scss";
 
 //const { moduleSize } = STYLE;
@@ -412,7 +414,7 @@ export class WTree extends HTMLElement{
                     liEle.appendChild(ulEle);
                 }
                 rootUlEle.appendChild(liEle);
-                if (branch.type==="section" && branch.sequence<0) {
+                if (branch.type === STR.section && branch.sequence<0) {
                     liEle.style.display = "none";
                 }
             });

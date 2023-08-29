@@ -1,5 +1,7 @@
+import { BranchClass } from "../../Frontend/BranchClass";
 export default function(_options: any): any {
     const defaultOptions: any = {
+      a: BranchClass,
       method: "GET",
       url: "",
       async: true,

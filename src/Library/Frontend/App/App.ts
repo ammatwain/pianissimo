@@ -1,11 +1,13 @@
-import "./App.scss";
-import { WTree } from "../WTree";
-import { WebMidi, Input } from "../WebMidi";
+import { STR } from "../../Global/STR";
+import { WTree } from "../../Frontend/WTree";
+import { WebMidi, Input } from "../../Frontend/WebMidi";
+import { Maestro } from "../../Frontend/Maestro";
+import { WTabContainer } from "../../Frontend/WTabs";
+import { BranchClass } from "../../Frontend/BranchClass";
+import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { Maestro } from "../Maestro";
-import { WTabContainer } from "../WTabs";
-import { BranchClass } from "..";
-import { IBranchObject } from "../../Common";
+//
+import "./App.scss";
 
 /*
 import { electronHandler } from "../";
@@ -78,7 +80,7 @@ export class App {
             this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
-                    const sheet: BranchClass = this.data.tree.getLeafById( values[0]).closest("sheet");
+                    const sheet: BranchClass = this.data.tree.getLeafById( values[0]).closest(STR.sheet);
                     if(sheet) {
                         window.electron.ipcRenderer.sendMessage("request-sheet", sheet.id);
                     }
@@ -98,7 +100,7 @@ export class App {
 
         window.electron.ipcRenderer.on("response-sheet", (arg: any) => {
             const branch: BranchClass = this.tree.getBranchById(arg.id);
-            if (branch.type === "sheet" && arg.sheet!==null) {
+            if (branch.type === STR.sheet && arg.sheet!==null) {
                 //console.log("RESPONSE-SHEET_BRANCH",arg.id);
                 this.tree.fillPropertyEditor(arg.id);
                 this.maestro.loadXmSheet(arg.xml, branch);

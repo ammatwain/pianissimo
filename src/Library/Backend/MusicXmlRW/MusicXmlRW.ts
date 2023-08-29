@@ -1,6 +1,5 @@
 import fs from "fs";
-import xmldoc, { XmlDocument, XmlElement } from "xmldoc";
-import glob, { globSync } from "glob";
+import { XmlDocument, XmlElement } from "xmldoc";
 
 export type PianissimoID =  {
     app?: string;

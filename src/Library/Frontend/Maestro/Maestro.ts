@@ -1,8 +1,9 @@
-import { RepetitionInstruction, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay, ColoringModes } from "opensheetmusicdisplay";
-import { Input, NoteMessageEvent } from "../WebMidi";
-import { SheetFlowCalculator } from "../SheetFlow";
-import { BranchClass } from "../../";
-import { IExercise } from "../../Common";
+import { STR } from "../../Global/STR";
+import { RepetitionInstruction, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { Input, NoteMessageEvent } from "../../Frontend/WebMidi";
+import { SheetFlowCalculator } from "../../Frontend/SheetFlow";
+import { BranchClass } from "../../Frontend/BranchClass";
+import { IExercise } from "../../Common/Interfaces/IExercise";
 
 //import { KeyboardInputEvent } from "electron";
 
@@ -86,7 +87,7 @@ export class Maestro{
       // ciclo 1
       // controlla se le note grafiche sono suonate.
       let ok: boolean=false;
-      console.log("sheet",this.data.osmdNotes);
+      console.log(STR.sheet,this.data.osmdNotes);
       console.log("midi",this.data.midiNotes);
       for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
         if(this.getMidiNote(this.sheetNotes[i])) {ok = true;}
@@ -110,7 +111,7 @@ export class Maestro{
             }
         }
 
-        console.log("sheet", this.data.osmdNotes);
+        console.log(STR.sheet, this.data.osmdNotes);
         console.log("midi" , midiNotes);
         for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
             if (midiNotes.length>0) {
@@ -143,8 +144,6 @@ export class Maestro{
             if(this.data.midiNotes[i]) {midiNotes.push(i);}
         }
 
-//        console.log("sheet",this.data.osmdNotes);
-//        console.log("midi",midiNotes);
         for(let i: number = 0 ; i < this.sheetNotes.length; i++) {
             if(!this.getMidiNote(this.sheetNotes[i])) {
                 ok = false;
@@ -161,7 +160,7 @@ export class Maestro{
         // ciclo 1
         // controlla se le note grafiche sono suonate.
         let ok: boolean=true;
-        console.log("sheet",this.data.osmdNotes);
+        console.log(STR.sheet,this.data.osmdNotes);
         console.log("midi",this.data.midiNotes);
         for(let i: number = 0 ; i<this.sheetNotes.length; i++) {
             if(!this.getMidiNote(this.sheetNotes[i])) {ok = false;}
@@ -335,6 +334,7 @@ export class Maestro{
             }
             //console.log(xml);
             this.osmd.load(xml).then(()=>{
+                console.log(sheet);
                 this.osmd.TransposeCalculator.Options.transposeToHalftone(0);
                 sheet.mainKey = this.osmd.TransposeCalculator.Options.MainKey;
                 sheet.saveCustom();

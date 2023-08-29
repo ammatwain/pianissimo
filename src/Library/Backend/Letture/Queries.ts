@@ -1,3 +1,5 @@
+import { STR } from "../../Global/STR";
+
 export const SqlQuery: {[index: string]: string} = {
 
 CreateTableLibrary: `CREATE TABLE IF NOT EXISTS "library" (
@@ -20,11 +22,11 @@ SelectTableLibrary: `SELECT
 FROM
     "library"
 WHERE
-    "type"='book'
+    "type"='${STR.book}'
 OR
-    "type"='sheet'
+    "type"='${STR.sheet}'
 OR
-    "type"='section'
+    "type"='${STR.section}'
 ORDER BY
     "parentid",
     "sequence"

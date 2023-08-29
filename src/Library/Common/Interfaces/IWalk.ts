@@ -1,4 +1,4 @@
-import { IBranchObject } from "./IBranchObject";
+import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
 
 export interface IWalk {
     TreeObjects: IBranchObject[];

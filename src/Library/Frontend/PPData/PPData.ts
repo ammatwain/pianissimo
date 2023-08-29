@@ -1,4 +1,4 @@
-import {IBranchObject} from "../../Common";
+import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
 
 export class PPData {
 

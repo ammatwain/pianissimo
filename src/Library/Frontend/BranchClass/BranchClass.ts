@@ -1,4 +1,8 @@
-import { IVariableCOFNumberArray, IFixedCOFNumberArray, IBranchObject, IBranchType, IBranchCustom } from "../../Common";
+import { STR } from "../../Global/STR";
+import { IVariableCOFNumberArray, IFixedCOFNumberArray } from "../../Common/Interfaces";
+import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
+import { IBranchType } from "../../Common/Interfaces/IBranchType";
+import { IBranchCustom } from "../../Common/Interfaces/IBranchCustom";
 
 type KOC = keyof IBranchCustom;
 
@@ -22,10 +26,10 @@ export class BranchClass{
         if (typeof this._branchObject.custom === "string") {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
         }
-        if (this.type==="sheet") {
+        if (this.type === STR.sheet ) {
             this.activeKeys=[-2, +1, +5];
         }
-        if (this.type==="section"){
+        if (this.type===STR.section){
             this.shot = [
                 [
                     this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10, this.rnd(10)+10,
@@ -230,7 +234,7 @@ export class BranchClass{
         let shot: number = 0;
         let done: number = 0;
         //let fail: number = 0;
-        if (this.type === "section") {
+        if (this.type === STR.section) {
             this.activeKeys.forEach((key: number)=>{
                 if (key >= -7 && key <= 7) {
                     shot += this.shot[0][key+7];
@@ -251,9 +255,9 @@ export class BranchClass{
     }
 
     public get mainKey(): number {
-        if (this.type==="sheet") {
+        if (this.type === STR.sheet) {
             return this.getCustom("mainKey") || null;
-        } else if (this.type==="section" && this.parent.type==="sheet") {
+        } else if (this.type === STR.section && this.parent.type === STR.sheet) {
             return this.parent.mainKey;
         } else {
             return null;
@@ -261,15 +265,15 @@ export class BranchClass{
     }
 
     public set mainKey(value: number) {
-        if (this.type==="sheet") {
+        if (this.type === STR.sheet) {
             this.setCustom("mainKey", value);
         }
     }
 
     public get activeKeys(): IVariableCOFNumberArray {
-         if (this.type==="sheet") {
+         if (this.type === STR.sheet) {
             return this.getCustom("activeKeys") || [];
-        } else if (this.type==="section" && this.parent.type==="sheet") {
+        } else if (this.type === STR.section && this.parent.type === STR.sheet) {
             return this.parent.activeKeys;
         } else {
             return [];
@@ -281,7 +285,7 @@ export class BranchClass{
     }
 
     public get shot(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
-        if (this.type === "section") {
+        if (this.type === STR.section) {
             return this.getCustom("shot") || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
         } else {
             return null;
@@ -289,13 +293,13 @@ export class BranchClass{
     }
 
     public set shot(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
-        if (this.type === "section") {
+        if (this.type === STR.section) {
             this.setCustom("shot", value);
         }
     }
 
     public get done(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
-        if (this.type === "section") {
+        if (this.type === STR.section) {
             return this.getCustom("done") || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
         } else {
             return null;
@@ -303,7 +307,7 @@ export class BranchClass{
     }
 
     public set done(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
-        if (this.type === "section") {
+        if (this.type === STR.section) {
             this.setCustom("done", value);
         }
     }

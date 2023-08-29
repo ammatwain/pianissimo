@@ -1,8 +1,8 @@
-//import FS from "fs";
-import { IWalk } from "../../Common/Interfaces";
-import { IBranchObject } from "../../Common";
 import PATH from "path";
 import directoryTree, { DirectoryTree } from "directory-tree";
+import { STR } from "../../Global/STR";
+import { IWalk } from "../../Common/Interfaces";
+import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
 
 export class FSWalk implements IWalk{
 
@@ -65,14 +65,14 @@ export class FSWalk implements IWalk{
 
             jsonChildren.push(jsonChild);
             if(node.type === "directory" && node.children && node.children.length ) {
-                jsonChild.type = "book";
+                jsonChild.type = STR.book;
                 jsonChild.$children = this.postwalk(node.children, jsonChild.id);
                 //for (let i: number = 0; i < jsonChild.$children.length; i++){
                 //    jsonChild.$children[i].sequence = i;
                 //}
             } else if(node.type === "file" && node.extension === ".musicxml"){
                 jsonChild.name = PATH.basename(jsonChild.name,".musicxml");
-                jsonChild.type = "sheet";
+                jsonChild.type = STR.sheet;
             }
 
             const jsonLeveled: IBranchObject = Object.assign({},jsonChild);

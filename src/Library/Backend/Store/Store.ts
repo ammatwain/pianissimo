@@ -1,7 +1,6 @@
 import FS from "fs";
 import BetterSqlite3 from "better-sqlite3";
 import zlib from "zlib";
-import { MusicXmlRW } from "../../Backend";
 
 export type StoreOptions = BetterSqlite3.Options;
 

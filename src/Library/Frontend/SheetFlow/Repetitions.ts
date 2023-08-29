@@ -1,3 +1,5 @@
+import { RepetitionInstruction, RepetitionInstructionEnum, SourceMeasure } from "opensheetmusicdisplay";
+
 //https://www.myriad-online.com/resources/docs/melody/italiano/breaks.htm
 /*
 0  0 StartLine,      // linea |:            = Inizio di un gruppo di battute che vanno suonate più volte.
@@ -38,8 +40,6 @@ i segni non devono essere consumati
 ]
 
 */
-
-import { RepetitionInstruction, RepetitionInstructionEnum, SourceMeasure } from "opensheetmusicdisplay";
 
 export class Repetitions {
     private sign: RepetitionInstructionEnum;
