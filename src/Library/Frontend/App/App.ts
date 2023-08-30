@@ -1,13 +1,14 @@
-import { STR } from "../../Global/STR";
-import { WTree } from "../../Frontend/WTree";
-import { WebMidi, Input } from "../../Frontend/WebMidi";
-import { Maestro } from "../../Frontend/Maestro";
-import { WTabContainer } from "../../Frontend/WTabs";
-import { BranchClass } from "../../Frontend/BranchClass";
-import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
+import { STR } from "@Global/STR";
+import { WTree } from "@Frontend/WTree";
+import { WebMidi, Input } from "@Frontend/WebMidi";
+import { Maestro } from "@Frontend/Maestro";
+import { WTabContainer } from "@Frontend/WTabs";
+import { BranchClass } from "@Frontend/BranchClass";
+import { IBranchObject } from "@Interfaces/IBranchObject";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 //
 import "./App.scss";
+import { FrontendListeners } from "../FrontendListeners";
 
 /*
 import { electronHandler } from "../";
@@ -82,7 +83,7 @@ export class App {
                 if (values.length===1) {
                     const sheet: BranchClass = this.data.tree.getLeafById( values[0]).closest(STR.sheet);
                     if(sheet) {
-                        window.electron.ipcRenderer.sendMessage("request-sheet", sheet.id);
+                        window.electron.ipcRenderer.sendMessage(STR.requestSheet, sheet.id);
                     }
                 }
             };
@@ -91,29 +92,11 @@ export class App {
     }
 
     setListeners(): void {
+        FrontendListeners(this);
+    }
 
-        window.electron.ipcRenderer.on("response-sheet-list", (sheetLibrary: IBranchObject[]) => {
-            if (this.tree && this.tree instanceof WTree){
-                this.tree.initialize(sheetLibrary);
-            }
-        });
-
-        window.electron.ipcRenderer.on("response-sheet", (arg: any) => {
-            const branch: BranchClass = this.tree.getBranchById(arg.id);
-            if (branch.type === STR.sheet && arg.sheet!==null) {
-                //console.log("RESPONSE-SHEET_BRANCH",arg.id);
-                this.tree.fillPropertyEditor(arg.id);
-                this.maestro.loadXmSheet(arg.xml, branch);
-            }
-        });
-
-        window.electron.ipcRenderer.sendMessage("request-sheet-list", {});
-        this.data.test.addEventListener("click",()=>{
-            window.electron.ipcRenderer.invoke("request-dir-listing","../Letture/Letture").then((result: any)=>{
-//                console.log("DIR-LISTING", result);
-            });
-        });
-        this.maestro.setListeners();
+    public get Data(): IAppData {
+        return this.data;
     }
 
     public get osmd(): OpenSheetMusicDisplay {
@@ -145,7 +128,7 @@ export class App {
 
     error(errString: string = ""): void {
         if (!errString) {
-            this.data.errorTr.style.display = "none";
+            this.data.errorTr.style.display = STR.none;
         } else {
             console.log("[OSMD demo] error: " + errString);
             this.data.errorTd.textContent = errString;

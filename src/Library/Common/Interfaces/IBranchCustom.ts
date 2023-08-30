@@ -1,5 +1,5 @@
-export type IVariableCOFNumberArray = [number?,number?,number?,number?,number?,number?,number?,number?,number?,number?,number?,number?,number?,number?,number?];
-export type IFixedCOFNumberArray = [number,number,number,number,number,number,number,number,number,number,number,number,number,number,number];
+import { IFixedCOFNumberArray } from "@Interfaces/IFixedCOFNumberArray";
+import { IVariableCOFNumberArray } from "@Interfaces/IVariableCOFNumberArray";
 
 export interface IBranchCustom{
     checked?: boolean;

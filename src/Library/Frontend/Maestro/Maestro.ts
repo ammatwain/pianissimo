@@ -1,9 +1,10 @@
-import { STR } from "../../Global/STR";
+import { STR } from "@Global/STR";
 import { RepetitionInstruction, ExtendedTransposeCalculator, Note, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { Input, NoteMessageEvent } from "../../Frontend/WebMidi";
-import { SheetFlowCalculator } from "../../Frontend/SheetFlow";
-import { BranchClass } from "../../Frontend/BranchClass";
-import { IExercise } from "../../Common/Interfaces/IExercise";
+import { Input } from "@Frontend/WebMidi";
+import { SheetFlowCalculator } from "@Frontend/SheetFlow";
+import { BranchClass } from "@Frontend/BranchClass";
+import { IExercise } from "@Common/Interfaces/IExercise";
+import { IDiaryObject } from "@Library/Common";
 
 //import { KeyboardInputEvent } from "electron";
 
@@ -24,6 +25,7 @@ interface IMaestroData extends IMaestroParams{
     notesToPlay: number;
     playedNotes: number;
     errors: number;
+    diary: IDiaryObject;
 }
 
 export class Maestro{
@@ -39,6 +41,12 @@ export class Maestro{
         notesToPlay: 0,
         playedNotes: 0,
         errors: 0,
+        diary: {
+            datetime: 0,
+            duration: 0,
+            id: 0,
+            score: 0,
+        }
     };
 
     //https://www.myriad-online.com/resources/docs/melody/italiano/breaks.htm
@@ -71,6 +79,10 @@ export class Maestro{
             this.data.midiNotes.push(false);
         }
         this.clearMidiNotes();
+    }
+
+    public get Data(): IMaestroData  {
+        return this.data;
     }
 
     public get OSMD(): OpenSheetMusicDisplay  {
@@ -255,8 +267,27 @@ export class Maestro{
                 console.log("NOTES TO PLAY", this.data.notesToPlay);
                 console.log("PLAYED NOTES", this.data.playedNotes);
 
-                const success: number = (this.data.notesToPlay / this.data.playedNotes ) * 100;
+                let success: number = 0;
+                if (this.data.notesToPlay && this.data.playedNotes) {
+                    success = ((this.data.notesToPlay / this.data.playedNotes ) * 100) || 0;
+                }
+
                 console.log("SUCCESS:", `${success.toFixed(2)}%` );
+
+                this.Diary.duration = Date.now() - this.Diary.datetime;
+                this.Diary.score = success;
+
+                console.log(this.Diary);
+
+                const diary: IDiaryObject = Object.assign({}, this.Diary);
+
+                window.electron.ipcRenderer.invoke(STR.requestSaveDiary, diary ).then((result: boolean)=>{
+                    console.log(result);
+                });
+
+                this.Diary.datetime = 0;
+                this.Diary.duration = 0;
+                this.Diary.score = 0;
 
                 this.data.notesToPlay = 0;
                 this.data.playedNotes = 0;
@@ -336,6 +367,12 @@ export class Maestro{
             this.osmd.load(xml).then(()=>{
                 console.log(sheet);
                 this.osmd.TransposeCalculator.Options.transposeToHalftone(0);
+
+                this.Diary.datetime = 0;
+                this.Diary.duration = 0;
+                this.Diary.id = sheet.id;
+                this.Diary.score = 0;
+
                 sheet.mainKey = this.osmd.TransposeCalculator.Options.MainKey;
                 sheet.saveCustom();
                 this.playerMeasures = [];
@@ -372,52 +409,8 @@ export class Maestro{
         }
     }
 
-    public setListeners(): void {
-        if (this.midiInputs) {
-            this.midiInputs.forEach((input: Input)=>{
-
-                input.addListener("noteon",(e: NoteMessageEvent)=>{
-                    //console.log(e.note.number, e.timestamp, e);
-                    this.setMidiNoteOn(e.note.number);
-                    this.data.playedNotes++;
-                    if(this.allNotesUnderCursorArePlayed()){
-                          this.next();
-                    }
-                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
-
-                input.addListener("noteoff",(e: NoteMessageEvent)=>{
-                    this.setMidiNoteOff(e.note.number);
-                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
-
-                input.addListener("pitchbend",(e: NoteMessageEvent)=>{
-                    console.log(e);
-                    this.setMidiNoteOff(e.note.number);
-                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
-
-            });
-
-            document.addEventListener(
-                "keydown",
-                (event: KeyboardEvent) => {
-                    if (event.key==="ArrowRight") {
-                        if(this.allNotesUnderCursorArePlayedDebug()){
-                            this.next();
-                        }
-                    }
-                },
-                false,
-            );
-
-              document.addEventListener(
-                "keyup",
-                (event: KeyboardEvent) => {
-                    if (event.key==="ArrowRight") {
-                        //
-                    }
-                },
-                false,
-              );
-        }
+    public get Diary(): IDiaryObject {
+        return this.data.diary;
     }
 
     public get osmd(): OpenSheetMusicDisplay {

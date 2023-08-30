@@ -29,7 +29,6 @@ export class Store {
     private registerFunctionUploadFile(): void {
         //var deflated = zlib.deflateSync(input).toString('base64');
         //var inflated = zlib.inflateSync(new Buffer(deflated, 'base64')).toString();
-
         this.Db.function("UPLOADFILE", (filename: string): Buffer => {
             if (FS.existsSync(filename)){
                 return zlib.deflateRawSync(FS.readFileSync(filename));
@@ -41,7 +40,6 @@ export class Store {
     private registerFunctionDownloadFile(): void {
         //var deflated = zlib.deflateSync(input).toString('base64');
         //var inflated = zlib.inflateSync(new Buffer(deflated, 'base64')).toString();
-
         this.Db.function("DOWNLOADFILE", (data: Buffer): Buffer => {
             return zlib.inflateRawSync(data);
         });

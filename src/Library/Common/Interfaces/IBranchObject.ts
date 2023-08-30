@@ -1,6 +1,4 @@
-//import { IBranchCustom } from "./IBranchCustom";
-import { Instrument } from "opensheetmusicdisplay";
-import { IBranchType } from "../../Common/Interfaces/IBranchType";
+import { IBranchType } from "@Interfaces/IBranchType";
 
 export interface IBranchObject {
     //COMMON, BOOK

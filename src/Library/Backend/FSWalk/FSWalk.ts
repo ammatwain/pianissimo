@@ -1,8 +1,8 @@
 import PATH from "path";
 import directoryTree, { DirectoryTree } from "directory-tree";
-import { STR } from "../../Global/STR";
-import { IWalk } from "../../Common/Interfaces";
-import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
+import { STR } from "@Global/STR";
+import { IWalk } from "@Interfaces/IWalk";
+import { IBranchObject } from "@Interfaces/IBranchObject";
 
 export class FSWalk implements IWalk{
 

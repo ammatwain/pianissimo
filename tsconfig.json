@@ -13,6 +13,14 @@
         "rootDir": ".",
         "outDir": "dist",
         "paths": {
+            "@Library/*": ["src/Library/*"],
+            "@Common/*": ["src/Library/Common/*"],
+            "@Global/*": ["src/Library/Global/*"],
+            "@Backend/*": ["src/Library/Backend/*"],
+            "@Frontend/*": ["src/Library/Frontend/*"],
+            "@Interfaces/*": ["src/Library/Common/Interfaces/*"],
+            "package.json": ["package.json"],
+            "tsconfig.json": ["tsconfig.json"],
             "*": ["node_modules/*"]
         }
     },

@@ -1,7 +1,7 @@
 import OS from "os";
 import FS from "fs";
 import PATH from "path";
-import { Package } from "../Package";
+import { Package } from "@Backend/Package";
 
 class _Config {
     constructor() {

@@ -1,8 +1,9 @@
-import { STR } from "../../Global/STR";
-import { IVariableCOFNumberArray, IFixedCOFNumberArray } from "../../Common/Interfaces";
-import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
-import { IBranchType } from "../../Common/Interfaces/IBranchType";
-import { IBranchCustom } from "../../Common/Interfaces/IBranchCustom";
+import { STR } from "@Global/STR";
+import { IFixedCOFNumberArray } from "@Interfaces/IFixedCOFNumberArray";
+import { IVariableCOFNumberArray } from "@Interfaces/IVariableCOFNumberArray";
+import { IBranchObject } from "@Interfaces/IBranchObject";
+import { IBranchType } from "@Interfaces/IBranchType";
+import { IBranchCustom } from "@Interfaces/IBranchCustom";
 
 type KOC = keyof IBranchCustom;
 
@@ -23,7 +24,7 @@ export class BranchClass{
         this._branchObject = branch;
         this._branchCustomFreezed = JSON.stringify(this._branchObject.custom);
         // in questo momento custom potrebbe essere una stringa;
-        if (typeof this._branchObject.custom === "string") {
+        if (typeof this._branchObject.custom === STR.string) {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
         }
         if (this.type === STR.sheet ) {
@@ -58,7 +59,7 @@ export class BranchClass{
 
     public saveCustom(): IBranchObject {
         if (this.modified) {
-            window.electron.ipcRenderer.invoke("request-save-branch-custom", this.id, this.branchObject.custom ).then((result: IBranchCustom)=>{
+            window.electron.ipcRenderer.invoke(STR.requestSaveBranchCustom, this.id, this.branchObject.custom ).then((result: IBranchCustom)=>{
                 this.branchObject.custom = result;
                 console.log(result);
             });
@@ -207,27 +208,27 @@ export class BranchClass{
     }
 
     public get checked(): boolean {
-        return this.getCustom("checked") || false;
+        return this.getCustom(STR.checked) || false;
     }
 
     public set checked(value: boolean) {
-        this.setCustom("checked", value);
+        this.setCustom(STR.checked, value);
     }
 
     public get disabled(): boolean {
-        return this.getCustom("disabled") || false;
+        return this.getCustom(STR.disabled) || false;
     }
 
     public set disabled(value: boolean) {
-        this.setCustom("disabled", value);
+        this.setCustom(STR.disabled, value);
     }
 
     public get status(): number {
-        return this.getCustom("status") || 0;
+        return this.getCustom(STR.status) || 0;
     }
 
     public set status(value: number) {
-        this.setCustom("status", value);
+        this.setCustom(STR.status, value);
     }
 
     public get percent(): number {
@@ -256,7 +257,7 @@ export class BranchClass{
 
     public get mainKey(): number {
         if (this.type === STR.sheet) {
-            return this.getCustom("mainKey") || null;
+            return this.getCustom(STR.mainKey) || null;
         } else if (this.type === STR.section && this.parent.type === STR.sheet) {
             return this.parent.mainKey;
         } else {
@@ -266,13 +267,13 @@ export class BranchClass{
 
     public set mainKey(value: number) {
         if (this.type === STR.sheet) {
-            this.setCustom("mainKey", value);
+            this.setCustom(STR.mainKey, value);
         }
     }
 
     public get activeKeys(): IVariableCOFNumberArray {
          if (this.type === STR.sheet) {
-            return this.getCustom("activeKeys") || [];
+            return this.getCustom(STR.activeKeys) || [];
         } else if (this.type === STR.section && this.parent.type === STR.sheet) {
             return this.parent.activeKeys;
         } else {
@@ -281,12 +282,12 @@ export class BranchClass{
     }
 
     public set activeKeys(value: IVariableCOFNumberArray) {
-        this.setCustom("activeKeys", value);
+        this.setCustom(STR.activeKeys, value);
     }
 
     public get shot(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
         if (this.type === STR.section) {
-            return this.getCustom("shot") || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+            return this.getCustom(STR.shot) || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
         } else {
             return null;
         }
@@ -294,13 +295,13 @@ export class BranchClass{
 
     public set shot(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
         if (this.type === STR.section) {
-            this.setCustom("shot", value);
+            this.setCustom(STR.shot, value);
         }
     }
 
     public get done(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
         if (this.type === STR.section) {
-            return this.getCustom("done") || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+            return this.getCustom(STR.done) || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
         } else {
             return null;
         }
@@ -308,7 +309,7 @@ export class BranchClass{
 
     public set done(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
         if (this.type === STR.section) {
-            this.setCustom("done", value);
+            this.setCustom(STR.done, value);
         }
     }
 

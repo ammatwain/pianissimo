@@ -1,5 +1,6 @@
 import type { Configuration } from 'webpack';
 import { rules } from './webpack.rules';
+import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 
 export const mainConfig: Configuration = {
     /**
@@ -13,5 +14,6 @@ export const mainConfig: Configuration = {
     },
     resolve: {
         extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
+        plugins: [new TsconfigPathsPlugin({ configFile: "./tsconfig.json" })],
     },
 };

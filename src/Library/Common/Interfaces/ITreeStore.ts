@@ -1,6 +1,6 @@
-import { BranchClass } from "../../Frontend/BranchClass";
+import { BranchClass } from "@Frontend/BranchClass";
+import { BranchClassCollectionItem } from "./IBranchClassCollectionItem";
 
-export type BranchClassCollectionItem = {[index: number]: BranchClass };
 export interface ITreeStore {
     treeBranches?: BranchClass[];
     linearBranches?: BranchClass[];

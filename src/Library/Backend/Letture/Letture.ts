@@ -1,15 +1,17 @@
 import { globSync } from "glob";
 import md5file from "md5-file";
-import { Store, StoreOptions } from "../Store";
-import { Walk } from "../Walk";
-import { SqlQuery } from "../Letture/Queries";
-import { IBranchObject } from "../../Common/Interfaces/IBranchObject";
+import { Store, StoreOptions } from "@Backend/Store";
+import { Walk } from "@Library/Common/Walk";
+import { SqlQuery } from "@Backend/Letture/Queries";
+import { IBranchObject } from "@Interfaces/IBranchObject";
+import { STR } from "@Library/Global/STR";
 //import { Config } from "../Config";
 
 export class Letture extends Store {
     constructor (dbFileName: string, dbOptions: StoreOptions = { verbose: console.warn}) {
         super(dbFileName, dbOptions);
         this.Db.exec(SqlQuery.CreateTableLibrary);
+        this.Db.exec(SqlQuery.CreateTableDiary);
         /*
         this.Db.table("homedir", {
             columns: ["id","path"],
@@ -28,7 +30,7 @@ export class Letture extends Store {
     getLinearLibrary(): IBranchObject[] {
         const library: IBranchObject[] = <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
         library.forEach((branchObject: IBranchObject)=>{
-            if (typeof branchObject.custom === "string") {
+            if (typeof branchObject.custom === STR.string) {
                 branchObject.custom = JSON.parse(branchObject.custom) || {};
             }
         });

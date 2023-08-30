@@ -8,3 +8,4 @@ export * from "./Maestro";
 export * from "./App";
 export * from "./HTMLParsedElement";
 export * from "./WTime";
+export * from "./FrontendListeners";

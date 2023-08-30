@@ -1,8 +1,11 @@
-import { STR } from "../../Global";
-import { BranchClassCollectionItem, Constants, IBranchObject, ITreeStore } from "../../Common";
-import { BranchClass } from "../../Frontend/BranchClass";
-import { WPropertyEditor } from "../../Frontend/WPropertyEditor";
-import { Walk } from  "../../Backend/Walk/Walk";
+import { STR } from "@Global/STR";
+import { BranchClassCollectionItem } from "@Interfaces/IBranchClassCollectionItem";
+import { Constants } from "@Common/Constants";
+import { IBranchObject } from "@Interfaces/IBranchObject";
+import { ITreeStore } from "@Interfaces/ITreeStore";
+import { BranchClass } from "@Frontend/BranchClass";
+import { WPropertyEditor } from "@Frontend/WPropertyEditor";
+import { Walk } from  "@Library/Common/Walk";
 import { default as wTreeAjax } from "./WTreeAjax";
 //
 import "./WTree.scss";
