@@ -45,6 +45,8 @@ export class Maestro{
             datetime: 0,
             duration: 0,
             id: 0,
+            key: 0,
+            bpm: 0,
             score: 0,
         }
     };
@@ -371,6 +373,8 @@ export class Maestro{
                 this.Diary.datetime = 0;
                 this.Diary.duration = 0;
                 this.Diary.id = sheet.id;
+                this.Diary.key = 0;
+                this.Diary.bpm = 0;
                 this.Diary.score = 0;
 
                 sheet.mainKey = this.osmd.TransposeCalculator.Options.MainKey;

@@ -27,6 +27,7 @@ export class BranchClass{
         if (typeof this._branchObject.custom === STR.string) {
             this._branchObject.custom = JSON.parse(this._branchObject.custom) ||  {};
         }
+        /*
         if (this.type === STR.sheet ) {
             this.activeKeys=[-2, +1, +5];
         }
@@ -55,6 +56,8 @@ export class BranchClass{
                 ]
             ];
         }
+        */
+
     }
 
     public saveCustom(): IBranchObject {
@@ -257,7 +260,7 @@ export class BranchClass{
 
     public get mainKey(): number {
         if (this.type === STR.sheet) {
-            return this.getCustom(STR.mainKey) || null;
+            return (this.getCustom(STR.mainKey) || 0);
         } else if (this.type === STR.section && this.parent.type === STR.sheet) {
             return this.parent.mainKey;
         } else {
@@ -273,7 +276,7 @@ export class BranchClass{
 
     public get activeKeys(): IVariableCOFNumberArray {
          if (this.type === STR.sheet) {
-            return this.getCustom(STR.activeKeys) || [];
+            return this.getCustom(STR.activeKeys) || [this.mainKey];
         } else if (this.type === STR.section && this.parent.type === STR.sheet) {
             return this.parent.activeKeys;
         } else {
@@ -282,7 +285,9 @@ export class BranchClass{
     }
 
     public set activeKeys(value: IVariableCOFNumberArray) {
-        this.setCustom(STR.activeKeys, value);
+        if (this.type === STR.sheet) {
+            this.setCustom(STR.activeKeys, value);
+        }
     }
 
     public get shot(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {

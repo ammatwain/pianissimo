@@ -74,11 +74,15 @@ export function BackendListeners(database: Letture): void {
             "${STR.datetime}",
             "${STR.duration}",
             "${STR.id}",
+            "${STR.key}",
+            "${STR.bpm}",
             "${STR.score}"
         ) VALUES (
             ${diaryObject.datetime},
             ${diaryObject.duration},
             ${diaryObject.id},
+            ${diaryObject.key},
+            ${diaryObject.bpm},
             ${diaryObject.score}
         );`);
         return true;
@@ -89,15 +93,16 @@ export function BackendListeners(database: Letture): void {
         event.reply(STR.responseSheetList, branchObjects);
     });
 
-    ipcMain.on(STR.requestSheet, async (event: Electron.IpcMainEvent, sheetId: number) => {
+    ipcMain.on(STR.requestSheetForSection, async (event: Electron.IpcMainEvent, ids: {sectionId: number, sheetId:  number}) => {
         console.log(event);
         const xmlBuffer: Buffer = (<Buffer>database.prepare(
-            `SELECT DOWNLOADFILE("${STR.data}") FROM "${STR.library}" WHERE "${STR.type}"='${STR.sheet}' AND "${STR.id}"=${sheetId};`
+            `SELECT DOWNLOADFILE("${STR.data}") FROM "${STR.library}" WHERE "${STR.type}"='${STR.sheet}' AND "${STR.id}"=${ids.sheetId};`
         ).pluck().get());
         if (xmlBuffer) {
-            event.reply(STR.responseSheet, {id: sheetId, xml: xmlBuffer.toString()});
+            console.log(xmlBuffer.toString());
+            event.reply(STR.responseSheetForSection, {sheetId: ids.sheetId, sectionId: ids.sectionId, xml: xmlBuffer.toString()});
         } else {
-            event.reply(STR.responseSheet, {id: sheetId, xml: null});
+            event.reply(STR.responseSheetForSection, {sheetId: ids.sheetId, sectionId: ids.sectionId, xml: null});
         }
     });
 }

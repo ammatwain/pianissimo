@@ -81,9 +81,18 @@ export class App {
             this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
-                    const sheet: BranchClass = this.data.tree.getLeafById( values[0]).closest(STR.sheet);
-                    if(sheet) {
-                        window.electron.ipcRenderer.sendMessage(STR.requestSheet, sheet.id);
+                    const section: BranchClass = this.data.tree.getLeafById( values[0]);// .closest(STR.sheet);
+                    if (section && section.type === STR.section) {
+                        if(section) {
+                            console.log("SECTION", section);
+                            console.log("SHEET", this.data.tree.getBranchById( section.parentid).custom);
+                            window.electron.ipcRenderer.sendMessage(
+                                STR.requestSheetForSection, {
+                                    sectionId: section.id,
+                                    sheetId: section.parentid,
+                                }
+                            );
+                        }
                     }
                 }
             };

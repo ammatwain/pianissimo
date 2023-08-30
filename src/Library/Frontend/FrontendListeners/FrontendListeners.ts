@@ -20,11 +20,11 @@ function appFrontendListeners(app: App): void {
         }
     });
 
-    window.electron.ipcRenderer.on(STR.responseSheet, (arg: any) => {
-        const branch: BranchClass = app.tree.getBranchById(arg.id);
-        if (branch.type === STR.sheet && arg.sheet!==null) {
-            app.tree.fillPropertyEditor(arg.id);
-            app.maestro.loadXmSheet(arg.xml, branch);
+    window.electron.ipcRenderer.on(STR.responseSheetForSection, (ids: {sheetId: number, sectionId: number, xml: string }) => {
+        const branch: BranchClass = app.tree.getBranchById(ids.sectionId);
+        if (branch.type === STR.section && ids.xml!==null) {
+            app.tree.fillPropertyEditor(ids.sectionId);
+            app.maestro.loadXmSheet(ids.xml, branch);
         }
     });
 

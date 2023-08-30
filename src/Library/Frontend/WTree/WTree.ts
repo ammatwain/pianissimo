@@ -196,7 +196,7 @@ export class WTree extends HTMLElement{
     }
 
     public getBranchById(id: number): BranchClass {
-        return this.treeStore. branchesById[id] || null;
+        return this.treeStore.branchesById[id] || null;
     }
 
     connectedCallback(): void{

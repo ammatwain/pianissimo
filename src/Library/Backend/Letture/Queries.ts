@@ -16,7 +16,9 @@ CreateTableDiary: `CREATE TABLE IF NOT EXISTS "${STR.diary}" (
 	"${STR.datetime}" INTEGER,
 	"${STR.duration}" INTEGER NOT NULL,
 	"${STR.id}"	INTEGER NOT NULL,
-	"${STR.score}" INTEGER NOT NULL,
+	"${STR.key}" INTEGER NOT NULL DEFAULT 0,
+	"${STR.bpm}" IINTEGER NOT NULL DEFAULT 0,
+	"${STR.score}" INTEGER NOT NULL DEFAULT 0,
 	PRIMARY KEY("${STR.datetime}")
 );`,
 
