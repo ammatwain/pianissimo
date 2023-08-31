@@ -81,10 +81,10 @@ export class App {
             console.log("OSMD has been enabled!", this.data.osmd.Version);
             this.data.midiInput = WebMidi.inputs;
             //maestro
-            this.data.maestro = new Maestro({etc: this.Etc, midiInputs: this.MidiInputs});
             console.log("Maestro has been enabled!");
 
             this.data.tree = <WTree>document.querySelector("#tree");
+            this.data.maestro = new Maestro({etc: this.Etc, midiInputs: this.MidiInputs, tree: this.Tree});
             this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {

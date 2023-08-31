@@ -6,12 +6,14 @@ import { BranchClass } from "@Frontend/BranchClass";
 import { IExercise } from "@Common/Interfaces/IExercise";
 import { IBranchObject, IDiaryObject } from "@Library/Common";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
+import { WTree } from "@Frontend/WTree";
 
 //import { KeyboardInputEvent } from "electron";
 
 export interface IMaestroParams {
     etc: ExtendedTransposeCalculator;
     midiInputs: Input[];
+    tree?: WTree;
 }
 
 interface IMaestroData extends IMaestroParams{
@@ -34,6 +36,7 @@ interface IMaestroData extends IMaestroParams{
 
 export class Maestro{
     private data: IMaestroData = {
+        tree: null,
         etc: null,
         midiInputs: [],
         osmd : null,
@@ -45,7 +48,7 @@ export class Maestro{
         playMeasureIndex: 0,
         exercises: [],
         currentExercise: {},
-        currentExercise: 0,
+        currentKey: 0,
         notesToPlay: 0,
         playedNotes: 0,
         errors: 0,
@@ -63,7 +66,7 @@ export class Maestro{
     constructor(params: IMaestroParams){
         this.Etc = params.etc;
         this.MidiInputs = params.midiInputs;
-
+        this.Tree = params.tree;
         this.Flow = new SheetFlowCalculator(this.Osmd);
         this.SheetNotes = [];
 
@@ -232,6 +235,14 @@ export class Maestro{
 
     public set SheetNotes(osmdNotes: number[]){
         this.data.osmdNotes = osmdNotes;
+    }
+
+    public get Tree(): WTree{
+        return this.data.tree;
+    }
+
+    public set Tree(tree: WTree){
+        this.data.tree = tree;
     }
 
     public fillOsmdNotes(): void {
@@ -554,10 +565,10 @@ export class Maestro{
                     success = ((this.PlayedDone / this.PlayedShot ) * 100) || 0;
                 }
 
-                this.CurrentSection.Done[0][this.CurrentKey] += this.PlayedDone;
-                this.CurrentSection.Done[1][this.CurrentKey] += this.PlayedDone;
-                this.CurrentSection.Shot[0][this.CurrentKey] += this.PlayedShot;
-                this.CurrentSection.Shot[1][this.CurrentKey] += this.PlayedShot;
+                this.CurrentSection.Done[0][this.CurrentKey+7] += this.PlayedDone;
+                this.CurrentSection.Done[1][this.CurrentKey+7] += this.PlayedDone;
+                this.CurrentSection.Shot[0][this.CurrentKey+7] += (this.PlayedDone * 1.1) ;// this.PlayedShot;
+                this.CurrentSection.Shot[1][this.CurrentKey+7] += (this.PlayedDone * 1.1) ;// this.PlayedShot;
 
                 console.log("SUCCESS:", `${success.toFixed(2)}%` );
 
@@ -568,6 +579,8 @@ export class Maestro{
 
                 const diary: IDiaryObject = Object.assign({}, this.Diary);
                 const section: IBranchObject = Object.assign({}, this.CurrentSection.BranchObject);
+
+                this.Tree.updateAllPercents();
 
                 window.electron.ipcRenderer.invoke(STR.requestSaveDiaryAndSection, {
                     diaryObject: diary,
