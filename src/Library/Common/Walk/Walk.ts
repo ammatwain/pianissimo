@@ -47,7 +47,7 @@ export class Walk implements IWalk{
         }).forEach((branch: IBranchObject)=>{
             const branchClass: BranchClass = new BranchClass(branch, parentBranchClass);
             if (branch.$children && branch.$children.length) {
-                branchClass.children = this.genealogicalTreeClasses(branch.$children, branchClass);
+                branchClass.Children = this.genealogicalTreeClasses(branch.$children, branchClass);
             }
             result.push(branchClass);
             this.linearClasses.push(branchClass);
@@ -71,7 +71,7 @@ export class Walk implements IWalk{
 
     public get LinearClasses(): BranchClass[] {
         return this.linearClasses.sort((a: BranchClass, b: BranchClass)=>{
-            return a.id - b.id;
+            return a.Id - b.Id;
         });
     }
 

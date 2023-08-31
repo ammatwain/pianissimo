@@ -21,6 +21,9 @@ export const STR: { [key: string]: string } = {
     keydown: "keydown",
     keyup: "keyup",
     library: "library",
+    measures: "measures",
+    measureEnd: "measureEnd",
+    measureStart: "measureStart",
     name: "name",
     none: "none",
     noteoff: "noteoff",
@@ -56,5 +59,7 @@ export const STR: { [key: string]: string } = {
     shot: "shot",
     status: "status",
     string: "string",
+    subtitle: "subtitle",
+    title: "title",
     type: "type",
 };

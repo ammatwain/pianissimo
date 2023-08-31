@@ -9,5 +9,9 @@ export interface IBranchCustom{
     activeKeys?: IVariableCOFNumberArray;
     shot?: [IFixedCOFNumberArray,IFixedCOFNumberArray];
     done?: [IFixedCOFNumberArray,IFixedCOFNumberArray];
+    measures?: number;
+    measureStart?: number;
+    measureEnd?: number;
     percent?: number;
+
 }

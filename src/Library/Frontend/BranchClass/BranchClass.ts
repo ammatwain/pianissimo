@@ -20,7 +20,7 @@ export class BranchClass{
     }
 
     constructor(branch: IBranchObject, parent: BranchClass = null) {
-        this.parent =  parent;
+        this.Parent =  parent;
         this._branchObject = branch;
         this._branchCustomFreezed = JSON.stringify(this._branchObject.custom);
         // in questo momento custom potrebbe essere una stringa;
@@ -60,34 +60,270 @@ export class BranchClass{
 
     }
 
-    public saveCustom(): IBranchObject {
-        if (this.modified) {
-            window.electron.ipcRenderer.invoke(STR.requestSaveBranchCustom, this.id, this.branchObject.custom ).then((result: IBranchCustom)=>{
-                this.branchObject.custom = result;
-                console.log(result);
-            });
+    public get ActiveKeys(): IVariableCOFNumberArray {
+        if (this.Type === STR.sheet) {
+            return this.getCustom(STR.activeKeys, [this.MainKey]);
+        } else if (this.Type === STR.section && this.Parent.Type === STR.sheet) {
+            return this.Parent.ActiveKeys;
+        } else {
+            return [];
         }
-        return this.branchObject;
     }
 
-    private get modified(): boolean {
+    public set ActiveKeys(value: IVariableCOFNumberArray) {
+        if (this.Type === STR.sheet) {
+            this.setCustom(STR.activeKeys, value);
+        }
+    }
+
+    public get BranchObject(): IBranchObject {
+        return this._branchObject || null;
+    }
+
+    private set BranchObject(value: IBranchObject) {
+        this._branchObject = value || null;
+    }
+
+    public get Checked(): boolean {
+        return this.getCustom(STR.checked, false);
+    }
+
+    public set Checked(value: boolean) {
+        this.setCustom(STR.checked, value);
+    }
+
+    public get Children(): BranchClass[] {
+        return this._children || [];
+    }
+
+    public set Children(value: BranchClass[]) {
+        this._children = value || [];
+    }
+
+    public get Custom(): any {
+        return this._branchObject.custom;
+    }
+
+    public set Custom(value: any) {
+        this._branchObject.custom = value;
+    }
+
+    public get Data(): Buffer {
+        return null;
+    }
+
+    public get Disabled(): boolean {
+        return this.getCustom(STR.disabled, false);
+    }
+
+    public set Disabled(value: boolean) {
+        this.setCustom(STR.disabled, value);
+    }
+
+    public get Done(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
+        if (this.Type === STR.section) {
+            return this.getCustom(STR.done, [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]);
+        } else {
+            return null;
+        }
+    }
+
+    public set Done(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
+        if (this.Type === STR.section) {
+            this.setCustom(STR.done, value);
+        }
+    }
+
+    public get HtmlLiElement(): HTMLLIElement {
+        return this._HTMLLiElement;
+    }
+
+    public set HtmlLiElement(value: HTMLLIElement) {
+        this._HTMLLiElement = value;
+    }
+
+    public get Id(): number {
+        return Number(this.BranchObject.id) || 0;
+    }
+
+    public set Id(value: number) {
+        this.BranchObject.id = value;
+    }
+
+    public get IsFragment(): boolean {
+        return (!(
+            this.Type === STR.section &&
+            this.MeasureStart === 0 &&
+            this.MeasureEnd === (this.Measures-1)
+        ));
+    }
+
+    public get Level(): number {
+        if (this.Parent){
+            return this.Parent.Level + 1;
+        } else {
+            return 0;
+        }
+    }
+
+    public get MainKey(): number {
+        if (this.Type === STR.sheet) {
+            return (this.getCustom(STR.mainKey, 0));
+        } else if (this.Type === STR.section && this.Parent.Type === STR.sheet) {
+            return this.Parent.MainKey;
+        } else {
+            return null;
+        }
+    }
+
+    public set MainKey(value: number) {
+        if (this.Type === STR.sheet) {
+            this.setCustom(STR.mainKey, value);
+        }
+    }
+
+    public get Measures(): number {
+        if (this.Type === STR.sheet ) {
+            return <number>this.getCustom(STR.sheet, 0);
+        } else if ((this.Type === STR.sheet) && (this.Parent.Type === STR.sheet)) {
+            return <number>this.Parent.Measures;
+        } else {
+            return 0;
+        }
+    }
+
+    public get MeasureEnd(): number {
+        if (this.Type === STR.sheet ) {
+            return this.Measures-1;
+        } else if ((this.Type === STR.section) && (this.Parent.Type === STR.sheet)) {
+            return <number>this.getCustom(STR.measureEnd, this.Parent.MeasureEnd);
+        } else {
+            return 0;
+        }
+    }
+
+    public get MeasureStart(): number {
+        if ((this.Type === STR.section) && (this.Parent.Type === STR.sheet)) {
+            return <number>this.getCustom(STR.measureEnd, 0);
+        } else {
+            return 0;
+        }
+    }
+
+    private get Modified(): boolean {
         this._customIsModified = this._customIsModified || (this._branchCustomFreezed !== JSON.stringify(this._branchObject));
         return this._customIsModified;
     }
 
-    public get root(): BranchClass {
-        if(this.parent!== null || this.parentid===0) {
-            return this;
+    public get Name(): string {
+        return String(this.BranchObject.name) || "";
+    }
+
+    public set Name(value: string) {
+        this.BranchObject.name = value;
+    }
+
+    public get Parent(): BranchClass {
+        return this._parent || null;
+    }
+
+    public set Parent(value: BranchClass) {
+        this._parent = value || null;
+    }
+
+    public get ParentId(): number {
+        return Number(this.BranchObject.parentid) || 0;
+    }
+
+    public set ParentId(value: number) {
+        this.BranchObject.parentid = value;
+    }
+
+    public get Percent(): number {
+        let shot: number = 0;
+        let done: number = 0;
+        //let fail: number = 0;
+        if (this.Type === STR.section) {
+            this.ActiveKeys.forEach((key: number)=>{
+                if (key >= -7 && key <= 7) {
+                    shot += this.Shot[0][key+7];
+                    shot += this.Shot[1][key+7];
+                    done += this.Done[0][key+7];
+                    done += this.Done[1][key+7];
+                    //fail += (shot-done);
+                }
+            });
+            return ((done/shot)* 100) || 0;
         } else {
-            return this.parent.root;
+            let percent: number = 0;
+            this.Children.forEach((branch: BranchClass)=>{
+                percent += branch.Percent;
+            });
+            return (percent / (this.Children.length * 100) * 100) || 0;
         }
     }
 
-    public closest(type: IBranchType): BranchClass {
-        if(this.type===type) {
+    public get Root(): BranchClass {
+        if(this.Parent!== null || this.ParentId===0) {
             return this;
-        } else if (this.parent) {
-            return this.parent.closest(type);
+        } else {
+            return this.Parent.Root;
+        }
+    }
+
+    public get Sequence(): number {
+        return Number(this.BranchObject.sequence) || 0;
+    }
+
+    public set Sequence(value: number) {
+        this.BranchObject.sequence = value;
+    }
+
+    public get Type(): IBranchType {
+        return <IBranchType>String(this.BranchObject.type);
+    }
+
+    public set Type(value: IBranchType) {
+        this.BranchObject.type = value;
+    }
+
+    public get Shot(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
+        if (this.Type === STR.section) {
+            return this.getCustom(STR.shot, [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]);
+        } else {
+            return null;
+        }
+    }
+
+    public set Shot(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
+        if (this.Type === STR.section) {
+            this.setCustom(STR.shot, value);
+        }
+    }
+
+    public get Status(): number {
+        return this.getCustom(STR.status, 0);
+    }
+
+    public set Status(value: number) {
+        this.setCustom(STR.status, value);
+    }
+
+    public getCustom(key: string, defaultValue: any = null): any {
+        if (!(key in this.Custom)) {
+            this.Custom[key] = defaultValue;
+        }
+        return this.Custom[key];
+    }
+
+    public setCustom(key: string, value: any): void {
+        this._branchObject.custom[key] = value;
+    }
+    public closest(type: IBranchType): BranchClass {
+        if(this.Type===type) {
+            return this;
+        } else if (this.Parent) {
+            return this.Parent.closest(type);
         } else {
             return null;
         }
@@ -95,230 +331,29 @@ export class BranchClass{
 
     public child(type: IBranchType): BranchClass {
         let child: BranchClass = null;
-        if(this.type === type) {
+        if(this.Type === type) {
             child = this;
-        } else if (this.children.length) {
-            for(let i: number = 0 ; i < this.children.length; i++) {
-                if (this.children[i].type===type) {
-                    child = this.children[i];
+        } else if (this.Children.length) {
+            for(let i: number = 0 ; i < this.Children.length; i++) {
+                if (this.Children[i].Type===type) {
+                    child = this.Children[i];
                     break;
                 } else {
-                    child = this.children[i].child(type);
+                    child = this.Children[i].child(type);
                 }
             }
         }
         return child;
     }
 
-    public get HTMLLiElement(): HTMLLIElement {
-        return this._HTMLLiElement;
-    }
-
-    public set HTMLLiElement(value: HTMLLIElement) {
-        this._HTMLLiElement = value;
-    }
-
-    public get level(): number {
-        if (this.parent){
-            return this.parent.level + 1;
-        } else {
-            return 0;
-        }
-    }
-
-    public get branchObject(): IBranchObject {
-        return this._branchObject || null;
-    }
-
-    private set branchObject(value: IBranchObject) {
-        this._branchObject = value || null;
-    }
-
-    public get parent(): BranchClass {
-        return this._parent || null;
-    }
-
-    public set parent(value: BranchClass) {
-        this._parent = value || null;
-    }
-
-    public get children(): BranchClass[] {
-        return this._children || [];
-    }
-
-    public set children(value: BranchClass[]) {
-        this._children = value || [];
-    }
-
-    public get id(): number {
-        return Number(this.branchObject.id) || 0;
-    }
-
-    public set id(value: number) {
-        this.branchObject.id = value;
-    }
-
-    public get type(): IBranchType {
-        return <IBranchType>String(this.branchObject.type);
-    }
-
-    public set type(value: IBranchType) {
-        this.branchObject.type = value;
-    }
-
-    public get name(): string {
-        return String(this.branchObject.name) || "";
-    }
-
-    public set name(value: string) {
-        this.branchObject.name = value;
-    }
-
-    public get parentid(): number {
-        return Number(this.branchObject.parentid) || 0;
-    }
-
-    public set parentid(value: number) {
-        this.branchObject.parentid = value;
-    }
-
-    public get sequence(): number {
-        return Number(this.branchObject.sequence) || 0;
-    }
-
-    public set sequence(value: number) {
-        this.branchObject.sequence = value;
-    }
-
-    public get custom(): any {
-        return this._branchObject.custom;
-    }
-
-    public set custom(value: any) {
-        this._branchObject.custom = value;
-    }
-
-    public getCustom(key: string): any {
-        if (key in this.custom) {
-            return this.custom[key];
-        } else {
-            return null;
-        }
-    }
-
-    public setCustom(key: string, value: any): void {
-        this._branchObject.custom[key] = value;
-    }
-
-    public get checked(): boolean {
-        return this.getCustom(STR.checked) || false;
-    }
-
-    public set checked(value: boolean) {
-        this.setCustom(STR.checked, value);
-    }
-
-    public get disabled(): boolean {
-        return this.getCustom(STR.disabled) || false;
-    }
-
-    public set disabled(value: boolean) {
-        this.setCustom(STR.disabled, value);
-    }
-
-    public get status(): number {
-        return this.getCustom(STR.status) || 0;
-    }
-
-    public set status(value: number) {
-        this.setCustom(STR.status, value);
-    }
-
-    public get percent(): number {
-        let shot: number = 0;
-        let done: number = 0;
-        //let fail: number = 0;
-        if (this.type === STR.section) {
-            this.activeKeys.forEach((key: number)=>{
-                if (key >= -7 && key <= 7) {
-                    shot += this.shot[0][key+7];
-                    shot += this.shot[1][key+7];
-                    done += this.done[0][key+7];
-                    done += this.done[1][key+7];
-                    //fail += (shot-done);
-                }
+    public saveCustom(): IBranchObject {
+        if (this.Modified) {
+            window.electron.ipcRenderer.invoke(STR.requestSaveBranchCustom, this.Id, this.BranchObject.custom ).then((result: IBranchCustom)=>{
+                this.BranchObject.custom = result;
+                console.log(result);
             });
-            return ((done/shot)* 100) || 0;
-        } else {
-            let percent: number = 0;
-            this.children.forEach((branch: BranchClass)=>{
-                percent += branch.percent;
-            });
-            return (percent / (this.children.length * 100) * 100) || 0;
         }
+        return this.BranchObject;
     }
 
-    public get mainKey(): number {
-        if (this.type === STR.sheet) {
-            return (this.getCustom(STR.mainKey) || 0);
-        } else if (this.type === STR.section && this.parent.type === STR.sheet) {
-            return this.parent.mainKey;
-        } else {
-            return null;
-        }
-    }
-
-    public set mainKey(value: number) {
-        if (this.type === STR.sheet) {
-            this.setCustom(STR.mainKey, value);
-        }
-    }
-
-    public get activeKeys(): IVariableCOFNumberArray {
-         if (this.type === STR.sheet) {
-            return this.getCustom(STR.activeKeys) || [this.mainKey];
-        } else if (this.type === STR.section && this.parent.type === STR.sheet) {
-            return this.parent.activeKeys;
-        } else {
-            return [];
-        }
-    }
-
-    public set activeKeys(value: IVariableCOFNumberArray) {
-        if (this.type === STR.sheet) {
-            this.setCustom(STR.activeKeys, value);
-        }
-    }
-
-    public get shot(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
-        if (this.type === STR.section) {
-            return this.getCustom(STR.shot) || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
-        } else {
-            return null;
-        }
-    }
-
-    public set shot(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
-        if (this.type === STR.section) {
-            this.setCustom(STR.shot, value);
-        }
-    }
-
-    public get done(): [IFixedCOFNumberArray,IFixedCOFNumberArray] {
-        if (this.type === STR.section) {
-            return this.getCustom(STR.done) || [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
-        } else {
-            return null;
-        }
-    }
-
-    public set done(value: [IFixedCOFNumberArray,IFixedCOFNumberArray]) {
-        if (this.type === STR.section) {
-            this.setCustom(STR.done, value);
-        }
-    }
-
-    public get data(): Buffer {
-        return null;
-    }
 }

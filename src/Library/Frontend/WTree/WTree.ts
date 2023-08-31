@@ -66,7 +66,7 @@ function animation(duration: number, callback: ICallbackAnimation): void {
 
 function collapseFromLeaf(tree: WTree, leafBranch: BranchClass): void {
   try {
-    const branchListItemElement: HTMLLIElement = tree.liElementsById[leafBranch.parent.id];
+    const branchListItemElement: HTMLLIElement = tree.liElementsById[leafBranch.Parent.Id];
     if(!branchListItemElement.classList.contains("_close")) {
         (<HTMLDivElement>branchListItemElement.querySelector("switcher")).click();
     }
@@ -74,17 +74,17 @@ function collapseFromLeaf(tree: WTree, leafBranch: BranchClass): void {
     return;
   }
   if("parent" in leafBranch) {
-    collapseFromLeaf(tree, leafBranch.parent);
+    collapseFromLeaf(tree, leafBranch.Parent);
   }
 }
 
 function expandFromRoot(tree: WTree, root: BranchClass): void {
-    const branchListItemElement: HTMLLIElement = tree.liElementsById[root.id];
+    const branchListItemElement: HTMLLIElement = tree.liElementsById[root.Id];
     if(branchListItemElement.classList.contains("_close")) {
         (<HTMLDivElement>branchListItemElement.querySelector("switcher")).click();
     }
     if("children" in root) {
-        for(const child of root.children) {
+        for(const child of root.Children) {
             expandFromRoot(tree, child);
         }
     }
@@ -164,7 +164,7 @@ export class WTree extends HTMLElement{
         for (const id in branchesById) {
         if (
             id in branchesById &&
-            (branchesById[id].status === 1 || branchesById[id].status === 2)
+            (branchesById[id].Status === 1 || branchesById[id].Status === 2)
         ) {
             const branch: BranchClass = branchesById[id];
             branches.push(branch);
@@ -174,7 +174,7 @@ export class WTree extends HTMLElement{
     }
 
     fillPropertyEditor(id: number): void {
-        const ele: IBranchObject = Object.assign({},this.treeStore.branchesById[id].branchObject);
+        const ele: IBranchObject = Object.assign({},this.treeStore.branchesById[id].BranchObject);
         delete ele.$children;
         this.propEditor.properties = ele;
     }
@@ -183,7 +183,7 @@ export class WTree extends HTMLElement{
         const branches: BranchClass[] = [];
         const branchesById: BranchClassCollectionItem = this.treeStore.branchesById;
         for (const id in branchesById) {
-            if (id in branchesById && branchesById[id].disabled) {
+            if (id in branchesById && branchesById[id].Disabled) {
                 const branch: BranchClass = branchesById[id];
                 branches.push(branch);
             }
@@ -238,27 +238,27 @@ export class WTree extends HTMLElement{
 
     getSelectedBranchesById(): BranchClass[] {
         return this.treeStore.linearBranches.filter((branch: BranchClass)=>{
-            return (branch.status === 1 || branch.status === 2);
+            return (branch.Status === 1 || branch.Status === 2);
         });
     }
 
     getDisabledBranchesById(): BranchClass[] {
         return this.treeStore.linearBranches.filter((branch: BranchClass)=>{
-            return (branch.disabled===true);
+            return (branch.Disabled===true);
         });
     }
 
     emptyBranchesCheckStatus(): void {
         this.willUpdateBranchesById = this.getSelectedBranchesById();
         this.willUpdateBranchesById.forEach((branch: BranchClass) => {
-          if (!branch.disabled) {branch.status = 0;}
+          if (!branch.Disabled) {branch.Status = 0;}
         });
     };
 
     emptyBranchesDisable(): void {
         this.willUpdateBranchesById = this.getDisabledBranchesById();
         this.willUpdateBranchesById.forEach((branch: BranchClass) => {
-            branch.disabled = false;
+            branch.Disabled = false;
         });
     };
 
@@ -304,14 +304,14 @@ export class WTree extends HTMLElement{
 
         const walkTree: Function = function(branches: BranchClass[], parent: any = null): void {
             branches.forEach((branch: BranchClass)  => {
-                treeData.branchesById[branch.id] = branch;
-                if (branch.checked) {treeData.defaultValues.push(branch.id);}
-                if (branch.disabled) {treeData.defaultDisables.push(branch.id);}
-                if (parent) {branch.parent = parent;}
-                if (branch.children && branch.children.length) {
-                    walkTree(branch.children, branch);
+                treeData.branchesById[branch.Id] = branch;
+                if (branch.Checked) {treeData.defaultValues.push(branch.Id);}
+                if (branch.Disabled) {treeData.defaultDisables.push(branch.Id);}
+                if (parent) {branch.Parent = parent;}
+                if (branch.Children && branch.Children.length) {
+                    walkTree(branch.Children, branch);
                 } else {
-                    treeData.leafBranchesById[branch.id] = branch;
+                    treeData.leafBranchesById[branch.Id] = branch;
                 }
             });
         };
@@ -344,8 +344,8 @@ export class WTree extends HTMLElement{
         for (const id in this.treeStore.leafBranchesById) {
           if (id in this.treeStore.leafBranchesById) {
             if (
-              this.treeStore.leafBranchesById[id].status === 1 ||
-              this.treeStore.leafBranchesById[id].status === 2
+              this.treeStore.leafBranchesById[id].Status === 1 ||
+              this.treeStore.leafBranchesById[id].Status === 2
             ) {
               values.push(Number(id));
             }
@@ -369,9 +369,9 @@ export class WTree extends HTMLElement{
     setDisable(value: number): void {
         const branch: BranchClass = this.treeStore.branchesById[value];
         if (!branch) {return;}
-        const prevDisabled: boolean = branch.disabled;
+        const prevDisabled: boolean = branch.Disabled;
         if (!prevDisabled) {
-            branch.disabled = true;
+            branch.Disabled = true;
             this.markWillUpdateBranch(branch);
             this.walkOut(branch, "disabled");
             this.walkIn(branch, "disabled");
@@ -382,7 +382,7 @@ export class WTree extends HTMLElement{
         const values: number[] = [];
         for (const id in this.treeStore.leafBranchesById) {
             if (id in this.treeStore.leafBranchesById) {
-                if (this.treeStore.leafBranchesById[id].disabled) {
+                if (this.treeStore.leafBranchesById[id].Disabled) {
                     values.push(Number(id));
                 }
             }
@@ -408,16 +408,16 @@ export class WTree extends HTMLElement{
                     depth === this.options.closeDepth - 1,
                     level
                 );
-                this.liElementsById[branch.id] = liEle;
+                this.liElementsById[branch.Id] = liEle;
                 let ulEle: HTMLUListElement  = null;
-                if (branch.children && branch.children.length) {
-                    ulEle = this.buildTree(branch.children, depth + 1, level + 1);
+                if (branch.Children && branch.Children.length) {
+                    ulEle = this.buildTree(branch.Children, depth + 1, level + 1);
                 }
                 if(ulEle) {
                     liEle.appendChild(ulEle);
                 }
                 rootUlEle.appendChild(liEle);
-                if (branch.type === STR.section && branch.sequence<0) {
+                if (branch.Type === STR.section && branch.Sequence<0) {
                     liEle.style.display = "none";
                 }
             });
@@ -469,7 +469,7 @@ export class WTree extends HTMLElement{
 //        console.time('onItemClick');
         const branch: BranchClass = this.treeStore.branchesById[id];
         const onChange: Function = this.options.onChange;
-        if (!branch.disabled) {
+        if (!branch.Disabled) {
             this.setValue(id);
             this.updateListItemElements();
         }
@@ -482,9 +482,9 @@ export class WTree extends HTMLElement{
     setValue(value: number): void {
         const branch: BranchClass = this.treeStore.branchesById[value];
         if (!branch) {return;}
-        const prevStatus: number = branch.status;
+        const prevStatus: number = branch.Status;
         const status: number = prevStatus === 1 || prevStatus === 2 ? 0 : 2;
-        branch.status = status;
+        branch.Status = status;
         this.markWillUpdateBranch(branch);
         this.walkOut(branch, "status");
         this.walkIn(branch, "status");
@@ -497,11 +497,11 @@ export class WTree extends HTMLElement{
     }
 
     updatePercent(branch: BranchClass): void{
-        const li: HTMLLIElement = this.liElementsById[branch.id];
+        const li: HTMLLIElement = this.liElementsById[branch.Id];
         const percentDiv: HTMLDivElement = li.querySelector(".percent");
-        this.setPercentLinearGradient(percentDiv, branch.percent);
-        if (branch.children.length){
-            branch.children.forEach((childBranch: BranchClass) => {
+        this.setPercentLinearGradient(percentDiv, branch.Percent);
+        if (branch.Children.length){
+            branch.Children.forEach((childBranch: BranchClass) => {
                 this.updatePercent(childBranch);
             });
         }
@@ -509,9 +509,9 @@ export class WTree extends HTMLElement{
 
     updateAllPercents(): void {
         this.treeStore.linearBranches.filter((branch: BranchClass)=>{
-            return branch.parentid === 0;
+            return branch.ParentId === 0;
         }).forEach((branch: BranchClass)=>{
-            this.updatePercent(branch, branch.percent);
+            this.updatePercent(branch, branch.Percent);
         });
     }
 
@@ -566,33 +566,33 @@ export class WTree extends HTMLElement{
     };
 
     public walkOut(branch: BranchClass, changeState: string): void {
-        const {parent} = branch;
+        const {Parent: parent} = branch;
         if (parent) {
             if (changeState === "status") {
                 let parentStatus: number = null;
-                const statusCount: number = parent.children.reduce((acc, child) => {
-                if (!isNaN(child.status)) {
-                    return acc + child.status;
+                const statusCount: number = parent.Children.reduce((acc, child) => {
+                if (!isNaN(child.Status)) {
+                    return acc + child.Status;
                 }
                 return acc;
             }, 0);
 
             if (statusCount) {
-                parentStatus = statusCount === parent.children.length * 2 ? 2 : 1;
+                parentStatus = statusCount === parent.Children.length * 2 ? 2 : 1;
             } else {
                 parentStatus = 0;
             }
-            if (parent.status === parentStatus) {return;}
-                parent.status = parentStatus;
+            if (parent.Status === parentStatus) {return;}
+                parent.Status = parentStatus;
             } else {
-                const parentIsDisabled: boolean = parent.children.reduce(
-                    (acc, child) => acc && child.disabled,
+                const parentIsDisabled: boolean = parent.Children.reduce(
+                    (acc, child) => acc && child.Disabled,
                     true
                 );
-                if (parent.disabled === parentIsDisabled) {
+                if (parent.Disabled === parentIsDisabled) {
                     return;
                 }
-                parent.disabled = parentIsDisabled;
+                parent.Disabled = parentIsDisabled;
             }
             this.markWillUpdateBranch(parent);
             this.walkOut(parent, changeState);
@@ -600,17 +600,17 @@ export class WTree extends HTMLElement{
     }
 
     walkIn(branch: BranchClass, changeState: any): void {
-        if (branch.children && branch.children.length) {
-            branch.children.forEach((child: BranchClass) => {
+        if (branch.Children && branch.Children.length) {
+            branch.Children.forEach((child: BranchClass) => {
                 if (changeState === "status") {
-                    if(child.disabled) {
+                    if(child.Disabled) {
                         return;
                     }
-                    child.status = branch.status;
+                    child.Status = branch.Status;
                 } else if (changeState==="checked") {
-                    child.checked = branch.checked;
+                    child.Checked = branch.Checked;
                 } else if (changeState==="disabled") {
-                    child.disabled = branch.disabled;
+                    child.Disabled = branch.Disabled;
                 }
                 this.markWillUpdateBranch(child);
                 this.walkIn(child, changeState);
@@ -619,8 +619,8 @@ export class WTree extends HTMLElement{
     }
 
     updateListItemElement(branch: BranchClass): void {
-        const {classList} = this.liElementsById[branch.id];
-        switch (branch.status) {
+        const {classList} = this.liElementsById[branch.Id];
+        switch (branch.Status) {
             case 0:
                 classList.remove("_halfchecked", "_checked");
             break;
@@ -635,7 +635,7 @@ export class WTree extends HTMLElement{
             default: break;
         }
 
-        switch (branch.disabled) {
+        switch (branch.Disabled) {
             case true:
                 if (!classList.contains("_disabled")) {
                     classList.add("_disabled");
@@ -671,7 +671,7 @@ export class WTree extends HTMLElement{
         do {
             const items: BranchClass[] = Object.values(this.treeStore.branchesById);
             branch = items[Math.floor(Math.random() * items.length)];
-        } while (branch.children && branch.children.length);
+        } while (branch.Children && branch.Children.length);
         return branch;
     }
 /*
@@ -683,7 +683,7 @@ export class WTree extends HTMLElement{
 */
     createListItemElement(branch: BranchClass, closed: boolean, level: number): HTMLLIElement {
         const li: HTMLLIElement = document.createElement("li");
-        branch.HTMLLiElement = li;
+        branch.HtmlLiElement = li;
         let spacerWidth: number = 0;
         const switcherWidth: number = $moduleSize;
         const checkboxWidth: number = $moduleSize;
@@ -700,7 +700,7 @@ export class WTree extends HTMLElement{
         divline.appendChild(spacer);
 
         if (closed) {li.classList.add("_close");}
-        if (branch.children && branch.children.length) {
+        if (branch.Children && branch.Children.length) {
           spacerWidth = level * $moduleSize;
           spacer.style.width = `${spacerWidth}px`;
           const switcher: HTMLDivElement = document.createElement("div");
@@ -719,9 +719,9 @@ export class WTree extends HTMLElement{
         divline.appendChild(checkbox);
         const label: HTMLDivElement = document.createElement("div");
         label.classList.add("label");
-        label.innerHTML = branch.name;
+        label.innerHTML = branch.Name;
         divline.appendChild(label);
-        li.branchId = String(branch.id);
+        li.branchId = String(branch.Id);
 
         const percent: HTMLDivElement = document.createElement("div");
         percent.innerHTML="0%";

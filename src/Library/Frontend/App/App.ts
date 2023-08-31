@@ -33,6 +33,7 @@ interface IAppData {
     errorTr?: HTMLTableRowElement;
     osmdDivId?: string;
     osmd?: OpenSheetMusicDisplay;
+    etc?: ExtendedTransposeCalculator;
     midiInput?: Input[];
     maestro?: Maestro;
     selectSample?: string;
@@ -66,17 +67,21 @@ export class App {
         WebMidi.enable().then(() => {
             console.log("WebMidi.js has been enabled!");
             // osmd
-            this.data.osmd = new OpenSheetMusicDisplay(this.data.osmdDivId, {
+            this.Osmd = new OpenSheetMusicDisplay(this.data.osmdDivId, {
                 backend: "svg",
                 drawTitle: true,
                 drawSubtitle: true,
                 disableCursor:false,
                 followCursor:true,
             });
+
+            this.Etc = new ExtendedTransposeCalculator(this.Osmd);
+            this.Osmd.TransposeCalculator = this.Etc;
+
             console.log("OSMD has been enabled!", this.data.osmd.Version);
             this.data.midiInput = WebMidi.inputs;
             //maestro
-            this.data.maestro = new Maestro({osmd: this.osmd, midiInputs: this.midiInputs});
+            this.data.maestro = new Maestro({etc: this.Etc, midiInputs: this.MidiInputs});
             console.log("Maestro has been enabled!");
 
             this.data.tree = <WTree>document.querySelector("#tree");
@@ -84,14 +89,14 @@ export class App {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
                     const section: BranchClass = this.data.tree.getLeafById( values[0]);// .closest(STR.sheet);
-                    if (section && section.type === STR.section) {
+                    if (section && section.Type === STR.section) {
                         if(section) {
                             console.log("SECTION", section);
-                            console.log("SHEET", this.data.tree.getBranchById( section.parentid).custom);
+                            console.log("SHEET", this.data.tree.getBranchById( section.ParentId).Custom);
                             window.electron.ipcRenderer.sendMessage(
                                 STR.requestSheetForSection, {
-                                    sectionId: section.id,
-                                    sheetId: section.parentid,
+                                    sectionId: section.Id,
+                                    sheetId: section.ParentId,
                                 }
                             );
                         }
@@ -110,19 +115,35 @@ export class App {
         return this.data;
     }
 
-    public get osmd(): OpenSheetMusicDisplay {
+    public get Etc(): ExtendedTransposeCalculator {
+        return this.data.etc;
+    }
+
+    public set Etc(etc: ExtendedTransposeCalculator) {
+        if (etc instanceof ExtendedTransposeCalculator) {
+            this.data.etc = etc;
+        }
+    }
+
+    public get Osmd(): OpenSheetMusicDisplay {
         return this.data.osmd || null;
     }
 
-    public get midiInputs(): Input[] {
+    public set Osmd(osmd: OpenSheetMusicDisplay) {
+        if (osmd instanceof OpenSheetMusicDisplay) {
+            this.data.osmd = osmd;
+        }
+    }
+
+    public get MidiInputs(): Input[] {
         return this.data.midiInput || null;
     }
 
-    public get tree(): WTree {
+    public get Tree(): WTree {
         return this.data.tree || null;
     }
 
-    public get maestro(): Maestro {
+    public get Maestro(): Maestro {
         return this.data.maestro || null;
     }
 
@@ -154,10 +175,10 @@ export class App {
         this.disable();
         if (this.data.selectSample !== sample) {
             this.data.selectSample = sample;
-            this.osmd.load(this.data.selectSample, title).then(
+            this.Osmd.load(this.data.selectSample, title).then(
                 () => {
-                    this.osmd.zoom = 0.666;
-                    return this.osmd.render();
+                    this.Osmd.zoom = 0.666;
+                    return this.Osmd.render();
                 },
                 () => {
                     console.log("ERROR",sample);

@@ -69,7 +69,9 @@ export function BackendListeners(database: Letture): void {
         return resultBranchObject;
     });
 
-    ipcMain.handle(STR.requestSaveDiary, async (event: Electron.IpcMainEvent, diaryObject: IDiaryObject) => {
+    ipcMain.handle(STR.requestSaveDiaryAndSection, async (
+        event: Electron.IpcMainEvent, objs: {diaryObject: IDiaryObject, sectionObject: IBranchObject}
+    ) => {
         database.exec(`INSERT INTO "${STR.diary}" (
             "${STR.datetime}",
             "${STR.duration}",
@@ -78,13 +80,23 @@ export function BackendListeners(database: Letture): void {
             "${STR.bpm}",
             "${STR.score}"
         ) VALUES (
-            ${diaryObject.datetime},
-            ${diaryObject.duration},
-            ${diaryObject.id},
-            ${diaryObject.key},
-            ${diaryObject.bpm},
-            ${diaryObject.score}
+            ${objs.diaryObject.datetime},
+            ${objs.diaryObject.duration},
+            ${objs.diaryObject.id},
+            ${objs.diaryObject.key},
+            ${objs.diaryObject.bpm},
+            ${objs.diaryObject.score}
         );`);
+
+        const sql: string = `UPDATE "${STR.library}"
+        SET
+            "${STR.custom}" = '${JSON.stringify(objs.sectionObject.custom)}'
+        WHERE
+            "${STR.id}" = ${objs.sectionObject.id}
+        ;`;
+        console.log(sql);
+        database.exec(sql);
+
         return true;
     });
 

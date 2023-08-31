@@ -8,23 +8,23 @@ import { Input, NoteMessageEvent } from "@Frontend/WebMidi";
 
 export function FrontendListeners( app: App): void {
     appFrontendListeners(app);
-    maestroFrontendListeners(app.maestro);
+    maestroFrontendListeners(app.Maestro);
     window.electron.ipcRenderer.sendMessage(STR.requestSheetList, {});
 }
 
 function appFrontendListeners(app: App): void {
 
     window.electron.ipcRenderer.on( STR.responseSheetList, (sheetLibrary: IBranchObject[]) => {
-        if (app.tree && app.tree instanceof WTree){
-            app.tree.initialize(sheetLibrary);
+        if (app.Tree && app.Tree instanceof WTree){
+            app.Tree.initialize(sheetLibrary);
         }
     });
 
     window.electron.ipcRenderer.on(STR.responseSheetForSection, (ids: {sheetId: number, sectionId: number, xml: string }) => {
-        const branch: BranchClass = app.tree.getBranchById(ids.sectionId);
-        if (branch.type === STR.section && ids.xml!==null) {
-            app.tree.fillPropertyEditor(ids.sectionId);
-            app.maestro.loadXmSheet(ids.xml, branch);
+        const branch: BranchClass = app.Tree.getBranchById(ids.sectionId);
+        if (branch.Type === STR.section && ids.xml!==null) {
+            app.Tree.fillPropertyEditor(ids.sectionId);
+            app.Maestro.loadXmSheet(ids.xml, branch);
         }
     });
 
@@ -36,8 +36,8 @@ function appFrontendListeners(app: App): void {
 }
 
 function maestroFrontendListeners(maestro: Maestro): void {
-    if (maestro.midiInputs) {
-        maestro.midiInputs.forEach((input: Input)=>{
+    if (maestro.MidiInputs) {
+        maestro.MidiInputs.forEach((input: Input)=>{
 
             input.addListener("noteon",(e: NoteMessageEvent)=>{
                 //console.log(e.note.number, e.timestamp, e);
