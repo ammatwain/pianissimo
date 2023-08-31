@@ -6,6 +6,8 @@ import { WTabContainer } from "@Frontend/WTabs";
 import { BranchClass } from "@Frontend/BranchClass";
 import { IBranchObject } from "@Interfaces/IBranchObject";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
+
 //
 import "./App.scss";
 import { FrontendListeners } from "../FrontendListeners";

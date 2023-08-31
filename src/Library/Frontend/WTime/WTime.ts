@@ -1,6 +1,4 @@
-import { HTMLParsedElement } from "../HTMLParsedElement";
-
-export class WTime extends HTMLParsedElement {
+export class WTime extends HTMLElement {
     private timer: number;
     private targetDate: Date = new Date();
     private countDownDate: number = this.targetDate.setDate(this.targetDate.getDate() + 1);
