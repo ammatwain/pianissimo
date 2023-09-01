@@ -7,11 +7,13 @@ import { Maestro } from "@Frontend/Maestro";
 import { Input, NoteMessageEvent } from "@Frontend/WebMidi";
 
 export function FrontendListeners( app: App): void {
+    documentFrontendListeners();
     appFrontendListeners(app);
     maestroFrontendListeners(app.Maestro);
     window.electron.ipcRenderer.sendMessage(STR.requestSheetList, {});
 }
 
+ 
 function appFrontendListeners(app: App): void {
 
     window.electron.ipcRenderer.on( STR.responseSheetList, (sheetLibrary: IBranchObject[]) => {
@@ -87,4 +89,51 @@ function maestroFrontendListeners(maestro: Maestro): void {
             false,
           );
     }
+}
+
+let $WtreeDragged: HTMLLIElement = null;
+
+function documentFrontendListeners(){
+    document.addEventListener("dragstart", (event: DragEvent) => {
+        // store a ref. on the dragged elem
+        if (event.target instanceof HTMLLIElement) {
+            if (event.target.tagName==="LI" && event.target.classList.contains("branch")) {
+                $WtreeDragged = <HTMLLIElement>event.target; 
+                console.log("DRAGSTART", event.target);
+            } else {
+                this.$WtreeDragged = null;
+            }
+        }
+    });
+    
+    document.addEventListener("dragover", (event: DragEvent) => {
+        // store a ref. on the dragged elem
+        //console.log("DRAGOVER", event.target);
+        event.preventDefault();
+        if ($WtreeDragged !== null && event.target instanceof HTMLElement) {
+            if (event.target.tagName==='LI'){
+                event.preventDefault();
+            }
+        }
+    });
+
+    document.addEventListener("drop", (event: DragEvent) => {
+        // store a ref. on the dragged elem
+        if ($WtreeDragged !== null && event.target instanceof HTMLElement && $WtreeDragged !== event.target) {
+            const dstLi: HTMLLIElement = <HTMLLIElement>event.target.closest('LI');
+            if (dstLi && dstLi.classList.contains("branch")) {
+                const srcLi: HTMLLIElement = $WtreeDragged;
+                const srcUl: HTMLUListElement = <HTMLUListElement>srcLi.closest("UL");
+                const dstUl: HTMLUListElement = <HTMLUListElement>dstLi.closest("UL");
+                if (srcUl===dstUl) { // sequence change
+                    console.log("sequence change");
+                } else { //traferimento su altro livello che NON può esser livello figlio
+                    if (srcUl && dstUl && srcUl.id && dstUl.id && !(srcUl.querySelector(`ul#${dstUl.id}`))) {
+                        console.log("DROP", dstLi);
+                    }
+                }
+                event.preventDefault();
+            } 
+        }
+    });
 }

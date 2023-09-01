@@ -130,6 +130,9 @@ export class WTree extends HTMLElement{
     };
     private treeStore: ITreeStore = {};
     private treeContainer: HTMLDivElement = null;
+    private treeHeader: HTMLDivElement = null;
+    private treeMain: HTMLDivElement = null;
+    private treeFooter: HTMLDivElement = null;
     private propContainer: HTMLDivElement = null;
     private propEditor: WPropertyEditor = null;
 
@@ -320,11 +323,21 @@ export class WTree extends HTMLElement{
     };
 
     render(treeBranches: BranchClass[]): void {
+        this.treeHeader = document.createElement("div");
+        this.treeMain = document.createElement("div");
+        this.treeFooter = document.createElement("div");
+        this.treeHeader.classList.add("tree-header");
+        this.treeMain.classList.add("tree-main");
+        this.treeFooter.classList.add("tree-footer");
+
         const treeElement: HTMLDivElement = this.createRootElement();
-        treeElement.appendChild(this.buildTree(treeBranches, 0));
+        treeElement.appendChild(this.buildTree(0,treeBranches, 0));
         this.bindEvent(treeElement);
         empty(this.treeContainer);
-        this.treeContainer.appendChild(treeElement);
+        this.treeContainer.appendChild(this.treeHeader);
+        this.treeContainer.appendChild(this.treeMain);
+        this.treeContainer.appendChild(this.treeFooter);
+        this.treeMain.appendChild(treeElement);
         treeElement.addEventListener("click",(e: Event)=>{
 
             Object.values(this.liElementsById).forEach((element: HTMLLIElement)=>{
@@ -399,8 +412,8 @@ export class WTree extends HTMLElement{
     };
 
     // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-    buildTree(branches: BranchClass[], depth: number, level: number = 0): HTMLUListElement {
-        const rootUlEle: HTMLUListElement = this.createUnorderedListElelement();
+    buildTree(id: number, branches: BranchClass[], depth: number, level: number = 0): HTMLUListElement {
+        const rootUlEle: HTMLUListElement = this.createUnorderedListElelement(id);
         if (branches && branches.length) {
             branches.forEach(branch => {
                 const liEle: HTMLLIElement = this.createListItemElement(
@@ -411,7 +424,7 @@ export class WTree extends HTMLElement{
                 this.liElementsById[branch.Id] = liEle;
                 let ulEle: HTMLUListElement  = null;
                 if (branch.Children && branch.Children.length) {
-                    ulEle = this.buildTree(branch.Children, depth + 1, level + 1);
+                    ulEle = this.buildTree(branch.Id, branch.Children, depth + 1, level + 1);
                 }
                 if(ulEle) {
                     liEle.appendChild(ulEle);
@@ -661,8 +674,9 @@ export class WTree extends HTMLElement{
         expandFromRoot(this, this.treeStore.treeBranches[0]);
     }
 
-    createUnorderedListElelement(): HTMLUListElement {
+    createUnorderedListElelement(id: number): HTMLUListElement {
         const ul: HTMLUListElement = document.createElement("ul");
+        ul.id = `ul-${id}`;
         ul.classList.add("branches");
         return ul;
     };
@@ -683,6 +697,8 @@ export class WTree extends HTMLElement{
 */
     createListItemElement(branch: BranchClass, closed: boolean, level: number): HTMLLIElement {
         const li: HTMLLIElement = document.createElement("li");
+        li.id = `li-${branch.Id}`;
+        li.setAttribute("draggable","true");
         branch.HtmlLiElement = li;
         let spacerWidth: number = 0;
         const switcherWidth: number = $moduleSize;
@@ -692,7 +708,6 @@ export class WTree extends HTMLElement{
 
         li.classList.add("branch");
         const divline: HTMLDivElement = document.createElement("div");
-
         divline.classList.add("divline");
 
         const spacer: HTMLDivElement = document.createElement("div");
@@ -723,6 +738,10 @@ export class WTree extends HTMLElement{
         divline.appendChild(label);
         li.branchId = String(branch.Id);
 
+        checkbox.setAttribute("draggable","false");
+        spacer.setAttribute("draggable","false");
+        divline.setAttribute("draggable","false");
+
         const percent: HTMLDivElement = document.createElement("div");
         percent.innerHTML="0%";
         percent.classList.add("percent");
@@ -736,6 +755,11 @@ export class WTree extends HTMLElement{
         divline.style.gridTemplateColumns = `${spacerWidth}px ${switcherWidth}px ${checkboxWidth}px ${labelWidth} ${percentWidth}px`;
 
         li.appendChild(divline);
+        percent.setAttribute("draggable","false");
+        label.setAttribute("draggable","false");
+        checkbox.setAttribute("draggable","false");
+        spacer.setAttribute("draggable","false");
+        divline.setAttribute("draggable","false");
         return li;
     };
 
