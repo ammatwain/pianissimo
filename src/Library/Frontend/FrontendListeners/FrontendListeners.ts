@@ -13,7 +13,7 @@ export function FrontendListeners( app: App): void {
     window.electron.ipcRenderer.sendMessage(STR.requestSheetList, {});
 }
 
- 
+
 function appFrontendListeners(app: App): void {
 
     window.electron.ipcRenderer.on( STR.responseSheetList, (sheetLibrary: IBranchObject[]) => {
@@ -93,47 +93,67 @@ function maestroFrontendListeners(maestro: Maestro): void {
 
 let $WtreeDragged: HTMLLIElement = null;
 
-function documentFrontendListeners(){
+function isDropAllowew(event: DragEvent, dragLi: HTMLLIElement, dropLi: HTMLElement): boolean{
+    let ok: boolean = false;
+    if (dragLi !== null && dropLi instanceof HTMLElement && dragLi !== dropLi) {
+        const dstLi: HTMLLIElement = <HTMLLIElement>dropLi.closest("LI");
+        if (dstLi && dstLi.classList.contains("branch")) {
+            const srcLi: HTMLLIElement = $WtreeDragged;
+            const srcUl: HTMLUListElement = <HTMLUListElement>srcLi.closest("UL");
+            const dstUl: HTMLUListElement = <HTMLUListElement>dstLi.closest("UL");
+            if (srcUl===dstUl) { // sequence change
+                console.log("sequence change");
+                ok = true;
+            } else { //traferimento su altro livello che NON può esser livello figlio
+                if (srcUl && dstUl && srcUl.id && dstUl.id && !(srcUl.querySelector(`ul#${dstUl.id}`))) {
+                    console.log("DROP", dstLi);
+                    ok = true;
+                } else {
+                    ok = false;
+                    event.dataTransfer.dropEffect = "none";
+                }
+            }
+            //event.preventDefault();
+        }
+    }
+    return ok;
+}
+
+function documentFrontendListeners(): void{
     document.addEventListener("dragstart", (event: DragEvent) => {
         // store a ref. on the dragged elem
         if (event.target instanceof HTMLLIElement) {
             if (event.target.tagName==="LI" && event.target.classList.contains("branch")) {
-                $WtreeDragged = <HTMLLIElement>event.target; 
+                $WtreeDragged = <HTMLLIElement>event.target;
                 console.log("DRAGSTART", event.target);
             } else {
                 this.$WtreeDragged = null;
             }
         }
     });
-    
+
     document.addEventListener("dragover", (event: DragEvent) => {
         // store a ref. on the dragged elem
         //console.log("DRAGOVER", event.target);
-        event.preventDefault();
-        if ($WtreeDragged !== null && event.target instanceof HTMLElement) {
-            if (event.target.tagName==='LI'){
-                event.preventDefault();
-            }
+        if (event.target instanceof HTMLElement && isDropAllowew(event, $WtreeDragged, event.target)) {
+            event.dataTransfer.effectAllowed = "copy";
+            event.dataTransfer.dropEffect = "copy";
+            event.preventDefault();
+        } else {
+            event.dataTransfer.effectAllowed = "none";
+            event.dataTransfer.dropEffect = "none";
         }
     });
 
     document.addEventListener("drop", (event: DragEvent) => {
         // store a ref. on the dragged elem
-        if ($WtreeDragged !== null && event.target instanceof HTMLElement && $WtreeDragged !== event.target) {
-            const dstLi: HTMLLIElement = <HTMLLIElement>event.target.closest('LI');
-            if (dstLi && dstLi.classList.contains("branch")) {
-                const srcLi: HTMLLIElement = $WtreeDragged;
-                const srcUl: HTMLUListElement = <HTMLUListElement>srcLi.closest("UL");
-                const dstUl: HTMLUListElement = <HTMLUListElement>dstLi.closest("UL");
-                if (srcUl===dstUl) { // sequence change
-                    console.log("sequence change");
-                } else { //traferimento su altro livello che NON può esser livello figlio
-                    if (srcUl && dstUl && srcUl.id && dstUl.id && !(srcUl.querySelector(`ul#${dstUl.id}`))) {
-                        console.log("DROP", dstLi);
-                    }
-                }
-                event.preventDefault();
-            } 
+        if (event.target instanceof HTMLElement && isDropAllowew(event, $WtreeDragged, event.target)) {
+            event.dataTransfer.effectAllowed = "copy";
+            event.dataTransfer.dropEffect = "copy";
+            event.preventDefault();
+        } else {
+            event.dataTransfer.effectAllowed = "none";
+            event.dataTransfer.dropEffect = "none";
         }
     });
 }
