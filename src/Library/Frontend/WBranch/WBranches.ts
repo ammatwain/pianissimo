@@ -24,8 +24,12 @@ export class WBranches extends HTMLElement {
     public get Children(): WBranch[] {
         const branches: WBranch[] = [];
         for(let i: number = 0 ; i < this.children.length ; i++ ) {
-            if (this.children.item(i) instanceof WBranch) {
-                branches.push(<WBranch>this.children.item(i));
+            try {
+                if (this.children.item(i) instanceof WBranch) {
+                    branches.push(<WBranch>this.children.item(i));
+                }
+            } catch {
+                console.log("QUALCoSa di Storto", typeof this.children.item(i), this.children.item(i));
             }
         }
         return branches;
