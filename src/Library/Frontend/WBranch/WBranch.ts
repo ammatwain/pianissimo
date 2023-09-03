@@ -14,6 +14,7 @@ export class WBranch extends HTMLElement {
     private label: HTMLDivElement = null;
     private edit: HTMLDivElement = null;
     private percent: HTMLDivElement = null;
+    private percentValue: number = 0;
 
     constructor(){
         super();
@@ -59,6 +60,7 @@ export class WBranch extends HTMLElement {
         }
         this.customIsConnected = true;
         this.update();
+        this.updateAllPercents();
     }
 
     disconnectedCallback(): void {
@@ -286,7 +288,29 @@ export class WBranch extends HTMLElement {
             this.classList.remove("leaf");
         } else {
             this.classList.add("leaf");
+            this.Percent = Math.random() * 100;
         }
+    }
+
+    public updateAllPercents(): void {
+        this.RootBranches.Children.forEach((child: WBranch)=>{
+            child.updatePercent();
+        });
+    }
+
+    public updatePercent(): number{
+        let percent: number = this.Percent;
+        if (!this.IsLeaf) {
+            this.Percent = 0;
+            const total: number = this.Children.length * 100;
+            let accumulator: number = 0;
+            this.Children.forEach((child: WBranch)=>{
+                accumulator += child.updatePercent();
+            });
+            percent = (total / accumulator ) * 100;
+        }
+        this.Percent = percent;
+        return percent;
     }
 
     public get Closed(): boolean {
@@ -349,6 +373,17 @@ export class WBranch extends HTMLElement {
         }
         console.log(this.label.innerHTML, parentBranches);
         throw new Error("The elements of the 'w-branch' type must reside within a container element of type 'w-branches'.");
+    }
+
+    public set Percent(percentValue: number) {
+        this.percentValue = percentValue || 0;
+        if (this.percentValue < 0) {
+            this.percentValue = 0;
+        } else if (this.percentValue > 100){
+            this.percentValue = 100;
+        }
+        this.percent.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${this.percentValue}%, rgba(0,0,0,0.333) ${this.percentValue}%)`;
+        this.percent.innerHTML = `${(this.percentValue || 0 ).toFixed(0)}%`;
     }
 
     public get PreviousSibling(): WBranch {
