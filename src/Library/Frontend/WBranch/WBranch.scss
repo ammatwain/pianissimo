@@ -118,7 +118,7 @@ w-branch {
             transition: transform 150ms ease-out;
         }
     }
-    .body{
+    .branches{
         font-family: inherit;
     }
 }
@@ -137,7 +137,7 @@ w-branch {
                 transform: rotate(-90deg);
             }
         }
-        > .body {
+        > .branches {
             height: 0;
             overflow: hidden;
         }

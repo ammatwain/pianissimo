@@ -2,10 +2,13 @@ import { WBranch } from "./WBranch";
 
 import "./WBranches.scss";
 
+
 export class WBranches extends HTMLElement {
     private customIsConnected: boolean = false;
     private originalInnerHtml: string = "";
     private selected: WBranch[] = [];
+    private dragBranch: WBranch = null;
+    private dropBranch: WBranch = null;
 
     constructor() {
         super();
@@ -20,7 +23,7 @@ export class WBranches extends HTMLElement {
             this.Type = newValue;
         }
     }
-
+    ///TODO
     public get Children(): WBranch[] {
         const branches: WBranch[] = [];
         for(let i: number = 0 ; i < this.children.length ; i++ ) {
@@ -33,6 +36,30 @@ export class WBranches extends HTMLElement {
             }
         }
         return branches;
+    }
+
+    public get DragBranch(): WBranch {
+        return this.dragBranch;
+    }
+
+    public set DragBranch(dragBranch: WBranch) {
+        if (dragBranch instanceof WBranch) {
+            this.dragBranch = dragBranch;
+        } else {
+            this.dragBranch = null;
+        }
+    }
+
+    public get DropBranch(): WBranch {
+        return this.dropBranch;
+    }
+
+    public set DropBranch(dropBranch: WBranch) {
+        if (dropBranch instanceof WBranch) {
+            this.dropBranch = dropBranch;
+        } else {
+            this.dropBranch = null;
+        }
     }
 
     public get ParentBranch(): WBranch {
@@ -67,6 +94,14 @@ export class WBranches extends HTMLElement {
         }
     }
 
+    public get Selected(): WBranch[] {
+        return this.selected;
+    }
+
+    public set Selected(branches: WBranch[]) {
+        this.selected = branches;
+    }
+
     public get Type(): string {
         if (this.classList.contains("radio")){
             return "radio";
@@ -85,15 +120,4 @@ export class WBranches extends HTMLElement {
             child.Type = type;
         });
     }
-
-    public get Selected(): WBranch[] {
-        return this.selected;
-    }
-
-    public set Selected(branches: WBranch[]) {
-        this.selected = branches;
-    }
-
 }
-
-customElements.define("w-branches", WBranches);

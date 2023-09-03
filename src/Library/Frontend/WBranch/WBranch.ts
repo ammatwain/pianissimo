@@ -1,5 +1,4 @@
 import { Constants } from "@Common/Constants";
-
 import { WBranches } from "./WBranches";
 
 import "./WBranch.scss";
@@ -8,7 +7,7 @@ export class WBranch extends HTMLElement {
     private customIsConnected: boolean = false;
     private originalInnerHtml: string = "";
     private header: HTMLDivElement = null;
-    private body: WBranches = null;
+    private branches: WBranches = null;
     private spacer: HTMLDivElement = null;
     private switcher: HTMLDivElement = null;
     private checkbox: HTMLDivElement = null;
@@ -24,8 +23,8 @@ export class WBranch extends HTMLElement {
         this.setAttribute("draggable","true");
         this.header = document.createElement("div");
         this.header.classList.add("header");
-        this.body = <WBranches>document.createElement("w-branches");
-        this.body.classList.add("body");
+        this.branches = <WBranches>document.createElement("w-branches");
+        this.branches.classList.add("branches");
         this.spacer = document.createElement("div");
         this.spacer.classList.add("spacer");
         this.switcher = document.createElement("div");
@@ -45,13 +44,14 @@ export class WBranch extends HTMLElement {
         this.header.appendChild(this.edit);
         this.header.appendChild(this.percent);
         this.appendChild(this.header);
-        this.appendChild(this.body);
-        this.body.innerHTML = this.originalInnerHtml;
+        this.appendChild(this.branches);
+        this.branches.innerHTML = this.originalInnerHtml;
         //this.label.innerHTML = `Level ${this.Level}`;
     }
 
     connectedCallback(): void {
         if (this.customIsConnected === false){
+            console.log("CONNECTED CALLBACK");
             const ms: number = Constants.scss.$moduleSize;
             this.header.style.gridTemplateColumns =`${ms * this.Level}px ${ms}px ${ms}px 1fr ${ms}px ${ms * 5}px`;
             console.log(this.Sequence);
@@ -62,7 +62,13 @@ export class WBranch extends HTMLElement {
     }
 
     disconnectedCallback(): void {
+        console.log("DISCONNECTED CALLBACK");
         this.customIsConnected = false;
+    }
+
+
+    public addChild(child: WBranch): void {
+        this.branches.appendChild(child);
     }
 
     private attachEvents(): void {
@@ -79,11 +85,124 @@ export class WBranch extends HTMLElement {
         this.edit.onclick = (): void => {
             console.log(this);
         };
+        /**
+         * TARGET è l'elemento che viene attraversato
+         */
+        this.ondrag = (event: DragEvent): void => {
+            const source: WBranch = <WBranch>event.target;
+            const destination: WBranch = <WBranch>event.currentTarget;
+            if (
+                source === this.RootBranches.DragBranch &&
+                destination instanceof WBranch &&
+                source !== destination
+            ) {
+                event.stopImmediatePropagation();
+                event.stopPropagation();
+            }
+        };
+        this.ondragend =  (event: DragEvent): void => {
+            const source: WBranch = this.RootBranches.DragBranch;
+            const destination: WBranch =  this.RootBranches.DropBranch;
+            if (
+                source instanceof WBranch &&
+                destination instanceof WBranch &&
+                destination !== source
+            ) {
+                event.stopPropagation();
+                if (!destination.hasParent(source)){
+                    console.log(source.Level);
+                    console.log(destination);
+                    if (destination.IsLeaf) {
+                        if (destination.ParentBranches) {
+                            if (source.ParentBranches === destination.ParentBranches) {
+                                // chi c'è prima?
+                                const s: number = source.ParentBranches.Children.indexOf(source);
+                                const d: number = destination.ParentBranches.Children.indexOf(destination);
+                                if (s>d) {
+                                    source.parentElement.removeChild(source);
+                                    destination.ParentBranches.insertBefore(source, destination);
+                                } else if (d>s) {
+                                    // inverse logic
+                                    destination.parentElement.removeChild(destination);
+                                    source.ParentBranches.insertBefore(destination, source);
+                                }
+                            } else {
+                                source.parentElement.removeChild(source);
+                                destination.ParentBranches.insertBefore(source,destination);
+                            }
+                        }
+                    } else {
+                        source.parentElement.removeChild(source);
+                        destination.addChild(source);
+                    }
+                    console.log(source.Level);
+                }
+            }
+            this.RootBranches.DragBranch = null;
+            this.RootBranches.DropBranch = null;
+        };
+        this.ondragenter = (event: DragEvent): void => {
+            const source: WBranch = this.RootBranches.DragBranch;
+            const destination: WBranch = <WBranch>event.currentTarget;
+            console.log("ENTER DESTINATION", destination);
+            if (
+                destination instanceof WBranch &&
+                source !== destination
+            ) {
+                event.stopImmediatePropagation();
+                this.RootBranches.DropBranch = destination;
+            }
+        };
+        this.ondragleave = (event: DragEvent): void => {
+            const leaved: WBranch = <WBranch>event.currentTarget;
+            if (
+                leaved instanceof WBranch &&
+                leaved !== this.RootBranches.DragBranch
+            ) {
+                event.stopImmediatePropagation();
+                console.log("DRAG LEAVE", event.target);
+            }
+        };
+        this.ondragover = (event: DragEvent): void => {
+            const overed: WBranch = <WBranch>event.currentTarget;
+            if (
+                overed instanceof WBranch &&
+                overed !== this.RootBranches.DragBranch
+            ) {
+                event.stopImmediatePropagation();
+                this.RootBranches.DropBranch = overed;
+            }
+        };
+        this.ondragstart = (event: DragEvent): void => {
+            event.stopImmediatePropagation();
+            const target: WBranch = <WBranch>event.target;
+            if (
+                target instanceof WBranch &&
+                target === this &&
+                this.RootBranches.DragBranch !== this
+            ) {
+                this.RootBranches.DragBranch = this;
+                console.log( "DRAG START", event.target);
+            }
+        };
+    }
+
+    hasParent(branch: WBranch): boolean {
+        if (this.Parent) {
+            if (this.Parent === branch) {
+                return true;
+            } else {
+                return this.Parent.hasParent(branch);
+            }
+        } else {
+            return false;
+        }
     }
 
     static get observedAttributes(): string[] {
         return ["branch-label","branch-type"];
     }
+
 
     private attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
         if (name === "branch-label" && this.label) {
@@ -184,10 +303,22 @@ export class WBranch extends HTMLElement {
 
 
     public get Children(): WBranch[] {
-        if ( this.body ) {
-            return this.body.Children;
+        if ( this.branches ) {
+            return this.branches.Children;
         } else {
             return [];
+        }
+    }
+
+    public get IsLeaf(): boolean {
+        return this.classList.contains("leaf");
+    }
+
+    public set IsLeaf(isLeaf: boolean) {
+        if (isLeaf) {
+            this.classList.add("leaf");
+        } else {
+            this.classList.remove("leaf");
         }
     }
 
@@ -248,7 +379,7 @@ export class WBranch extends HTMLElement {
         } else if (this.ParentBranches && this.ParentBranches instanceof WBranches) {
             return this.ParentBranches;
         } else {
-            return this.body;
+            return this.branches;
         }
     }
 
@@ -288,7 +419,7 @@ export class WBranch extends HTMLElement {
         const childrenLength: number = this.Children.length;
         if (childrenLength) {
             this.classList.remove("leaf");
-            return this.body.Status;
+            return this.branches.Status;
         } else {
             this.classList.add("leaf");
             if (this.Checked) {
@@ -300,4 +431,11 @@ export class WBranch extends HTMLElement {
     }
 }
 
+
+console.log("STO PER DEFINIRE WBRANCHES");
+customElements.define("w-branches", WBranches);
+console.log("HO DEFINITO WBRANCHES");
+console.log("STO PER DEFINIRE WBRANCH");
 customElements.define("w-branch", WBranch);
+console.log("FO DEFINITO WBRANCH");
+
