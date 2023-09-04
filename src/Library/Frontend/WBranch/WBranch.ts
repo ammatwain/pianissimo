@@ -4,6 +4,8 @@ import { WBranches } from "./WBranches";
 import "./WBranch.scss";
 
 export class WBranch extends HTMLElement {
+    private adoptable: boolean = true;
+    private canAdopt: boolean = true;
     private customIsConnected: boolean = false;
     private originalInnerHtml: string = "";
     private header: HTMLDivElement = null;
@@ -15,56 +17,69 @@ export class WBranch extends HTMLElement {
     private edit: HTMLDivElement = null;
     private percent: HTMLDivElement = null;
     private percentValue: number = 0;
+    private sequence: number = NaN;
 
     constructor(){
         super();
         this.originalInnerHtml = this.innerHTML;
         this.innerHTML = "";
-        this.classList.add("leaf");
-        this.setAttribute("draggable","true");
-        this.header = document.createElement("div");
-        this.header.classList.add("header");
-        this.branches = <WBranches>document.createElement("w-branches");
-        this.branches.classList.add("branches");
-        this.spacer = document.createElement("div");
-        this.spacer.classList.add("spacer");
-        this.switcher = document.createElement("div");
-        this.switcher.classList.add("switcher");
-        this.checkbox = document.createElement("div");
-        this.checkbox.classList.add("checkbox");
-        this.label = document.createElement("div");
-        this.label.classList.add("label");
-        this.edit = document.createElement("div");
-        this.edit.classList.add("edit");
-        this.percent = document.createElement("div");
-        this.percent.classList.add("percent");
-        this.header.appendChild(this.spacer);
-        this.header.appendChild(this.switcher);
-        this.header.appendChild(this.checkbox);
-        this.header.appendChild(this.label);
-        this.header.appendChild(this.edit);
-        this.header.appendChild(this.percent);
-        this.appendChild(this.header);
-        this.appendChild(this.branches);
-        this.branches.innerHTML = this.originalInnerHtml;
+            this.classList.add("leaf");
+            this.setAttribute("draggable","true");
+            this.header = document.createElement("div");
+            this.header.classList.add("header");
+            this.branches = <WBranches>document.createElement("w-branches");
+            this.branches.classList.add("branches");
+            this.spacer = document.createElement("div");
+            this.spacer.classList.add("spacer");
+            this.switcher = document.createElement("div");
+            this.switcher.classList.add("switcher");
+            this.checkbox = document.createElement("div");
+            this.checkbox.classList.add("checkbox");
+            this.label = document.createElement("div");
+            this.label.classList.add("label");
+            this.edit = document.createElement("div");
+            this.edit.classList.add("edit");
+            this.percent = document.createElement("div");
+            this.percent.classList.add("percent");
+            this.header.appendChild(this.spacer);
+            this.header.appendChild(this.switcher);
+            this.header.appendChild(this.checkbox);
+            this.header.appendChild(this.label);
+            this.header.appendChild(this.edit);
+            this.header.appendChild(this.percent);
+            this.appendChild(this.header);
+            this.appendChild(this.branches);
+            this.branches.innerHTML = this.originalInnerHtml;
         //this.label.innerHTML = `Level ${this.Level}`;
+    }
+    static get observedAttributes(): string[] {
+            return ["w-label","w-type","w-adoptable","w-can-adopt"];
+    }
+
+
+    private attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
+        if (name === "w-label" && this.label) {
+            this.label.innerHTML = newValue;
+        } else if (name === "w-type") {
+            this.Type = newValue;
+        } else if (name === "w-adoptable") {
+            this.adoptable = !(newValue.toLocaleLowerCase()==="false");
+        } else if (name === "w-can-adopt") {
+            this.canAdopt = !(newValue.toLocaleLowerCase()==="false");
+        }
     }
 
     connectedCallback(): void {
         if (this.customIsConnected === false){
-            console.log("CONNECTED CALLBACK");
-            const ms: number = Constants.scss.$moduleSize;
-            this.header.style.gridTemplateColumns =`${ms * this.Level}px ${ms}px ${ms}px 1fr ${ms}px ${ms * 5}px`;
-            console.log(this.Sequence);
+            this.render();
+            this.update();
+            this.updateAllPercents();
             this.attachEvents();
         }
         this.customIsConnected = true;
-        this.update();
-        this.updateAllPercents();
     }
 
     disconnectedCallback(): void {
-        console.log("DISCONNECTED CALLBACK");
         this.customIsConnected = false;
     }
 
@@ -85,7 +100,8 @@ export class WBranch extends HTMLElement {
             this.Checked = !this.Checked;
         };
         this.edit.onclick = (): void => {
-            console.log(this);
+            this.updateAllPercents();
+            console.log("TODO!!!", Date.now());
         };
         /**
          * TARGET è l'elemento che viene attraversato
@@ -102,7 +118,8 @@ export class WBranch extends HTMLElement {
                 event.stopPropagation();
             }
         };
-        this.ondragend =  (event: DragEvent): void => {
+/*
+        this._ondragend =  (event: DragEvent): void => {
             const source: WBranch = this.RootBranches.DragBranch;
             const destination: WBranch =  this.RootBranches.DropBranch;
             if (
@@ -111,10 +128,20 @@ export class WBranch extends HTMLElement {
                 destination !== source
             ) {
                 event.stopPropagation();
-                if (!destination.hasParent(source)){
-                    console.log(source.Level);
-                    console.log(destination);
-                    if (destination.IsLeaf) {
+                //if (!source.IsAdoptable && )
+                if ( destination!==source && (!destination.hasParent(source))){
+                    if (destination.IsBranch) {
+                        if (
+                            source.ParentBranches === destination.ParentBranches ||
+                            (
+                                source.ParentBranches !== destination.ParentBranches &&
+                                source.IsAdoptable
+                            )
+                        ) {
+                            source.parentElement.removeChild(source);
+                            destination.addChild(source);
+                        }
+                    } else {
                         if (destination.ParentBranches) {
                             if (source.ParentBranches === destination.ParentBranches) {
                                 // chi c'è prima?
@@ -125,31 +152,89 @@ export class WBranch extends HTMLElement {
                                     destination.ParentBranches.insertBefore(source, destination);
                                 } else if (d>s) {
                                     // inverse logic
-                                    destination.parentElement.removeChild(destination);
-                                    source.ParentBranches.insertBefore(destination, source);
+                                    source.parentElement.removeChild(source);
+                                    destination.ParentBranches.insertAfter(source, destination);
+//                                    destination.parentElement.removeChild(destination);
+//                                    source.ParentBranches.insertBefore(destination, source);
                                 }
-                            } else {
+                            } else if(source.IsAdoptable){
                                 source.parentElement.removeChild(source);
                                 destination.ParentBranches.insertBefore(source,destination);
                             }
                         }
-                    } else {
-                        source.parentElement.removeChild(source);
-                        destination.addChild(source);
                     }
-                    console.log(source.Level);
                 }
             }
             this.RootBranches.DragBranch = null;
             this.RootBranches.DropBranch = null;
         };
+*/
+        this.ondragend =  (event: DragEvent): void => {
+            const source: WBranch = this.RootBranches.DragBranch;
+            const destination: WBranch =  this.RootBranches.DropBranch;
+            if (
+                source instanceof WBranch &&
+                destination instanceof WBranch &&
+                destination !== source &&
+                !destination.hasParent(source)
+            ) {
+                event.stopPropagation();
+                if (source.IsAdoptable) { //source = branch
+                    if(destination.CanAdopt) {//destination = branch
+                        if (source.ParentBranches === destination.ParentBranches) { //scambio d'ordine
+                            // chi c'è prima?
+                            const s: number = source.ParentBranches.Children.indexOf(source);
+                            const d: number = destination.ParentBranches.Children.indexOf(destination);
+                            source.parentElement.removeChild(source);
+                            if (s>d) {
+                                destination.ParentBranches.insertBefore(source, destination);
+                            } else if (d>s) {
+                                destination.ParentBranches.insertAfter(source, destination);
+                            }
+                        } else if (source.ParentBranches !== destination.branches) {
+                            source.parentElement.removeChild(source);
+                            destination.addChild(source);
+                        }
+                    }
+                }
+/* 
+                if ( destination!==source && (!destination.hasParent(source))){
+                    if (destination.IsBranch) {
+                    } else {
+                        if (destination.ParentBranches) {
+                            if (source.ParentBranches === destination.ParentBranches) {
+                                // chi c'è prima?
+                                const s: number = source.ParentBranches.Children.indexOf(source);
+                                const d: number = destination.ParentBranches.Children.indexOf(destination);
+                                if (s>d) {
+                                    source.parentElement.removeChild(source);
+                                    destination.ParentBranches.insertBefore(source, destination);
+                                } else if (d>s) {
+                                    // inverse logic
+                                    source.parentElement.removeChild(source);
+                                    destination.ParentBranches.insertAfter(source, destination);
+                                }
+                            } else if(source.IsAdoptable){
+                                source.parentElement.removeChild(source);
+                                destination.ParentBranches.insertBefore(source,destination);
+                            }
+                        }
+                    }
+                }
+*/
+            }
+            this.RootBranches.DragBranch = null;
+            this.RootBranches.DropBranch = null;
+        };
+
         this.ondragenter = (event: DragEvent): void => {
             const source: WBranch = this.RootBranches.DragBranch;
             const destination: WBranch = <WBranch>event.currentTarget;
-            console.log("ENTER DESTINATION", destination);
-            if (
-                destination instanceof WBranch &&
-                source !== destination
+            if (source === destination) {
+                event.stopImmediatePropagation();
+                this.RootBranches.DropBranch = null;
+            } else if (
+                destination instanceof WBranch
             ) {
                 event.stopImmediatePropagation();
                 this.RootBranches.DropBranch = destination;
@@ -162,17 +247,20 @@ export class WBranch extends HTMLElement {
                 leaved !== this.RootBranches.DragBranch
             ) {
                 event.stopImmediatePropagation();
-                console.log("DRAG LEAVE", event.target);
             }
         };
         this.ondragover = (event: DragEvent): void => {
-            const overed: WBranch = <WBranch>event.currentTarget;
-            if (
-                overed instanceof WBranch &&
-                overed !== this.RootBranches.DragBranch
+            const source: WBranch = this.RootBranches.DragBranch;
+            const destination: WBranch = <WBranch>event.currentTarget;
+            if (source === destination) {
+                event.stopImmediatePropagation();
+                this.RootBranches.DropBranch = null;
+            } else if (
+                destination instanceof WBranch &&
+                destination !== this.RootBranches.DragBranch
             ) {
                 event.stopImmediatePropagation();
-                this.RootBranches.DropBranch = overed;
+                this.RootBranches.DropBranch = destination;
             }
         };
         this.ondragstart = (event: DragEvent): void => {
@@ -184,12 +272,11 @@ export class WBranch extends HTMLElement {
                 this.RootBranches.DragBranch !== this
             ) {
                 this.RootBranches.DragBranch = this;
-                console.log( "DRAG START", event.target);
             }
         };
     }
 
-    hasParent(branch: WBranch): boolean {
+    public hasParent(branch: WBranch): boolean {
         if (this.Parent) {
             if (this.Parent === branch) {
                 return true;
@@ -201,21 +288,32 @@ export class WBranch extends HTMLElement {
         }
     }
 
-    static get observedAttributes(): string[] {
-        return ["branch-label","branch-type"];
+    private render(): void {
+            const ms: number = Constants.scss.$moduleSize;
+            this.header.style.gridTemplateColumns =`${ms * this.Level}px ${ms}px ${ms}px 1fr ${ms}px ${ms * 5}px`;
     }
 
-
-    private attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
-        if (name === "branch-label" && this.label) {
-            this.label.innerHTML = newValue;
-        } else if (name === "branch-type") {
-            this.Type = newValue;
-        }
+    private setPercent(): void {
+        this.percent.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${this.Percent}%, rgba(0,0,0,0.333) ${this.Percent}%)`;
+        this.percent.innerHTML = `${(this.Percent || 0 ).toFixed(0)}%`;
     }
 
     public get Checked(): boolean {
         return this.classList.contains("checked") || this.classList.contains("halfchecked");
+    }
+
+    /**
+     * CanAdopt.
+     * Leaf non può adottare
+     * Branch può adottare se non contiene leaf
+     * In questo caso branch può solo "generare" 
+     */
+    public get CanAdopt(): boolean {
+        return this.canAdopt && this.IsAdoptable;
+    }
+
+    public set CanAdopt(canAdopt: boolean) {
+        this.canAdopt = canAdopt;
     }
 
     public set Checked(checked: boolean) {
@@ -287,8 +385,12 @@ export class WBranch extends HTMLElement {
             });
             this.classList.remove("leaf");
         } else {
-            this.classList.add("leaf");
-            this.Percent = Math.random() * 100;
+            if (this.IsNotAdoptable) {
+                this.classList.add("leaf");
+                this.Percent = Math.random() * 100;
+            } else {
+                this.classList.remove("leaf");
+            }
         }
     }
 
@@ -299,18 +401,33 @@ export class WBranch extends HTMLElement {
     }
 
     public updatePercent(): number{
-        let percent: number = this.Percent;
-        if (!this.IsLeaf) {
-            this.Percent = 0;
-            const total: number = this.Children.length * 100;
-            let accumulator: number = 0;
+        if (this.Children.length) {
             this.Children.forEach((child: WBranch)=>{
-                accumulator += child.updatePercent();
+                child.updatePercent();
             });
-            percent = (total / accumulator ) * 100;
         }
-        this.Percent = percent;
-        return percent;
+        this.setPercent();
+    }
+
+    public get IsAdoptable(): boolean {
+        return !this.classList.contains("leaf");
+    }
+
+    public set IsAdoptable(adoptable: boolean) {
+        if (adoptable){
+            this.classList.remove("leaf");
+        } else {
+            this.classList.add("leaf");
+        }
+        this.setAttribute("w-adoptable", String(this.adoptable));
+    }
+
+    public get IsNotAdoptable(): boolean {
+        return !this.IsAdoptable;
+    }
+
+    public set IsNotAdoptable(notAdoptable: boolean) {
+        this.IsAdoptable = !notAdoptable;
     }
 
     public get Closed(): boolean {
@@ -332,6 +449,10 @@ export class WBranch extends HTMLElement {
         } else {
             return [];
         }
+    }
+
+    public get IsBranch(): boolean {
+        return (!(this.IsLeaf && !(this.IsAdoptable)));
     }
 
     public get IsLeaf(): boolean {
@@ -371,8 +492,23 @@ export class WBranch extends HTMLElement {
         if (parentBranches instanceof WBranches) {
               return parentBranches;
         }
-        console.log(this.label.innerHTML, parentBranches);
         throw new Error("The elements of the 'w-branch' type must reside within a container element of type 'w-branches'.");
+    }
+
+    public get Percent(): number {
+        if (this.IsBranch && Array.isArray(this.Children)) {
+            const total: number = this.Children.length * 100;
+            let accumulator: number = 0;
+            this.Children.forEach((child: WBranch)=>{
+                accumulator += child.Percent;
+            });
+            if (accumulator>0 && total>0) {
+                this.percentValue = ( accumulator / total ) * 100;
+            } else {
+                this.percentValue = 0;
+            }
+        }
+        return this.percentValue;
     }
 
     public set Percent(percentValue: number) {
@@ -382,8 +518,7 @@ export class WBranch extends HTMLElement {
         } else if (this.percentValue > 100){
             this.percentValue = 100;
         }
-        this.percent.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${this.percentValue}%, rgba(0,0,0,0.333) ${this.percentValue}%)`;
-        this.percent.innerHTML = `${(this.percentValue || 0 ).toFixed(0)}%`;
+        this.setPercent();
     }
 
     public get PreviousSibling(): WBranch {
@@ -467,10 +602,6 @@ export class WBranch extends HTMLElement {
 }
 
 
-console.log("STO PER DEFINIRE WBRANCHES");
 customElements.define("w-branches", WBranches);
-console.log("HO DEFINITO WBRANCHES");
-console.log("STO PER DEFINIRE WBRANCH");
 customElements.define("w-branch", WBranch);
-console.log("FO DEFINITO WBRANCH");
 

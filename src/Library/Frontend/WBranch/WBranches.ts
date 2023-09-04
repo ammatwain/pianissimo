@@ -15,14 +15,19 @@ export class WBranches extends HTMLElement {
     }
 
     static get observedAttributes(): string[] {
-        return ["branch-type"];
+        return ["w-type"];
     }
 
     private attributeChangedCallback(name: string, oldValue: string, newValue: string): void {
-        if (name === "branch-type") {
+        if (name === "w-type") {
             this.Type = newValue;
         }
     }
+
+    public insertAfter(newNode: WBranch, existingNode: WBranch): void {
+        existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+    }
+
     ///TODO
     public get Children(): WBranch[] {
         const branches: WBranch[] = [];

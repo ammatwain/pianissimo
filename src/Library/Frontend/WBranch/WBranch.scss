@@ -10,7 +10,7 @@ w-branch {
     min-height: $module-size;
     &:hover{
         border-radius: calc($module-size * 0.45);
-        background-color: rgba(0, 0, 100, 0.0333);
+        background-color: rgba(0, 0, 100, 0.01);
     }
     >.header {
         display: grid;
