@@ -55,8 +55,24 @@ export class WBranches extends HTMLElement {
         }
     }
 
+    public get DragBranches(): WBranches {
+        if (this.DragBranch) {
+            return this.DragBranch.ParentBranches;
+        } else {
+            return null;
+        }
+    }
+
     public get DropBranch(): WBranch {
         return this.dropBranch;
+    }
+
+    public get DropBranches(): WBranches {
+        if (this.DropBranch) {
+            return this.DropBranch.ParentBranches;
+        } else {
+            return null;
+        }
     }
 
     public set DropBranch(dropBranch: WBranch) {
