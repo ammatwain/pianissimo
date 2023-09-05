@@ -100,8 +100,11 @@ w-branch {
             white-space: nowrap;
         }
         .edit{
-            background-color: green;
+            background-color: black;
+            border-radius: 50%;
+            color: white;
             opacity: 0;
+            text-align: center;
         }
         .percent{
             background-color: blueviolet;

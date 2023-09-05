@@ -40,6 +40,7 @@ export class WBranch extends HTMLElement {
             this.label.classList.add("label");
             this.edit = document.createElement("div");
             this.edit.classList.add("edit");
+            this.edit.innerHTML = "&#x1F589";
             this.percent = document.createElement("div");
             this.percent.classList.add("percent");
             this.header.appendChild(this.spacer);
@@ -87,7 +88,7 @@ export class WBranch extends HTMLElement {
 
 
     public addChild(child: WBranch): void {
-        this.branches.appendChild(child);
+        this.branches.addChild(child);
     }
 
     private attachEvents(): void {
@@ -357,6 +358,7 @@ export class WBranch extends HTMLElement {
     }
 
     public set Checked(checked: boolean) {
+console.log("start 1");
         if (checked) {
             this.classList.add("checked");
             if (!(this.Children && this.Children.length)) {
@@ -379,25 +381,34 @@ export class WBranch extends HTMLElement {
                 }
             }
         }
-        if (checked && this.Type==="radio") {
-
-            if(this.Parent && this.Parent.Children) {
-                this.Parent.Children.filter((child: WBranch) => {
-                    return child !== this;
-                }).forEach((child: WBranch) => {
-                    child.Checked = false;
-                });
-            }
-        }
+console.log("end 1");
+console.log("start 2");
+//        if (checked && this.Type==="radio") {
+//            if(this.Parent && this.Parent.Children) {
+//                this.Parent.Children.filter((child: WBranch) => {
+//                    return child !== this;
+//                }).forEach((child: WBranch) => {
+//                    child.Checked = false;
+//                });
+//            }
+//        }
+console.log("end 2");
+console.log("start 3");
         if (this.Children.length) {
-            if (checked && this.Type === "radio") {
-                this.Children[0].Checked = true;
-            } else {
-                this.Children.forEach((child: WBranch)=>{
-                    child.Checked = checked;
-                });
+            if (this.Type === "radio") {
+                this.Children[0].Checked = checked;
             }
+//            else {
+//                this.Children.forEach((child: WBranch)=>{
+//                    child.Checked = checked;
+//                });
+//            }
         }
+console.log("end 3");
+console.log("SELECTED",this.Selected);
+        this.Selected.forEach((selected: WBranch) => {
+            console.log(selected.label.innerHTML);
+        });
         this.setParentStatus();
     }
 
@@ -526,10 +537,17 @@ export class WBranch extends HTMLElement {
         }
     }
 
+    public set Parent(branch: WBranch) {
+        if (this.ParentBranches) {
+            this.ParentBranches.removeChild(this);
+        }
+        branch.addChild(this);
+    }
+
     public get ParentBranches(): WBranches {
         const parentBranches: WBranches = <WBranches>this.parentElement;
         if (parentBranches instanceof WBranches) {
-              return parentBranches;
+            return parentBranches;
         }
         throw new Error("The elements of the 'w-branch' type must reside within a container element of type 'w-branches'.");
     }

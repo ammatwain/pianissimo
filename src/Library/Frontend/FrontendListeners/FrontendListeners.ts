@@ -19,6 +19,7 @@ function appFrontendListeners(app: App): void {
     window.electron.ipcRenderer.on( STR.responseSheetList, (sheetLibrary: IBranchObject[]) => {
         if (app.Tree && app.Tree instanceof WTree){
             app.Tree.initialize(sheetLibrary);
+            app.Branches.initialize(sheetLibrary);
         }
     });
 

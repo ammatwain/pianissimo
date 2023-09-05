@@ -10,7 +10,8 @@ import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 
 //
 import "./App.scss";
-import { FrontendListeners } from "../FrontendListeners";
+import { FrontendListeners } from "@Frontend/FrontendListeners";
+import { WBranches } from "@Frontend/WBranch";
 
 /*
 import { electronHandler } from "../";
@@ -27,11 +28,13 @@ interface IAppData {
     tabs?: WTabContainer;
     treeDivID?: string;
     tree?: WTree;
+    branches?: WBranches;
     errorTdId?: string;
     errorTd?: HTMLTableCellElement;
     errorTrId?: string;
     errorTr?: HTMLTableRowElement;
     osmdDivId?: string;
+    branchesDivID?: string;
     osmd?: OpenSheetMusicDisplay;
     etc?: ExtendedTransposeCalculator;
     midiInput?: Input[];
@@ -44,12 +47,14 @@ export class App {
     constructor (
         osmdDivId: string = "osmd",
         treeDivID: string = "tree",
+        branchesDivID: string = "branches",
         errorTdId: string = "error-td",
         errorTrId: string = "error-tr"
     ) {
         this.data.errorTdId = errorTdId;
         this.data.errorTrId = errorTrId;
         this.data.treeDivID = treeDivID;
+        this.data.branchesDivID = branchesDivID;
         this.data.osmdDivId = osmdDivId;
         document.addEventListener("DOMContentLoaded",() => {
             this.domContentLoaded();
@@ -83,8 +88,9 @@ export class App {
             //maestro
             console.log("Maestro has been enabled!");
 
-            this.data.tree = <WTree>document.querySelector("#tree");
-            this.data.maestro = new Maestro({etc: this.Etc, midiInputs: this.MidiInputs, tree: this.Tree});
+            this.data.tree = <WTree>document.querySelector(`#${this.data.treeDivID}`);
+            this.data.branches = <WBranches>document.querySelector(`#${this.data.branchesDivID}`);
+            this.data.maestro = new Maestro({etc: this.Etc, midiInputs: this.MidiInputs, tree: this.Tree, branches: this.data.branches});
             this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
                 if (values.length===1) {
@@ -110,6 +116,11 @@ export class App {
     setListeners(): void {
         FrontendListeners(this);
     }
+
+    public get Branches(): WBranches {
+        return this.data.branches || null;
+    }
+
 
     public get Data(): IAppData {
         return this.data;

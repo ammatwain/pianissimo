@@ -9,7 +9,8 @@
             <w-tabs>
                 <w-tab class="">Home</w-tab>
                 <w-tab class="">Profile</w-tab>
-                <w-tab class="active">MessagesMessages </w-tab>
+                <w-tab class="active">ASNode </w-tab>
+                <w-tab class="">WBranch</w-tab>
             </w-tabs>
             <w-tab-panels>
                 <w-tab-panel class="">
@@ -28,8 +29,12 @@
                         </table>
                     </div>
                 </w-tab-panel>
-                <w-tab-panel class="active" >
-                    <w-branches w-type="radio">
+                <w-tab-panel class="active">
+                    <as-node></as-node>
+                </w-tab-panel>
+                <w-tab-panel class="" >
+                    <w-branches id="branches" w-type="radio">
+                        <!--
                         <w-branch w-label="Studi"></w-branch>
                         <w-branch w-label="Esercizi"></w-branch>
                         <w-branch w-label="Scale"></w-branch>
@@ -85,6 +90,7 @@
                                 </w-branch>
                             </w-branch>
                         </w-branch>
+                    -->
                     </w-branches>
                 </w-tab-panel>
             </w-tab-panels>

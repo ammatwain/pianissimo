@@ -1,6 +1,9 @@
+import { IBranchObject } from "@Library/Common/Interfaces/IBranchObject";
 import { WBranch } from "./WBranch";
 
 import "./WBranches.scss";
+import { Walk } from "@Library/Common/Walk/Walk";
+import { BranchClass } from "../BranchClass/BranchClass";
 
 
 export class WBranches extends HTMLElement {
@@ -9,6 +12,7 @@ export class WBranches extends HTMLElement {
     private selected: WBranch[] = [];
     private dragBranch: WBranch = null;
     private dropBranch: WBranch = null;
+    private walk: Walk = null;
 
     constructor() {
         super();
@@ -24,9 +28,37 @@ export class WBranches extends HTMLElement {
         }
     }
 
+    public addChild(child: WBranch): void {
+        this.appendChild(child);
+    }
+
+    initialize(data: IBranchObject[] ): void {
+        this.innerHTML = "";
+        this.walk = new Walk(data);
+        this.walkTree(this.walk.TreeClasses);
+    };
+
     public insertAfter(newNode: WBranch, existingNode: WBranch): void {
         existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
     }
+
+    public walkTree (branches: BranchClass[], parent: WBranch | WBranches = this): void {
+        branches.forEach((branch: BranchClass)  => {
+            const guiBranch: WBranch = new WBranch();
+            guiBranch.setAttribute("w-label",branch.Name);
+            if (branch.Type === "sheet" ) {
+                guiBranch.setAttribute("w-can-adopt","false");
+            }
+            if (branch.Type === "section" ) {
+                guiBranch.setAttribute("w-adoptable","false");
+                guiBranch.setAttribute("w-can-adopt","false");
+            }
+            parent.addChild(guiBranch);
+            if (branch.Children && branch.Children.length) {
+                this.walkTree(branch.Children, guiBranch);
+            }
+        });
+    };
 
     ///TODO
     public get Children(): WBranch[] {

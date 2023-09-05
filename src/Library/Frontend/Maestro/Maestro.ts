@@ -7,6 +7,7 @@ import { IExercise } from "@Common/Interfaces/IExercise";
 import { IBranchObject, IDiaryObject } from "@Library/Common";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import { WTree } from "@Frontend/WTree";
+import { WBranches, WBranch } from "@Frontend/WBranch";
 
 //import { KeyboardInputEvent } from "electron";
 
@@ -14,6 +15,7 @@ export interface IMaestroParams {
     etc: ExtendedTransposeCalculator;
     midiInputs: Input[];
     tree?: WTree;
+    branches: WBranches;
 }
 
 interface IMaestroData extends IMaestroParams{
@@ -37,6 +39,7 @@ interface IMaestroData extends IMaestroParams{
 export class Maestro{
     private data: IMaestroData = {
         tree: null,
+        branches: null,
         etc: null,
         midiInputs: [],
         osmd : null,
