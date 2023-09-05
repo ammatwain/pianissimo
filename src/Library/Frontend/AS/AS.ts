@@ -80,6 +80,7 @@ interface IASCoreInternalData {
     args?: any;
     fn?: any;
     props?: any;
+    originalHtml: string;
     kinds?: {[key: string]: boolean};
     elements?: {[index: string]: HTMLElement};
 }
@@ -101,12 +102,14 @@ export class ASCore extends HTMLElement {
                 log: console.log,
                 rand: (max: number): number => { return Math.floor(Math.random() * max); },
             },
+            originalHtml: this.innerHTML,
             props: {},
             kinds: {
                 connected: false,
             },
             elements: {},
         };
+        this.innerHTML = "";
 
         let css: Element  = <Element>document.head.querySelector(`style#${this.tagName}`);
 

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="160"
+   height="160"
+   viewBox="0 0 42.333332 42.333335"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="radio.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="px"
+     showgrid="true"
+     units="px"
+     width="160px"
+     showguides="false"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="144.07301"
+     inkscape:cy="80.963727"
+     inkscape:window-width="1920"
+     inkscape:window-height="1051"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:snap-bbox="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3564"
+       spacingx="2.6458333"
+       spacingy="2.6458333" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path1030-3"
+       style="opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:2.34476"
+       d="M 80 10 A 70.000002 70.000002 0 0 0 10 80 A 70.000002 70.000002 0 0 0 80 150 A 70.000002 70.000002 0 0 0 150 80 A 70.000002 70.000002 0 0 0 80 10 z M 80 20 A 60 60 0 0 1 140 80 A 60 60 0 0 1 80 140 A 60 60 0 0 1 20 80 A 60 60 0 0 1 80 20 z "
+       transform="scale(0.26458333)" />
+    <path
+       id="rect3880"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke-width:0.705001"
+       d="M 9.0059033,21.166666 18.360336,30.5211 33.32743,15.554006 l -3.741774,-3.741773 -11.22532,11.22532 -5.61266,-5.61266 z" />
+  </g>
+</svg>
