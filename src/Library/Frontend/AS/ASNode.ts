@@ -59,7 +59,17 @@ ASCore.CSS["AS-NODE"] = {
                 "text-overflow": "ellipsis",
                 "vertical-align": "middle",
                 "white-space":"nowrap",
-            },
+                ">.caption":{
+                    "background-color":"transparent",
+                    "border-radius":`${$ms/4}px`,
+                    "display": "inline-block",
+                    "line-height":`${$ms}px`,
+                    "max-height": `${$ms}px`,
+                    "min-height": `${$ms}px`,
+                    "padding-left": `${$ms/4}px`,
+                    "padding-right": `${$ms/4}px`,
+                },
+        },
             ">.edit":{
                 "display": "inline-block",
                 "max-height": `${$ms}px`,
@@ -77,7 +87,11 @@ ASCore.CSS["AS-NODE"] = {
                 "vertical-align": "middle",
             },
             ":hover":{
-                "background-color":"rgb(0,0,0,0.1)",
+                ">.label":{
+                    ">.caption":{
+                        "background-color":"rgb(0,0,0,0.1)",
+                    },
+                },
             },
         },
         ">.children":{
@@ -124,13 +138,14 @@ const $_RADIO: string = ""
 export class ASNode extends ASCore {
     protected preConnect(): void{
 
-        if(this.$.args.adoptable && this.$.args.adoptable===false){
+        if("adoptable" in this.$.args && this.$.args.adoptable===false){
             this.$.kinds.adoptable = false;
+            console.log(false);
         } else {
             this.$.kinds.adoptable = true;
         }
 
-        if(this.$.args.canAdopt && this.$.args.canAdopt===false){
+        if("canAdopt" in this.$.args && this.$.args.canAdopt===false){
             this.$.kinds.canAdopt = false;
         } else {
             this.$.kinds.canAdopt = true;
@@ -163,6 +178,9 @@ export class ASNode extends ASCore {
         this.Elements.checkbox.innerHTML = $_RADIO;
         this.Elements.label = document.createElement("div");
         this.Elements.label.classList.add("label");
+        this.Elements.caption = document.createElement("span");
+        this.Elements.caption.classList.add("caption");
+        this.Elements.label.appendChild(this.Elements.caption);
         this.Elements.edit = document.createElement("div");
         this.Elements.edit.classList.add("edit");
         this.Elements.percent = document.createElement("div");
@@ -201,8 +219,21 @@ export class ASNode extends ASCore {
             this.Parent.Elements.arrow.style.fill = "#000";
         }
         this.Elements.header.style.gridTemplateColumns = `${$ms * this.Level}px ${$ms}px ${$ms}px minmax(${$ms * 4}px, 1fr) ${$ms}px ${$ms*4}px`;
+
+        this.Elements.spacer.onclick = (): void => {
+            if(this.Empty) {
+                this.toggleCheck();
+            } else {
+                this.Closed = !this.Closed;
+            }
+        };
+
         this.Elements.switcher.onclick = (): void => {
-            this.Closed = !this.Closed;
+            if(this.Empty) {
+                this.toggleCheck();
+            } else {
+                this.Closed = !this.Closed;
+            }
         };
 
         this.Elements.checkbox.onclick = (): void => {
@@ -211,6 +242,42 @@ export class ASNode extends ASCore {
 
         this.Elements.label.onclick = (): void => {
             this.toggleCheck();
+        };
+
+        this.ondragend = (event: DragEvent): void => {
+            const dragTarget: ASNode = this.DragTarget;
+            const dropTarget: ASNode = this.DropTarget;
+            event.stopImmediatePropagation();
+            if (
+                dragTarget instanceof ASNode &&
+                dropTarget instanceof ASNode &&
+                dragTarget !== dropTarget
+            ){
+                if(dragTarget.IsAdoptable){
+                    if(dropTarget.IsRoot){
+                        dropTarget.appendNode(dragTarget.removeNode());
+                    } else if(dropTarget.CanAdopt){
+                        if(dropTarget.Empty){
+                            dragTarget.removeNode();
+                            dropTarget.Parent.appendNode(dragTarget);
+                        } else {
+                            dragTarget.insertBeforeNode(dropTarget);
+                        }
+                    }
+                } else if (dragTarget.Parent === dropTarget.Parent){
+                    console.log("// chi c'è prima?");
+                    const s: number = dragTarget.Index;
+                    const d: number = dropTarget.Index;
+                    console.log(s,d);
+                    if (s>d) {
+                        dragTarget.insertBeforeNode(dropTarget);
+                    } else if (d>s) {
+                        dragTarget.insertAfterNode(dropTarget);
+                    }
+                }
+            }
+            this.DropTarget = null;
+            this.DragTarget = null;
         };
 
         this.ondragenter = (event: DragEvent): void => {
@@ -223,13 +290,32 @@ export class ASNode extends ASCore {
                 dragTarget.Parent !== dropTarget &&
                 dropTarget.isNotChildOf(dragTarget)
             ) {
-                this.DropTarget = dropTarget;
-                console.log("ON DRAG ENTER", dragTarget.Caption, dropTarget.Caption)
-                event.stopImmediatePropagation();
+                // altri controlli
+                if (
+                    (
+                        dragTarget.IsAdoptable &&
+                        (
+                            dropTarget.IsRoot || (
+                                dropTarget.Parent &&
+                                dropTarget.Parent.CanAdopt
+                            )
+                        )
+                    )
+                    ||
+                    (dragTarget.IsNotAdoptable && dragTarget.Parent === dropTarget.Parent)
+                ){
+                    this.DropTarget = dropTarget;
+                    console.log("ON DRAG ENTER", dragTarget.Caption, dragTarget.IsAdoptable, dropTarget.Caption);
+                    event.stopImmediatePropagation();
+                }
             } else {
                 event.stopImmediatePropagation();
                 this.DropTarget = null;
             }
+        };
+
+        this.ondragover = (event: DragEvent): void => {
+            event.dataTransfer.dropEffect = "copy";
         };
 
         this.ondragleave = (event: DragEvent): void => {
@@ -245,28 +331,56 @@ export class ASNode extends ASCore {
         };
 
         this.ondragstart = (event: DragEvent): void =>{
-            event.stopImmediatePropagation();
-            const dropTarget: ASNode = <ASNode>event.target;
+            const dragTarget: ASNode = <ASNode>event.target;
             if (
-                dropTarget instanceof ASNode &&
-                dropTarget === this &&
-                this.DragTarget !== dropTarget
+                dragTarget instanceof ASNode &&
+                dragTarget === this
             ) {
+                event.stopImmediatePropagation();
+                this.DropTarget = null;
+                event.dataTransfer.setDragImage(
+                    this.Elements.caption,
+                    this.Elements.caption.offsetWidth/2,
+                    this.Elements.caption.offsetHeight/2
+                );
                 this.DragTarget = this;
-                console.log("ON DRAG START", this.DragTarget)
+                console.log("ON DRAG START", this.DragTarget);
             }
-        }
-    
-
+        };
     }
 
-    public addNode(node: ASNode): ASNode {
+    public appendNode(node: ASNode): ASNode {
         if (!this.Elements.items) {
             this.Elements.items = document.createElement("div");
             this.Elements.items.classList.add("children");
         }
         return this.Elements.items.appendChild(node);
     }
+
+    public removeNode(): ASNode {
+        if (this.parentNode) {
+            return this.parentNode.removeChild(this);
+        } else {
+            return null;
+        }
+    }
+
+    public insertAfterNode(existingNode: ASNode): ASNode {
+        if(existingNode && existingNode.parentNode && this.parentNode){
+            return existingNode.parentNode.insertBefore(this.removeNode(), existingNode.nextSibling);
+        } else {
+            return null;
+        }
+    }
+
+    public insertBeforeNode(existingNode: ASNode): ASNode {
+        if(existingNode && existingNode.parentNode && this.parentNode){
+            return existingNode.parentNode.insertBefore(this.removeNode(),existingNode);
+        } else {
+            return null;
+        }
+    }
+
 
     private drawPercent(): void {
         this.Elements.percent.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${this.Percent}%, rgba(0,0,0,0.333) ${this.Percent}%)`;
@@ -302,15 +416,10 @@ export class ASNode extends ASCore {
         return this.Checked;
     }
 
-    public get Adoptable(): boolean {
-        return Boolean(this.$.kinds.adoptable);
-    }
-
-    public set Adoptable(adoptable: boolean) {
-        this.$.kinds.adoptable = adoptable;
-    }
-
     public get CanAdopt(): boolean {
+        if (!("canAdopt" in this.$.kinds)) {
+            this.$.kinds.canAdopt = true;
+        }
         return Boolean(this.$.kinds.canAdopt);
     }
 
@@ -318,12 +427,20 @@ export class ASNode extends ASCore {
         this.$.kinds.canAdopt = canAdopt;
     }
 
+    public get CannotAdopt(): boolean {
+        return !this.CanAdopt;
+    }
+
+    public set CannotAdopt(cannotAdopt: boolean) {
+        this.CanAdopt = !cannotAdopt;
+    }
+
     public get Caption(): string {
-        return this.Elements.label.textContent;
+        return this.Elements.caption.textContent;
     }
 
     public set Caption(caption: string) {
-        this.Elements.label.textContent = caption;
+        this.Elements.caption.textContent = caption;
     }
 
     public get Checked(): boolean {
@@ -373,7 +490,7 @@ export class ASNode extends ASCore {
     }
 
     public set DropTarget(dropTarget: ASNode) {
-        let oldDropTarget: ASNode = this.DropTarget;
+        const oldDropTarget: ASNode = this.DropTarget;
         if  (this.DragTarget && dropTarget instanceof ASNode) {
             this.Root.$.props.dropTarget = dropTarget;
         } else {
@@ -390,6 +507,10 @@ export class ASNode extends ASCore {
         }
     }
 
+    public get Empty(): boolean {
+        return !(this.Items.length > 0);
+    }
+
     public get HalfChecked(): boolean {
         return this.Elements.check.style.fillOpacity === String(0.333);
     }
@@ -403,6 +524,34 @@ export class ASNode extends ASCore {
         if (this.Parent) {
             this.Parent.HalfChecked = halfChecked;
         }
+    }
+
+    public get Index(): number {
+        if (this.Parent) {
+            return this.Parent.Items.indexOf(this);
+        } else {
+            return 0;
+        }
+    }
+
+    public get IsAdoptable(): boolean {
+        return Boolean(this.$.kinds.adoptable);
+    }
+
+    public set IsAdoptable(adoptable: boolean) {
+        this.$.kinds.adoptable = adoptable;
+    }
+
+    public get IsNotAdoptable(): boolean {
+        return !this.IsAdoptable;
+    }
+
+    public set IsNotAdoptable(notAdoptable: boolean) {
+        this.IsAdoptable = !notAdoptable;
+    }
+
+    public get IsRoot(): boolean {
+        return this === this.Root;
     }
 
     /**

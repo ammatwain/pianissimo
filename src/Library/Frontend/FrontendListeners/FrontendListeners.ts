@@ -15,7 +15,7 @@ export function FrontendListeners( app: App): void {
     window.electron.ipcRenderer.sendMessage(STR.requestSheetList, {});
 }
 
-function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = "") {
+function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = ""): void {
     const walk: Walk = new Walk(sheetLibrary);
     node.Caption = rootCaption;
     node.setAttribute("draggable","false");
@@ -24,7 +24,7 @@ function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = ""
     });
 }
 
-function walkTree(branchClass: BranchClass, parent: ASNode){
+function walkTree(branchClass: BranchClass, parent: ASNode): void {
     console.log(branchClass.Name);
     const args: any = {};
     if (branchClass.Type === "book") {
@@ -39,7 +39,13 @@ function walkTree(branchClass: BranchClass, parent: ASNode){
         args.percent = branchClass.Percent;
     }
     args.caption = branchClass.Name;
-    const item: ASNode = parent.addNode(new ASNode(args));
+    const item: ASNode = parent.appendNode(new ASNode(args));
+    if (branchClass.Type==="section") {
+        args.caption = "A";
+        parent.appendNode(new ASNode(args));
+        args.caption = "B";
+        parent.appendNode(new ASNode(args));
+    }
     branchClass.Children.forEach((branch: BranchClass) => {
         walkTree(branch, item);
     });

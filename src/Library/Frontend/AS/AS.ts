@@ -8,14 +8,17 @@ stopPropagation              Yes           No              No
 stopImmediatePropagation     Yes           No              Yes
 */
 
-/*
-interface HTMLElement {
-    insertAfter: (newNode: HTMLElement, existingNode: Node) => HTMLElement;
+
+declare global {
+    interface HTMLElement {
+        insertAfter: (newNode: HTMLElement, existingNode: Node) => HTMLElement;
+    }
 }
+
 HTMLElement.prototype.insertAfter = (newNode: HTMLElement, existingNode: Node): HTMLElement => {
     return existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
 };
-*/
+
 function stopEvent(e: Event): boolean{
     e.stopPropagation();
     e.stopImmediatePropagation();
