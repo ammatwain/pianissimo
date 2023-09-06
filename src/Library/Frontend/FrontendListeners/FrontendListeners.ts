@@ -5,6 +5,8 @@ import { BranchClass } from "@Frontend/BranchClass";
 import { WTree } from "@Frontend/WTree";
 import { Maestro } from "@Frontend/Maestro";
 import { Input, NoteMessageEvent } from "@Frontend/WebMidi";
+import { ASNode } from "@Frontend/AS";
+import { Walk } from "@Library/Common";
 
 export function FrontendListeners( app: App): void {
     documentFrontendListeners();
@@ -13,13 +15,42 @@ export function FrontendListeners( app: App): void {
     window.electron.ipcRenderer.sendMessage(STR.requestSheetList, {});
 }
 
+function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = "") {
+    const walk: Walk = new Walk(sheetLibrary);
+    node.Caption = rootCaption;
+    node.setAttribute("draggable","false");
+    walk.TreeClasses.forEach((branch: BranchClass) => {
+        walkTree(branch, node);
+    });
+}
+
+function walkTree(branchClass: BranchClass, parent: ASNode){
+    console.log(branchClass.Name);
+    const args: any = {};
+    if (branchClass.Type === "book") {
+        args.adoptable = true;
+        args.canAdopt = true;
+    } else if (branchClass.Type === "sheet") {
+        args.adoptable = true;
+        args.canAdopt = false;
+    } else if (branchClass.Type === "section") {
+        args.adoptable = false;
+        args.canAdopt = false;
+        args.percent = branchClass.Percent;
+    }
+    args.caption = branchClass.Name;
+    const item: ASNode = parent.addNode(new ASNode(args));
+    branchClass.Children.forEach((branch: BranchClass) => {
+        walkTree(branch, item);
+    });
+}
 
 function appFrontendListeners(app: App): void {
 
     window.electron.ipcRenderer.on( STR.responseSheetList, (sheetLibrary: IBranchObject[]) => {
         if (app.Tree && app.Tree instanceof WTree){
             app.Tree.initialize(sheetLibrary);
-            //app.Branches.initialize(sheetLibrary);
+            fillNodes(sheetLibrary, app.AsNode, "Libreria di Pianissimo");
         }
     });
 

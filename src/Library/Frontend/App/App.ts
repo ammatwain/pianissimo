@@ -12,6 +12,7 @@ import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import "./App.scss";
 import { FrontendListeners } from "@Frontend/FrontendListeners";
 import { WBranches } from "@Frontend/WBranch";
+import { ASNode } from "@Library/index";
 
 /*
 import { electronHandler } from "../";
@@ -28,13 +29,15 @@ interface IAppData {
     tabs?: WTabContainer;
     treeDivID?: string;
     tree?: WTree;
+    branchesDivID?: string;
     branches?: WBranches;
+    asNodeDivID?: string;
+    asNode?: ASNode;
     errorTdId?: string;
     errorTd?: HTMLTableCellElement;
     errorTrId?: string;
     errorTr?: HTMLTableRowElement;
     osmdDivId?: string;
-    branchesDivID?: string;
     osmd?: OpenSheetMusicDisplay;
     etc?: ExtendedTransposeCalculator;
     midiInput?: Input[];
@@ -48,6 +51,7 @@ export class App {
         osmdDivId: string = "osmd",
         treeDivID: string = "tree",
         branchesDivID: string = "branches",
+        asNodeDivId: string ="asnode",
         errorTdId: string = "error-td",
         errorTrId: string = "error-tr"
     ) {
@@ -55,6 +59,7 @@ export class App {
         this.data.errorTrId = errorTrId;
         this.data.treeDivID = treeDivID;
         this.data.branchesDivID = branchesDivID;
+        this.data.asNodeDivID = asNodeDivId;
         this.data.osmdDivId = osmdDivId;
         document.addEventListener("DOMContentLoaded",() => {
             this.domContentLoaded();
@@ -90,6 +95,7 @@ export class App {
 
             this.data.tree = <WTree>document.querySelector(`#${this.data.treeDivID}`);
             this.data.branches = <WBranches>document.querySelector(`#${this.data.branchesDivID}`);
+            this.data.asNode = <ASNode>document.querySelector(`#${this.data.asNodeDivID}`);
             this.data.maestro = new Maestro({etc: this.Etc, midiInputs: this.MidiInputs, tree: this.Tree, branches: this.data.branches});
             this.data.tree.onChange = (): void => {
                 const values: number[] = this.data.tree.getValues();
@@ -148,6 +154,10 @@ export class App {
 
     public get MidiInputs(): Input[] {
         return this.data.midiInput || null;
+    }
+
+    public get AsNode(): ASNode {
+        return this.data.asNode || null;
     }
 
     public get Tree(): WTree {
