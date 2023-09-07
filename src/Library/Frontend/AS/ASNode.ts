@@ -207,6 +207,48 @@ export class ASNode extends ASCore {
 
         this.$.props.dragTarget = null;
         this.$.props.dropTarget = null;
+        this.$.props.dragAndDropMode = 0;
+    }
+
+    getDragAndDropMode(drag: ASNode, drop: ASNode): number {
+        if (
+            drag &&
+            drag instanceof ASNode &&
+            drop &&
+            drop instanceof ASNode &&
+            drag !== drop
+        ) {
+            if (drag.isSiblingOf(drop)) {
+                if (drag.Index < drop.Index) {
+                    return 1;
+                } else {
+                    return 2;
+                }
+            } else {
+                if (drag.IsAdoptable) {
+                    if (drop.isNotChildOf(drag)){
+                        if (drop.Empty) {
+                            if(drop.CanAdopt){
+                                return 3;
+                            }
+                        } else {
+                            if (drop.Parent) {
+                                if(drop.Parent.CanAdopt){
+                                    return 2;
+                                }
+                            } else {
+                                if(drag.Parent !== drop){
+                                    if(drop.CanAdopt){
+                                        return 3;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     protected connect(): void{
@@ -245,6 +287,17 @@ export class ASNode extends ASCore {
         };
 
         this.ondragend = (event: DragEvent): void => {
+            event.stopImmediatePropagation();
+            if (this.DragAndDropMode === 1) {
+                this.DragTarget.insertAfterNode(this.DropTarget);
+            } else if (this.DragAndDropMode === 2) {
+                this.DragTarget.insertBeforeNode(this.DropTarget);
+            } else if (this.DragAndDropMode === 3) {
+                this.DropTarget.appendNode(this.DragTarget);
+            }
+        };
+/*
+        this.ondragend = (event: DragEvent): void => {
             const dragTarget: ASNode = this.DragTarget;
             const dropTarget: ASNode = this.DropTarget;
             event.stopImmediatePropagation();
@@ -279,7 +332,8 @@ export class ASNode extends ASCore {
             this.DropTarget = null;
             this.DragTarget = null;
         };
-
+*/
+/*
         this.ondragenter = (event: DragEvent): void => {
             const dragTarget: ASNode = this.DragTarget;
             const dropTarget: ASNode = <ASNode>event.currentTarget;
@@ -311,6 +365,16 @@ export class ASNode extends ASCore {
             } else {
                 event.stopImmediatePropagation();
                 this.DropTarget = null;
+            }
+        };
+*/
+        this.ondragenter = (event: DragEvent): void => {
+            const dragTarget: ASNode = this.DragTarget;
+            const dropTarget: ASNode = <ASNode>event.currentTarget;
+            this.DragAndDropMode = this.getDragAndDropMode(dragTarget, dropTarget);
+            if (this.DragAndDropMode) {
+                event.stopImmediatePropagation();
+                this.DropTarget = dropTarget;
             }
         };
 
@@ -355,6 +419,14 @@ export class ASNode extends ASCore {
             this.Elements.items.classList.add("children");
         }
         return this.Elements.items.appendChild(node);
+    }
+
+    public isSiblingOf(node: ASNode): boolean {
+        if (node instanceof ASNode) {
+            return this.Parent === node.Parent;
+        } else {
+            return false;
+        }
     }
 
     public removeNode(): ASNode {
@@ -472,6 +544,14 @@ export class ASNode extends ASCore {
         }
     }
 
+    private get DragAndDropMode(): number {
+        return this.Root.$.props.dragAndDropMode || 0;
+    }
+
+    private set DragAndDropMode(dragAndDropMode: number) {
+        this.Root.$.props.dragAndDropMode = dragAndDropMode;
+    }
+
     public get DragTarget(): ASNode {
         return <ASNode>this.Root.$.props.dragTarget || null;
     }
@@ -498,10 +578,10 @@ export class ASNode extends ASCore {
         }
         if (oldDropTarget!==this.DropTarget) {
             if (oldDropTarget instanceof ASNode) {
-                oldDropTarget.Elements.header.style.backgroundColor = "";
+                oldDropTarget.Elements.label.style.backgroundColor = "";
             }
             if (this.DropTarget instanceof ASNode) {
-                this.DropTarget.Elements.header.style.backgroundColor = "yellow";
+                this.DropTarget.Elements.label.style.backgroundColor = "yellow";
             }
             console.log("DROP TARGET", this.DropTarget);
         }
