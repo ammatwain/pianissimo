@@ -140,7 +140,6 @@ export class ASNode extends ASCore {
 
         if("adoptable" in this.$.args && this.$.args.adoptable===false){
             this.$.kinds.adoptable = false;
-            console.log(false);
         } else {
             this.$.kinds.adoptable = true;
         }
@@ -157,20 +156,19 @@ export class ASNode extends ASCore {
             this.$.kinds.draggable = true;
         }
 
-        if(this.$.args.caption && this.$.args.caption !== ""){
+        if("caption" in this.$.args && this.$.args.caption !== ""){
             this.$.props.caption = this.$.args.caption;
         } else {
             this.$.props.caption = "";
         }
 
-        if(this.$.args.percent && this.$.args.percent !== null){
+        if("percent" in this.$.args && this.$.args.percent !== null){
             this.$.props.percent = Number(this.$.args.percent);
         } else {
             this.$.props.percent = 0;
         }
 
         this.setAttribute("draggable", String(this.$.kinds.draggable));
-        console.log("draggable", String(this.$.kinds.draggable));
         this.classList.add("closed");
 
         this.$.props.selected = null;
@@ -356,7 +354,6 @@ export class ASNode extends ASCore {
                     this.Elements.caption.offsetHeight/2
                 );
                 this.DragTarget = this;
-                console.log("ON DRAG START", this.DragTarget);
             }
         };
     }
@@ -531,7 +528,6 @@ export class ASNode extends ASCore {
             if (this.DropTarget instanceof ASNode) {
                 this.DropTarget.Elements.label.style.backgroundColor = "yellow";
             }
-            console.log("DROP TARGET", this.DropTarget);
         }
     }
 

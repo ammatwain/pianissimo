@@ -87,7 +87,41 @@ interface IASCoreInternalData {
     kinds?: {[key: string]: boolean};
     elements?: {[index: string]: HTMLElement};
 }
-export class ASCore extends HTMLElement {
+
+export class AS extends HTMLElement {
+    protected getConstructorChain(obj: any, type: string): any {
+        const cs: any[] = [];
+        let pt: any = obj;
+        do {
+           pt = Object.getPrototypeOf(pt)
+           if (pt) {
+                cs.push(pt.constructor || null);
+           }
+        } while (pt != null);
+        return type === "names" ? cs.map(function(c) {
+            return c ? c.toString().split(/\s|\(/)[1] : null;
+        }) : cs;
+    }
+
+    protected get ClassesArray(): string[] {
+        const cn: string[] = this.getConstructorChain(this,"names");
+        const result : string[] = [];
+        for(let i: number = cn.length-1; cn[i]!=="AS"; i--) {
+            cn.pop();
+        }
+        for(let i: number = cn.length-1; i>=0; i--) {
+            result.push(cn[i]);
+        }
+        return result;
+    }
+
+    protected get ClassesString(): string {
+        return `.${this.ClassesArray.join(".")}`;
+    }
+
+}
+
+export class ASCore extends AS {
 
     public static CSS: any  = {};
 
@@ -95,6 +129,7 @@ export class ASCore extends HTMLElement {
 
     constructor(args: any = {} ){
         super();
+        console.log(this.ClassesString);
         this.$ = {
             args: args,
             fn: {

@@ -25,7 +25,6 @@ function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = ""
 }
 
 function walkTree(branchClass: BranchClass, parent: ASNode): void {
-    console.log(branchClass.Name);
     const args: any = {};
     if (branchClass.Type === "book") {
         args.adoptable = true;
