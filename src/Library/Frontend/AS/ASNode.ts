@@ -242,7 +242,7 @@ export class ASNode extends ASCore {
                     if (drag.IsNotAdoptable || drop.IsNotAdoptable ) {
                         if (drag.Index===0 || drop.Index===0){
                             return 0;
-                        } 
+                        }
                     }
                     if (drag.Index < drop.Index) {
                         return 1;

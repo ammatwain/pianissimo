@@ -150,14 +150,14 @@ export class ASCore extends HTMLElement {
         let s: string = "";
         if (cssTemplate instanceof Object) {
             Object.keys(cssTemplate).forEach((cssTemplateKey)=>{
-            const value: any = cssTemplate[cssTemplateKey];
-            if (value instanceof Object){
-                if (parents !== "") {s += "}\r\n";}
-                const par: string= `${parents}${cssTemplateKey}`;
-                s +=`${par}{\r\n${this.processTemplateObject(value,par)}`;
-            } else {
-                s += `\t${cssTemplateKey}:${value};\r\n`;
-            }
+                const value: any = cssTemplate[cssTemplateKey];
+                if (value instanceof Object){
+                    if (parents !== "") {s += "}\r\n";}
+                    const par: string= `${parents}${cssTemplateKey}`;
+                    s +=`${par}{\r\n${this.processTemplateObject(value,par)}`;
+                } else {
+                    s += `\t${cssTemplateKey}:${value};\r\n`;
+                }
             });
             if (parents === "") {s += "}\r\n";}
         }
