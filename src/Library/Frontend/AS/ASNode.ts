@@ -151,6 +151,12 @@ export class ASNode extends ASCore {
             this.$.kinds.canAdopt = true;
         }
 
+        if("draggable" in this.$.args && this.$.args.draggable===false){
+            this.$.kinds.draggable = false;
+        } else {
+            this.$.kinds.draggable = true;
+        }
+
         if(this.$.args.caption && this.$.args.caption !== ""){
             this.$.props.caption = this.$.args.caption;
         } else {
@@ -163,7 +169,8 @@ export class ASNode extends ASCore {
             this.$.props.percent = 0;
         }
 
-        this.setAttribute("draggable","true");
+        this.setAttribute("draggable", String(this.$.kinds.draggable));
+        console.log("draggable", String(this.$.kinds.draggable));
         this.classList.add("closed");
 
         this.$.props.selected = null;
@@ -198,6 +205,16 @@ export class ASNode extends ASCore {
         this.Caption = this.$.props.caption;
         this.Percent = this.$.props.percent;
 
+        if (this.CannotAdopt){
+            this.Elements.caption.style.fontSize = "100%";
+            this.Elements.caption.style.fontStyle = "normal";
+            this.Elements.caption.style.fontWeight = "bold";
+        }
+        if (this.IsNotAdoptable){
+            this.Elements.caption.style.fontSize = "80%";
+            this.Elements.caption.style.fontStyle = "italic";
+            this.Elements.caption.style.fontWeight = "100";
+        }
         this.Elements.arrow = this.Elements.switcher.querySelector("svg>path#arrow");
         this.Elements.check = this.Elements.checkbox.querySelector("svg>path#check");
         this.Elements.check.style.fillOpacity = String(0);
@@ -219,10 +236,19 @@ export class ASNode extends ASCore {
             drag !== drop
         ) {
             if (drag.isSiblingOf(drop)) {
-                if (drag.Index < drop.Index) {
-                    return 1;
+                if (drop.Empty && drop.CanAdopt && drag.IsAdoptable) {
+                    return 3;
                 } else {
-                    return 2;
+                    if (drag.IsNotAdoptable || drop.IsNotAdoptable ) {
+                        if (drag.Index===0 || drop.Index===0){
+                            return 0;
+                        } 
+                    }
+                    if (drag.Index < drop.Index) {
+                        return 1;
+                    } else {
+                        return 2;
+                    }
                 }
             } else {
                 if (drag.IsAdoptable) {
@@ -295,102 +321,24 @@ export class ASNode extends ASCore {
             } else if (this.DragAndDropMode === 3) {
                 this.DropTarget.appendNode(this.DragTarget);
             }
-        };
-/*
-        this.ondragend = (event: DragEvent): void => {
-            const dragTarget: ASNode = this.DragTarget;
-            const dropTarget: ASNode = this.DropTarget;
-            event.stopImmediatePropagation();
-            if (
-                dragTarget instanceof ASNode &&
-                dropTarget instanceof ASNode &&
-                dragTarget !== dropTarget
-            ){
-                if(dragTarget.IsAdoptable){
-                    if(dropTarget.IsRoot){
-                        dropTarget.appendNode(dragTarget.removeNode());
-                    } else if(dropTarget.CanAdopt){
-                        if(dropTarget.Empty){
-                            dragTarget.removeNode();
-                            dropTarget.Parent.appendNode(dragTarget);
-                        } else {
-                            dragTarget.insertBeforeNode(dropTarget);
-                        }
-                    }
-                } else if (dragTarget.Parent === dropTarget.Parent){
-                    console.log("// chi c'è prima?");
-                    const s: number = dragTarget.Index;
-                    const d: number = dropTarget.Index;
-                    console.log(s,d);
-                    if (s>d) {
-                        dragTarget.insertBeforeNode(dropTarget);
-                    } else if (d>s) {
-                        dragTarget.insertAfterNode(dropTarget);
-                    }
-                }
-            }
-            this.DropTarget = null;
             this.DragTarget = null;
+            this.DropTarget = null;
         };
-*/
-/*
+
         this.ondragenter = (event: DragEvent): void => {
-            const dragTarget: ASNode = this.DragTarget;
-            const dropTarget: ASNode = <ASNode>event.currentTarget;
-            if (
-                dragTarget &&
-                dropTarget instanceof ASNode &&
-                dragTarget !== dropTarget &&
-                dragTarget.Parent !== dropTarget &&
-                dropTarget.isNotChildOf(dragTarget)
-            ) {
-                // altri controlli
-                if (
-                    (
-                        dragTarget.IsAdoptable &&
-                        (
-                            dropTarget.IsRoot || (
-                                dropTarget.Parent &&
-                                dropTarget.Parent.CanAdopt
-                            )
-                        )
-                    )
-                    ||
-                    (dragTarget.IsNotAdoptable && dragTarget.Parent === dropTarget.Parent)
-                ){
-                    this.DropTarget = dropTarget;
-                    console.log("ON DRAG ENTER", dragTarget.Caption, dragTarget.IsAdoptable, dropTarget.Caption);
+            if (this.DragTarget) {
+                const dragTarget: ASNode = this.DragTarget;
+                const dropTarget: ASNode = <ASNode>event.currentTarget;
+                if (dropTarget===dragTarget){
                     event.stopImmediatePropagation();
+                    this.DropTarget = null;
+                } if (dropTarget===this){
+                    this.DragAndDropMode = this.getDragAndDropMode(dragTarget, dropTarget);
+                    if (this.DragAndDropMode) {
+                        event.stopImmediatePropagation();
+                        this.DropTarget = dropTarget;
+                    }
                 }
-            } else {
-                event.stopImmediatePropagation();
-                this.DropTarget = null;
-            }
-        };
-*/
-        this.ondragenter = (event: DragEvent): void => {
-            const dragTarget: ASNode = this.DragTarget;
-            const dropTarget: ASNode = <ASNode>event.currentTarget;
-            this.DragAndDropMode = this.getDragAndDropMode(dragTarget, dropTarget);
-            if (this.DragAndDropMode) {
-                event.stopImmediatePropagation();
-                this.DropTarget = dropTarget;
-            }
-        };
-
-        this.ondragover = (event: DragEvent): void => {
-            event.dataTransfer.dropEffect = "copy";
-        };
-
-        this.ondragleave = (event: DragEvent): void => {
-            const leaved: ASNode = <ASNode>event.currentTarget;
-            if (
-                leaved instanceof ASNode &&
-                leaved !== this.DragTarget
-            ) {
-                event.stopImmediatePropagation();
-                leaved.style.backgroundColor = "";
-
             }
         };
 
@@ -545,7 +493,7 @@ export class ASNode extends ASCore {
     }
 
     private get DragAndDropMode(): number {
-        return this.Root.$.props.dragAndDropMode || 0;
+        return Number(this.Root.$.props.dragAndDropMode) || 0;
     }
 
     private set DragAndDropMode(dragAndDropMode: number) {

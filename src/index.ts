@@ -70,7 +70,8 @@ if(!(app.isPackaged && FS.existsSync(Config.Database))) {
     ).all();
     sheets.forEach((n: {id: number})=>{
         preLetture.exec(
-            `INSERT INTO "library" ("parentid","type","sequence","name") VALUES (${n.id},'${STR.section}','-1.0','Default');`
+            `INSERT INTO "library" ("parentid","type","sequence","name") VALUES
+            (${n.id},'${STR.section}','-1.0','Play it from beginning to end, including repetitions');`
         );
     });
     preLetture.Db.close();
