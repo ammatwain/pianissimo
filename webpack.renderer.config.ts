@@ -17,10 +17,10 @@ rules.push({
 });
 
 export const rendererConfig: Configuration = {
+    plugins,
     module: {
         rules,
     },
-    plugins,
     resolve: {
         extensions: ['.js', '.ts', '.jsx', '.tsx', '.css'],
         plugins: [new TsconfigPathsPlugin({ configFile: "./tsconfig.json" })],

@@ -93,7 +93,7 @@ export class AS extends HTMLElement {
         const cs: any[] = [];
         let pt: any = obj;
         do {
-           pt = Object.getPrototypeOf(pt)
+           pt = Object.getPrototypeOf(pt);
            if (pt) {
                 cs.push(pt.constructor || null);
            }
@@ -105,7 +105,7 @@ export class AS extends HTMLElement {
 
     protected get ClassesArray(): string[] {
         const cn: string[] = this.getConstructorChain(this,"names");
-        const result : string[] = [];
+        const result: string[] = [];
         for(let i: number = cn.length-1; cn[i]!=="AS"; i--) {
             cn.pop();
         }

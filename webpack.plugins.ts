@@ -1,6 +1,6 @@
 import path from 'path';
-// eslint-disable-next-line import/default
-import CopyPlugin from 'copy-webpack-plugin';
+import FileManagerPlugin from 'filemanager-webpack-plugin';
+
 import type IForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -10,10 +10,15 @@ export const plugins = [
     new ForkTsCheckerWebpackPlugin({
         logger: 'webpack-infrastructure',
     }),
-    new CopyPlugin({
-        patterns: [
-            { from: path.resolve(__dirname, "src/Data"), to: path.resolve(__dirname, ".webpack/main/Data")},
-            { from: path.resolve(__dirname, "src/pianissimo.png"), to: path.resolve(__dirname, ".webpack/main/pianissimo.png")},
-        ],
+    new FileManagerPlugin({
+        events: {
+            onStart: {
+                copy: [
+                    { source: path.resolve(__dirname, "src/Data"), destination: path.resolve(__dirname, ".webpack/main/Data") },
+                    { source: path.resolve(__dirname, "src/pianissimo.png"), destination: path.resolve(__dirname, ".webpack/main/pianissimo.png")},
+                ],
+            },
+        },
     }),
+
 ];
