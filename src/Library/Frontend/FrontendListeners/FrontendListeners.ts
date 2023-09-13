@@ -5,8 +5,11 @@ import { BranchClass } from "@Frontend/BranchClass";
 import { WTree } from "@Frontend/WTree";
 import { Maestro } from "@Frontend/Maestro";
 import { Input, NoteMessageEvent } from "@Frontend/WebMidi";
-import { ASNode } from "@Frontend/AS";
 import { Walk } from "@Library/Common";
+import { ASNode } from "@Frontend/AS/ASNode";
+import { BookNode } from "@Frontend/AS/BookNode";
+import { SheetNode } from "@Frontend/AS/SheetNode";
+import { SectionNode } from "@Frontend/AS/SectionNode";
 
 export function FrontendListeners( app: App): void {
     documentFrontendListeners();
@@ -26,25 +29,36 @@ function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = ""
 
 function walkTree(branchClass: BranchClass, parent: ASNode): void {
     const args: any = {};
+    args.caption = branchClass.Name;
+    let item: ASNode;
     if (branchClass.Type === "book") {
         args.adoptable = true;
         args.canAdopt = true;
+        item =  parent.appendNode(new BookNode(args))        
     } else if (branchClass.Type === "sheet") {
         args.adoptable = true;
         args.canAdopt = false;
+        item =  parent.appendNode(new SheetNode(args))        
     } else if (branchClass.Type === "section") {
         args.adoptable = false;
         args.canAdopt = false;
         args.percent = branchClass.Percent;
+        item =  parent.appendNode(new SectionNode(args))        
     }
-    args.caption = branchClass.Name;
-    const item: ASNode = parent.appendNode(new ASNode(args));
+
+//    const item: ASNode = parent.appendNode(new ASNode(args));
+    /*
+    START TEST
+    */
     if (branchClass.Type==="section") {
         args.caption = "A";
-        parent.appendNode(new ASNode(args));
+        parent.appendNode(new SectionNode(args));
         args.caption = "B";
-        parent.appendNode(new ASNode(args));
+        parent.appendNode(new SectionNode(args));
     }
+    /*
+    END TEST
+    */
     branchClass.Children.forEach((branch: BranchClass) => {
         walkTree(branch, item);
     });

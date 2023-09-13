@@ -12,7 +12,7 @@ import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import "./App.scss";
 import { FrontendListeners } from "@Frontend/FrontendListeners";
 import { WBranches } from "@Frontend/WBranch";
-import { ASNode } from "@Library/index";
+import { ASNode } from "@Frontend/AS/ASNode";
 
 /*
 import { electronHandler } from "../";

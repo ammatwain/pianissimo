@@ -1,120 +1,7 @@
-import { ASCore } from "./AS";
+import { ASSCSS } from "./ASCSS";
+import { ASCore } from "./ASCore";
 
 const $ms: number = 24;
-
-ASCore.CSS["AS-NODE"] = {
-    "AS-NODE": {
-        "background-color":"transparent",
-        "cursor":"pointer",
-        "display": "grid",
-        "gap":`${$ms/12}px`,
-        "grid-template-rows": "auto 1fr",
-        "user-select": "none",
-        ">.header":{
-            "display": "grid",
-            "grid-template-columns": `auto ${$ms}px ${$ms}px minmax(${$ms * 4}px, 1fr) ${$ms}px ${$ms*4}px`,
-            "max-height": `${$ms}px`,
-            "min-height": `${$ms}px`,
-            ">.spacer":{
-                "display": "inline-block",
-            },
-            ">.switcher":{
-                "background-color":"inherited",
-                "border-radius":"50%",
-                "box-sizing":"border-box",
-                "display": "inline-block",
-                "vertical-align": "middle",
-                "max-height": `${$ms}px`,
-                "max-width": `${$ms}px`,
-                "min-height": `${$ms}px`,
-                "min-width": `${$ms}px`,
-                ">svg":{
-                    "transition": "all 100ms ease-out",
-                    "transform":"rotate(0deg)",
-                },
-            },
-            ">.checkbox":{
-                "background-color":"inherited",
-                "border": `${$ms/12}px solid rgba(0,0,0,0.5)`,
-                "border-radius":"50%",
-                "box-sizing":"border-box",
-                "display": "inline-block",
-                "max-height": `${$ms}px`,
-                "max-width": `${$ms}px`,
-                "min-height": `${$ms}px`,
-                "min-width": `${$ms}px`,
-                "vertical-align": "middle",
-                ":hover":{
-                    "box-shadow": "0 0 2px 2px #666;",
-                },
-            },
-            ">.label":{
-                "display": "inline-block",
-                "max-height": `${$ms}px`,
-                "min-height": `${$ms}px`,
-                "line-height": `${$ms}px`,
-                "overflow":"hidden",
-                "padding-left": `${$ms/4}px`,
-                "padding-right": `${$ms/4}px`,
-                "text-overflow": "ellipsis",
-                "vertical-align": "middle",
-                "white-space":"nowrap",
-                ">.caption":{
-                    "background-color":"transparent",
-                    "border-radius":`${$ms/4}px`,
-                    "display": "inline-block",
-                    "line-height":`${$ms}px`,
-                    "max-height": `${$ms}px`,
-                    "min-height": `${$ms}px`,
-                    "padding-left": `${$ms/4}px`,
-                    "padding-right": `${$ms/4}px`,
-                },
-        },
-            ">.edit":{
-                "display": "inline-block",
-                "max-height": `${$ms}px`,
-                "min-height": `${$ms}px`,
-                "vertical-align": "middle",
-            },
-            ">.percent":{
-                "background-color":"red",
-                "border-radius":`${$ms/2}px`,
-                "display": "inline-block",
-                "line-height": `${$ms}px`,
-                "max-height": `${$ms}px`,
-                "min-height": `${$ms}px`,
-                "text-align": "center",
-                "vertical-align": "middle",
-            },
-            ":hover":{
-                ">.label":{
-                    ">.caption":{
-                        "background-color":"rgb(0,0,0,0.1)",
-                    },
-                },
-            },
-        },
-        ">.children":{
-            "display": "block",
-            "min-height":"0px",
-        },
-        ".closed":{
-            ">.header":{
-                ">.switcher":{
-                    ">svg":{
-                        "transition": "all 100ms ease-out",
-                        "transform":"rotate(-90deg)",
-                    },
-                },
-            },
-            ">.children":{
-                "max-height":"0px",
-                "overflow":"hidden",
-            },
-        },
-    },
-};
-
 
 const $_TRIANGLE: string = ""
 + "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 160 160\">"
@@ -135,9 +22,119 @@ const $_RADIO: string = ""
 + "style=\"opacity:1;fill:#000;fill-opacity:1;stroke-width:2.66457\"/>"
 + "</svg>";
 
+ASSCSS.ASNode = {
+    "background-color":"transparent",
+    "cursor":"pointer",
+    "display": "grid",
+    "gap":`${$ms/12}px`,
+    "grid-template-rows": "auto 1fr",
+    "user-select": "none",
+    ">.header":{
+        "display": "grid",
+        "grid-template-columns": `auto ${$ms}px ${$ms}px minmax(${$ms * 4}px, 1fr) ${$ms}px ${$ms*4}px`,
+        "max-height": `${$ms}px`,
+        "min-height": `${$ms}px`,
+        ">.spacer":{
+            "display": "inline-block",
+        },
+        ">.switcher":{
+            "background-color":"inherited",
+            "border-radius":"50%",
+            "box-sizing":"border-box",
+            "display": "inline-block",
+            "vertical-align": "middle",
+            "max-height": `${$ms}px`,
+            "max-width": `${$ms}px`,
+            "min-height": `${$ms}px`,
+            "min-width": `${$ms}px`,
+            ">svg":{
+                "transition": "all 100ms ease-out",
+                "transform":"rotate(0deg)",
+            },
+        },
+        ">.checkbox":{
+            "background-color":"inherited",
+            "border": `${$ms/12}px solid rgba(0,0,0,0.5)`,
+            "border-radius":"50%",
+            "box-sizing":"border-box",
+            "display": "inline-block",
+            "max-height": `${$ms}px`,
+            "max-width": `${$ms}px`,
+            "min-height": `${$ms}px`,
+            "min-width": `${$ms}px`,
+            "vertical-align": "middle",
+            ":hover":{
+                "box-shadow": "0 0 2px 2px #666;",
+            },
+        },
+        ">.label":{
+            "display": "inline-block",
+            "max-height": `${$ms}px`,
+            "min-height": `${$ms}px`,
+            "line-height": `${$ms}px`,
+            "overflow":"hidden",
+            "padding-left": `${$ms/4}px`,
+            "padding-right": `${$ms/4}px`,
+            "text-overflow": "ellipsis",
+            "vertical-align": "middle",
+            "white-space":"nowrap",
+            ">.caption":{
+                "background-color":"transparent",
+                "border-radius":`${$ms/4}px`,
+                "display": "inline-block",
+                "line-height":`${$ms}px`,
+                "max-height": `${$ms}px`,
+                "min-height": `${$ms}px`,
+                "padding-left": `${$ms/4}px`,
+                "padding-right": `${$ms/4}px`,
+            },
+        },
+        ">.edit":{
+            "display": "inline-block",
+            "max-height": `${$ms}px`,
+            "min-height": `${$ms}px`,
+            "vertical-align": "middle",
+        },
+        ">.percent":{
+            "background-color":"red",
+            "border-radius":`${$ms/2}px`,
+            "display": "inline-block",
+            "line-height": `${$ms}px`,
+            "max-height": `${$ms}px`,
+            "min-height": `${$ms}px`,
+            "text-align": "center",
+            "vertical-align": "middle",
+        },
+        ":hover":{
+            ">.label":{
+                ">.caption":{
+                    "background-color":"rgb(0,0,0,0.1)",
+                },
+            },
+        },
+    },
+    ">.children":{
+        "display": "block",
+        "min-height":"0px",
+    },
+    ".closed":{
+        ">.header":{
+            ">.switcher":{
+                ">svg":{
+                    "transition": "all 100ms ease-out",
+                    "transform":"rotate(-90deg)",
+                },
+            },
+        },
+        ">.children":{
+            "max-height":"0px",
+            "overflow":"hidden",
+        },
+    },
+};
+
 export class ASNode extends ASCore {
     protected preConnect(): void{
-
         if("adoptable" in this.$.args && this.$.args.adoptable===false){
             this.$.kinds.adoptable = false;
         } else {

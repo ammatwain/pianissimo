@@ -8,6 +8,7 @@ stopPropagation              Yes           No              No
 stopImmediatePropagation     Yes           No              Yes
 */
 
+import { ASSCSS } from "./ASCSS";
 
 declare global {
     interface HTMLElement {
@@ -18,13 +19,6 @@ declare global {
 HTMLElement.prototype.insertAfter = (newNode: HTMLElement, existingNode: Node): HTMLElement => {
     return existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
 };
-
-function stopEvent(e: Event): boolean{
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    e.preventDefault();
-    return false;
-}
 
 function ø( element: Element | string ): any {
     let NODES: any[] = [];
@@ -83,53 +77,30 @@ interface IASCoreInternalData {
     args?: any;
     fn?: any;
     props?: any;
-    originalHtml: string;
+    originalHtml?: string;
     kinds?: {[key: string]: boolean};
     elements?: {[index: string]: HTMLElement};
 }
 
 export class AS extends HTMLElement {
-    protected getConstructorChain(obj: any, type: string): any {
-        const cs: any[] = [];
-        let pt: any = obj;
-        do {
-           pt = Object.getPrototypeOf(pt);
-           if (pt) {
-                cs.push(pt.constructor || null);
-           }
-        } while (pt != null);
-        return type === "names" ? cs.map(function(c) {
-            return c ? c.toString().split(/\s|\(/)[1] : null;
-        }) : cs;
-    }
-
-    protected get ClassesArray(): string[] {
-        const cn: string[] = this.getConstructorChain(this,"names");
-        const result: string[] = [];
-        for(let i: number = cn.length-1; cn[i]!=="AS"; i--) {
-            cn.pop();
-        }
-        for(let i: number = cn.length-1; i>=0; i--) {
-            result.push(cn[i]);
-        }
-        return result;
-    }
-
-    protected get ClassesString(): string {
-        return `.${this.ClassesArray.join(".")}`;
-    }
-
 }
 
-export class ASCore extends AS {
+ASSCSS.ASCore = {
+    "font-weight":"100",
+};
 
-    public static CSS: any  = {};
+export class ASCore extends AS {
 
     protected $: IASCoreInternalData = {};
 
     constructor(args: any = {} ){
         super();
-        console.log(this.ClassesString);
+
+        this.ClassChainArray.forEach((aClass: string)=>{
+            this.classList.add(aClass);
+        });
+        this.applyDefaultStyle();
+
         this.$ = {
             args: args,
             fn: {
@@ -149,15 +120,6 @@ export class ASCore extends AS {
         };
         this.innerHTML = "";
 
-        let css: Element  = <Element>document.head.querySelector(`style#${this.tagName}`);
-
-        if (!css){
-            css = document.createElement("style");
-            css.id = this.tagName;
-            css.textContent = this.processTemplateObject(ASCore.CSS[this.tagName]);
-            document.head.appendChild(css);
-        }
-
         this.preConnect();
     }
 
@@ -173,12 +135,81 @@ export class ASCore extends AS {
         return this.$.elements;
     }
 
+    protected applyDefaultStyle(): void{
+        let classNames: string = "";
+        this.ClassChainArray.forEach((className: string)=>{
+            classNames += `.${className}`;
+            if (className in ASSCSS) {
+                let css: Element  = <Element>document.head.querySelector(`style[as-class-chain='${classNames}']`);
+                if (!css){
+                    const STYLE: any = {};
+                    STYLE[classNames] = ASSCSS[className];
+                    css = document.createElement("style");
+                    css.setAttribute("as-class-chain",classNames);
+                    css.textContent = this.processTemplateObject(STYLE);
+                    document.head.appendChild(css);
+                }
+            }
+        });
+    }
+
+    protected get ClassChainArray(): string[] {
+        const cn: string[] = this.getConstructorChain(this,"names");
+        const result: string[] = [];
+        for(let i: number = cn.length-1; cn[i]!=="ASCore"; i--) {
+            cn.pop();
+        }
+        for(let i: number = cn.length-1; i>=0; i--) {
+            result.push(cn[i]);
+        }
+        return result;
+    }
+
+    protected get ClassChainString(): string {
+        return `.${this.ClassChainArray.join(".")}`;
+    }
+
+    protected get ClassChainID(): string {
+        return this.ClassChainArray.join("-");
+    }
+
     private connectedCallback(): void{
         if (this.Disconnected){
             this.connect();
             this.$.kinds.connected = true;
         }
         this.alwaysConnect();
+    }
+
+    protected defaultStyle(className: string): any {
+        if (className in ASSCSS) {
+            return ASSCSS[className] || {};
+        } else {
+            return {};
+        }
+    }
+
+    private getComputedStyle (property: string = null): string {
+        const cs: any = window.getComputedStyle(this);
+        if (property) {
+            return cs[property];
+        } else {
+            return cs;
+        }
+    }
+
+    protected getConstructorChain(obj: any, type: string): any {
+        const cs: any[] = [];
+        let pt: any = obj;
+        do {
+           pt = Object.getPrototypeOf(pt);
+           if (pt) {
+                cs.push(pt.constructor || null);
+           }
+        } while (pt != null);
+        return type === "names" ? cs.map(function(c) {
+            return c ? c.toString().split(/\s|\(/)[1] : null;
+        }) : cs;
     }
 
     private processTemplateObject(cssTemplate: any, parents: string = ""): string{
@@ -199,14 +230,14 @@ export class ASCore extends AS {
         return s;
     }
 
-    private getComputedStyle (property: string = null): string {
-        const cs: any = window.getComputedStyle(this);
-        if (property) {
-            return cs[property];
-        } else {
-            return cs;
-        }
+    public stopEvent(e: Event): boolean{
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return false;
     }
+
+    /* ***************************************************************************************************** */
 
     protected preConnect(): void {
         ;
@@ -220,4 +251,4 @@ export class ASCore extends AS {
         ;
     }
 
-  }
+}
