@@ -1,1 +1,1 @@
-export const ASSCSS: any = {};
+export const ASCSS: any = {};

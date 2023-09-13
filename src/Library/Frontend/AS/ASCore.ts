@@ -8,7 +8,7 @@ stopPropagation              Yes           No              No
 stopImmediatePropagation     Yes           No              Yes
 */
 
-import { ASSCSS } from "./ASCSS";
+import { ASCSS } from "./ASCSS";
 
 declare global {
     interface HTMLElement {
@@ -85,7 +85,7 @@ interface IASCoreInternalData {
 export class AS extends HTMLElement {
 }
 
-ASSCSS.ASCore = {
+ASCSS.ASCore = {
     "font-weight":"100",
 };
 
@@ -139,11 +139,11 @@ export class ASCore extends AS {
         let classNames: string = "";
         this.ClassChainArray.forEach((className: string)=>{
             classNames += `.${className}`;
-            if (className in ASSCSS) {
+            if (className in ASCSS) {
                 let css: Element  = <Element>document.head.querySelector(`style[as-class-chain='${classNames}']`);
                 if (!css){
                     const STYLE: any = {};
-                    STYLE[classNames] = ASSCSS[className];
+                    STYLE[classNames] = ASCSS[className];
                     css = document.createElement("style");
                     css.setAttribute("as-class-chain",classNames);
                     css.textContent = this.processTemplateObject(STYLE);
@@ -182,8 +182,8 @@ export class ASCore extends AS {
     }
 
     protected defaultStyle(className: string): any {
-        if (className in ASSCSS) {
-            return ASSCSS[className] || {};
+        if (className in ASCSS) {
+            return ASCSS[className] || {};
         } else {
             return {};
         }

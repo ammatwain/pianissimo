@@ -4,6 +4,7 @@ import { IVariableCOFNumberArray } from "@Interfaces/IVariableCOFNumberArray";
 import { IBranchObject } from "@Interfaces/IBranchObject";
 import { IBranchType } from "@Interfaces/IBranchType";
 import { IBranchCustom } from "@Interfaces/IBranchCustom";
+import { ASNode } from "@Frontend/AS/ASNode";
 
 type KOC = keyof IBranchCustom;
 
@@ -12,7 +13,7 @@ export class BranchClass{
     private _children: BranchClass[];
     private _branchObject: IBranchObject;
     private _branchCustomFreezed: string;
-    private _HTMLLiElement: HTMLLIElement;
+    private _ASNode: ASNode;
     private _customIsModified: boolean = false;
 
     rnd(max: number): number  {
@@ -134,12 +135,12 @@ export class BranchClass{
         }
     }
 
-    public get HtmlLiElement(): HTMLLIElement {
-        return this._HTMLLiElement;
+    public get ASNode(): ASNode {
+        return this._ASNode;
     }
 
-    public set HtmlLiElement(value: HTMLLIElement) {
-        this._HTMLLiElement = value;
+    public set ASNode(value: ASNode) {
+        this._ASNode = value;
     }
 
     public get Id(): number {
@@ -319,6 +320,7 @@ export class BranchClass{
     public setCustom(key: string, value: any): void {
         this._branchObject.custom[key] = value;
     }
+
     public closest(type: IBranchType): BranchClass {
         if(this.Type===type) {
             return this;

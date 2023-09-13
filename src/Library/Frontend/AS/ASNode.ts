@@ -1,4 +1,4 @@
-import { ASSCSS } from "./ASCSS";
+import { ASCSS } from "./ASCSS";
 import { ASCore } from "./ASCore";
 
 const $ms: number = 24;
@@ -22,7 +22,7 @@ const $_RADIO: string = ""
 + "style=\"opacity:1;fill:#000;fill-opacity:1;stroke-width:2.66457\"/>"
 + "</svg>";
 
-ASSCSS.ASNode = {
+ASCSS.ASNode = {
     "background-color":"transparent",
     "cursor":"pointer",
     "display": "grid",
@@ -113,7 +113,7 @@ ASSCSS.ASNode = {
             },
         },
     },
-    ">.children":{
+    ">.items":{
         "display": "block",
         "min-height":"0px",
     },
@@ -126,7 +126,7 @@ ASSCSS.ASNode = {
                 },
             },
         },
-        ">.children":{
+        ">.items":{
             "max-height":"0px",
             "overflow":"hidden",
         },
@@ -214,7 +214,7 @@ export class ASNode extends ASCore {
         this.Elements.check = this.Elements.checkbox.querySelector("svg>path#check");
         this.Elements.check.style.fillOpacity = String(0);
         this.Elements.items = document.createElement("div");
-        this.Elements.items.classList.add("children");
+        this.Elements.items.classList.add("items");
         this.Elements.items.innerHTML = this.$.originalHtml;
 
         this.$.props.dragTarget = null;
@@ -358,7 +358,7 @@ export class ASNode extends ASCore {
     public appendNode(node: ASNode): ASNode {
         if (!this.Elements.items) {
             this.Elements.items = document.createElement("div");
-            this.Elements.items.classList.add("children");
+            this.Elements.items.classList.add("items");
         }
         return this.Elements.items.appendChild(node);
     }
@@ -571,6 +571,10 @@ export class ASNode extends ASCore {
         this.IsAdoptable = !notAdoptable;
     }
 
+    public get IsNotRoot(): boolean {
+        return !this.IsRoot;
+    }
+
     public get IsRoot(): boolean {
         return this === this.Root;
     }
@@ -654,7 +658,13 @@ export class ASNode extends ASCore {
      * Get the ASNode parent, if exists
      */
     public get Parent(): ASNode {
-        if (this.parentElement.parentElement instanceof ASNode) {
+        if (
+            "parentElement" in this &&
+            this.parentElement &&
+            "parentElement" in this.parentElement &&
+            this.parentElement.parentElement &&
+            this.parentElement.parentElement instanceof ASNode
+        ) {
             return this.parentElement.parentElement;
         } else {
             return null;

@@ -30,20 +30,21 @@ function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = ""
 function walkTree(branchClass: BranchClass, parent: ASNode): void {
     const args: any = {};
     args.caption = branchClass.Name;
+    args.branch = branchClass;
     let item: ASNode;
     if (branchClass.Type === "book") {
         args.adoptable = true;
         args.canAdopt = true;
-        item =  parent.appendNode(new BookNode(args))        
+        item =  parent.appendNode(new BookNode(args));
     } else if (branchClass.Type === "sheet") {
         args.adoptable = true;
         args.canAdopt = false;
-        item =  parent.appendNode(new SheetNode(args))        
+        item =  parent.appendNode(new SheetNode(args));
     } else if (branchClass.Type === "section") {
         args.adoptable = false;
         args.canAdopt = false;
         args.percent = branchClass.Percent;
-        item =  parent.appendNode(new SectionNode(args))        
+        item =  parent.appendNode(new SectionNode(args));
     }
 
 //    const item: ASNode = parent.appendNode(new ASNode(args));

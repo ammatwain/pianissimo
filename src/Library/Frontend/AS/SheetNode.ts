@@ -1,11 +1,46 @@
-import { ASSCSS } from "./ASCSS";
+import { BranchClass } from "@Frontend/BranchClass";
+import { ASCSS } from "./ASCSS";
 import { ASNode } from "./ASNode";
 import { BookNode } from "./BookNode";
+import { LibraryNode } from "./LibraryNode";
 
-ASSCSS.SheetNode = {
+ASCSS.SheetNode = {
 };
 
-export class SheetNode extends BookNode {
+export class SheetNode extends LibraryNode {
+
+    public get Book(): BranchClass {
+        if (this.Parent instanceof BookNode) {
+            return (<BookNode>this.Parent).Sheet;
+        } else {
+            return null;
+        }
+    }
+
+    public get Sheet(): BranchClass {
+        return this.$.props.branchClass;
+    }
+
+    public get Subtitle(): string {
+        if (this.Sheet && this.Sheet.Name) {
+            const titles: string[] = this.Sheet.Name.split(";");
+            if (titles.length>0) {
+                return titles[1];
+            }
+        }
+        return null;
+    }
+
+    public get Title(): string {
+        if (this.Sheet && this.Sheet.Name) {
+            const titles: string[] = this.Sheet.Name.split(";");
+            if (titles.length) {
+                return titles[0];
+            }
+        }
+        return null;
+    }
+
 }
 
 customElements.define("sheet-node", SheetNode);

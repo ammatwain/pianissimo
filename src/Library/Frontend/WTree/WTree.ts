@@ -699,7 +699,7 @@ export class WTree extends HTMLElement{
         const li: HTMLLIElement = document.createElement("li");
         li.id = `li-${branch.Id}`;
         li.setAttribute("draggable","true");
-        branch.HtmlLiElement = li;
+        branch.ASNode = li;
         let spacerWidth: number = 0;
         const switcherWidth: number = $moduleSize;
         const checkboxWidth: number = $moduleSize;
