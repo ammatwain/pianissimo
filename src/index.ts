@@ -94,7 +94,7 @@ if(!(app.isPackaged && FS.existsSync(Config.Database))) {
     preLetture.Db.close();
 */
     FS.copyFileSync(
-        PATH.resolve(__dirname,"Data/Letture.db"),
+        PATH.resolve(__dirname,"Data/pianissimo.db"),
         Config.Database
     );
 }

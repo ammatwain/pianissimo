@@ -69,6 +69,20 @@ export function BackendListeners(database: Letture): void {
         return resultBranchObject;
     });
 
+    ipcMain.handle("request-library-index", async (
+        event: Electron.IpcMainEvent
+    ) => {
+
+        return {
+            agenda: database.prepare("SELECT * FROM \"agenda\";").all(),
+            associativeArray: database.prepare("SELECT * FROM \"associativeArray\";").all(),
+            books: database.prepare("SELECT * FROM \"books\";").all(),
+            scores: database.prepare("SELECT * FROM \"scores\";").all(),
+            sheets: database.prepare("SELECT * FROM \"sheets\";").all(),
+            zippedScoreFiles: database.prepare("SELECT * FROM \"zippedScoreFiles\";").all(),
+        };
+    });
+
     ipcMain.handle(STR.requestSaveDiaryAndSection, async (
         event: Electron.IpcMainEvent, objs: {diaryObject: IDiaryObject, sectionObject: IBranchObject}
     ) => {

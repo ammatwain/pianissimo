@@ -83,9 +83,9 @@ function appFrontendListeners(app: App): void {
     });
 
     app.Data.test.addEventListener("click",()=>{
-//        window.electron.ipcRenderer.invoke("request-dir-listing","../Letture/Letture").then((result: any)=>{
-//                console.log("DIR-LISTING", result);
-//        });
+        window.electron.ipcRenderer.invoke("request-library-index").then((result: any)=>{
+                console.log("RESPONSE-LIBRARY-INDEX", result);
+        });
     });
 }
 
