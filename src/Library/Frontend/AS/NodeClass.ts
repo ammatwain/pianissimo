@@ -8,9 +8,9 @@ import { ASNode } from "@Frontend/AS/ASNode";
 
 type KOC = keyof IBranchCustom;
 
-export class BranchClass{
-    private _parent: BranchClass;
-    private _children: BranchClass[];
+export class NodeClass extends ASNode{
+    private _parent: NodeClass;
+    private _children: NodeClass[];
     private _branchObject: IBranchObject;
     private _branchCustomFreezed: string;
     private _ASNode: ASNode;
@@ -20,7 +20,8 @@ export class BranchClass{
         return Math.floor(Math.random() * max);
     }
 
-    constructor(branch: IBranchObject, parent: BranchClass = null) {
+    constructor(branch: IBranchObject, parent: NodeClass = null, args: any) {
+        super(args);
         this.Parent =  parent;
         this._branchObject = branch;
         this._branchCustomFreezed = JSON.stringify(this._branchObject.custom);
@@ -62,11 +63,11 @@ export class BranchClass{
         this.setCustom(STR.checked, value);
     }
 
-    public get Children(): BranchClass[] {
+    public get Children(): NodeClass[] {
         return this._children || [];
     }
 
-    public set Children(value: BranchClass[]) {
+    public set Children(value: NodeClass[]) {
         this._children = value || [];
     }
 
@@ -193,11 +194,11 @@ export class BranchClass{
         this.BranchObject.name = value;
     }
 
-    public get Parent(): BranchClass {
+    public get Parent(): NodeClass {
         return this._parent || null;
     }
 
-    public set Parent(value: BranchClass) {
+    public set Parent(value: NodeClass) {
         this._parent = value || null;
     }
 
@@ -226,14 +227,14 @@ export class BranchClass{
             return ((done/shot)* 100) || 0;
         } else {
             let percent: number = 0;
-            this.Children.forEach((branch: BranchClass)=>{
+            this.Children.forEach((branch: NodeClass)=>{
                 percent += branch.Percent;
             });
             return (percent / (this.Children.length * 100) * 100) || 0;
         }
     }
 
-    public get Root(): BranchClass {
+    public get Root(): NodeClass {
         if(this.Parent!== null || this.ParentId===0) {
             return this;
         } else {
@@ -290,7 +291,7 @@ export class BranchClass{
         this._branchObject.custom[key] = value;
     }
 
-    public closest(type: IBranchType): BranchClass {
+    public closest(type: IBranchType): NodeClass {
         if(this.Type===type) {
             return this;
         } else if (this.Parent) {
@@ -300,8 +301,8 @@ export class BranchClass{
         }
     }
 
-    public child(type: IBranchType): BranchClass {
-        let child: BranchClass = null;
+    public child(type: IBranchType): NodeClass {
+        let child: NodeClass = null;
         if(this.Type === type) {
             child = this;
         } else if (this.Children.length) {

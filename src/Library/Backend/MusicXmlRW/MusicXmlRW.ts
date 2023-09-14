@@ -27,7 +27,7 @@ export class MusicXmlRW {
 
     public setData(xml: string): void {
         this.xmlStr = xml;
-        this.xmlDom = new xmldoc.XmlDocument(this.xmlStr);
+        this.xmlDom = new XmlDocument(this.xmlStr);
     }
 
     loadXml(filename: string): void {

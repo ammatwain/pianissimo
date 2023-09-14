@@ -1,6 +1,7 @@
 import { BranchClass } from "@Frontend/BranchClass";
 import { ASCSS } from "./ASCSS";
 import { ASNode } from "./ASNode";
+import { NodeClass } from "./NodeClass";
 
 ASCSS.LibraryNode = {
 };

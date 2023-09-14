@@ -6,22 +6,22 @@ export interface IBranchObject {
     parentid?: number;
     sequence?: number;
     type?: IBranchType;
-    title: string;
+    title?: string;
     // SHEET
-    subtitle: string;
-    mainkey: number;
-    measurecount: number;
-    instrument: number;
-    score: Buffer;
+    subtitle?: string;
+    mainkey?: number;
+    measurecount?: number;
+    instrument?: number;
+    score?: Buffer;
     // SECTION
-    measurestart: number;
-    measureend: number;
-    activekey: number;
-    keys: string;
-    hands: string;
-    shot: string;
-    fail: string;
-    bpmratio: number;
+    measurestart?: number;
+    measureend?: number;
+    activekey?: number;
+    keys?: string;
+    hands?: string;
+    shot?: string;
+    fail?: string;
+    bpmratio?: number;
     // OLD
     name?: string;
     custom?: any;
