@@ -26,6 +26,7 @@ ASCSS.ASNode = {
     "background-color":"transparent",
     "cursor":"pointer",
     "display": "grid",
+    "font-size":`${$ms*0.6}px`,
     "gap":`${$ms/12}px`,
     "grid-template-rows": "auto 1fr",
     "user-select": "none",
@@ -136,40 +137,40 @@ ASCSS.ASNode = {
 export class ASNode extends ASCore {
     protected $preConnect(): void{
         if("adoptable" in this.$.arguments && this.$.arguments.adoptable===false){
-            this.$.kinds.adoptable = false;
+            this.$Kind.adoptable = false;
         } else {
-            this.$.kinds.adoptable = true;
+            this.$Kind.adoptable = true;
         }
 
         if("canAdopt" in this.$.arguments && this.$.arguments.canAdopt===false){
-            this.$.kinds.canAdopt = false;
+            this.$Kind.canAdopt = false;
         } else {
-            this.$.kinds.canAdopt = true;
+            this.$Kind.canAdopt = true;
         }
 
         if("draggable" in this.$.arguments && this.$.arguments.draggable===false){
-            this.$.kinds.draggable = false;
+            this.$Kind.draggable = false;
         } else {
-            this.$.kinds.draggable = true;
+            this.$Kind.draggable = true;
         }
 
         if("caption" in this.$.arguments && this.$.arguments.caption !== ""){
-            this.$.props.caption = this.$.arguments.caption;
+            this.$Property.caption = this.$.arguments.caption;
         } else {
-            this.$.props.caption = "";
+            this.$Property.caption = "";
         }
 
         if("percent" in this.$.arguments && this.$.arguments.percent !== null){
-            this.$.props.percent = Number(this.$.arguments.percent);
+            this.$Property.percent = Number(this.$.arguments.percent);
         } else {
-            this.$.props.percent = 0;
+            this.$Property.percent = 0;
         }
 
-        this.setAttribute("draggable", String(this.$.kinds.draggable));
+        this.setAttribute("draggable", String(this.$Kind.draggable));
         this.classList.add("closed");
 
-        this.$.props.selected = null;
-        this.$.props.percent = 0;
+        this.$Property.selected = null;
+        this.$Property.percent = 0;
         this.$Elements.spacer = document.createElement("div");
         this.$Elements.spacer.classList.add("spacer");
         this.$Elements.switcher = document.createElement("div");
@@ -197,8 +198,8 @@ export class ASNode extends ASCore {
         this.$Elements.header.appendChild(this.$Elements.edit);
         this.$Elements.header.appendChild(this.$Elements.percent);
 
-        this.$Caption = this.$.props.caption;
-        this.$Percent = this.$.props.percent;
+        this.$Caption = this.$Property.caption;
+        this.$Percent = this.$Property.percent;
 
         if (this.$CannotAdopt){
             this.$Elements.caption.style.fontSize = "100%";
@@ -217,9 +218,9 @@ export class ASNode extends ASCore {
         this.$Elements.items.classList.add("items");
         this.$Elements.items.innerHTML = this.$.originalHtml;
 
-        this.$.props.dragTarget = null;
-        this.$.props.dropTarget = null;
-        this.$.props.dragAndDropMode = 0;
+        this.$Property.dragTarget = null;
+        this.$Property.dropTarget = null;
+        this.$Property.dragAndDropMode = 0;
     }
 
     $getDragAndDropMode(drag: ASNode, drop: ASNode): number {
@@ -360,7 +361,25 @@ export class ASNode extends ASCore {
             this.$Elements.items = document.createElement("div");
             this.$Elements.items.classList.add("items");
         }
-        return this.$Elements.items.appendChild(node);
+        const oldParent: ASNode = node.$Parent;
+        const newParent: ASNode = this;
+        const renewedNode: ASNode = this.$Elements.items.appendChild(node);
+        if (renewedNode) {
+            if (
+                oldParent &&
+                oldParent !== newParent &&
+                oldParent instanceof ASNode &&
+                newParent &&
+                newParent instanceof ASNode
+            ) {
+                renewedNode.doCheckParent();
+                oldParent.doCheckItems();
+            }
+            if (newParent && newParent instanceof ASNode) {
+                newParent.doCheckItems();
+            }
+        }
+        return renewedNode;
     }
 
     public $isSiblingOf(node: ASNode): boolean {
@@ -381,7 +400,25 @@ export class ASNode extends ASCore {
 
     public $insertAfterNode(existingNode: ASNode): ASNode {
         if(existingNode && existingNode.parentNode && this.parentNode){
-            return existingNode.parentNode.insertBefore(this.$removeNode(), existingNode.nextSibling);
+            const oldParent: ASNode = this.$Parent;
+            const newParent: ASNode = existingNode.$Parent;
+            const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$removeNode(), existingNode.nextSibling);
+            if (renewedNode) {
+                if (
+                    oldParent &&
+                    oldParent !== newParent &&
+                    oldParent instanceof ASNode &&
+                    newParent &&
+                    newParent instanceof ASNode
+                ) {
+                    renewedNode.doCheckParent();
+                    oldParent.doCheckItems();
+                }
+                if (newParent && newParent instanceof ASNode) {
+                    newParent.doCheckItems();
+                }
+            }
+            return renewedNode;
         } else {
             return null;
         }
@@ -389,7 +426,25 @@ export class ASNode extends ASCore {
 
     public $insertBeforeNode(existingNode: ASNode): ASNode {
         if(existingNode && existingNode.parentNode && this.parentNode){
-            return existingNode.parentNode.insertBefore(this.$removeNode(),existingNode);
+            const oldParent: ASNode = this.$Parent;
+            const newParent: ASNode = existingNode.$Parent;
+            const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$removeNode(),existingNode);
+            if (renewedNode) {
+                if (
+                    oldParent &&
+                    oldParent !== newParent &&
+                    oldParent instanceof ASNode &&
+                    newParent &&
+                    newParent instanceof ASNode
+                ) {
+                    renewedNode.doCheckParent();
+                    oldParent.doCheckItems();
+                }
+                if (newParent && newParent instanceof ASNode) {
+                    newParent.doCheckItems();
+                }
+            }
+            return renewedNode;
         } else {
             return null;
         }
@@ -431,14 +486,14 @@ export class ASNode extends ASCore {
     }
 
     public get $CanAdopt(): boolean {
-        if (!("canAdopt" in this.$.kinds)) {
-            this.$.kinds.canAdopt = true;
+        if (!("canAdopt" in this.$Kind)) {
+            this.$Kind.canAdopt = true;
         }
-        return Boolean(this.$.kinds.canAdopt);
+        return Boolean(this.$Kind.canAdopt);
     }
 
     public set $CanAdopt(canAdopt: boolean) {
-        this.$.kinds.canAdopt = canAdopt;
+        this.$Kind.canAdopt = canAdopt;
     }
 
     public get $CannotAdopt(): boolean {
@@ -487,25 +542,25 @@ export class ASNode extends ASCore {
     }
 
     private get $DragAndDropMode(): number {
-        return Number(this.$Root.$.props.dragAndDropMode) || 0;
+        return Number(this.$Root.$Property.dragAndDropMode) || 0;
     }
 
     private set $DragAndDropMode(dragAndDropMode: number) {
-        this.$Root.$.props.dragAndDropMode = dragAndDropMode;
+        this.$Root.$Property.dragAndDropMode = dragAndDropMode;
     }
 
     public get $DragTarget(): ASNode {
-        return <ASNode>this.$Root.$.props.dragTarget || null;
+        return <ASNode>this.$Root.$Property.dragTarget || null;
     }
 
     public set $DragTarget(dragTarget: ASNode) {
         this.$DropTarget = null;
-        this.$Root.$.props.dragTarget = dragTarget;
+        this.$Root.$Property.dragTarget = dragTarget;
     }
 
     public get $DropTarget(): ASNode {
         if (this.$DragTarget){
-            return <ASNode>this.$Root.$.props.dropTarget;
+            return <ASNode>this.$Root.$Property.dropTarget;
         } else {
             return null;
         }
@@ -514,9 +569,9 @@ export class ASNode extends ASCore {
     public set $DropTarget(dropTarget: ASNode) {
         const oldDropTarget: ASNode = this.$DropTarget;
         if  (this.$DragTarget && dropTarget instanceof ASNode) {
-            this.$Root.$.props.dropTarget = dropTarget;
+            this.$Root.$Property.dropTarget = dropTarget;
         } else {
-            this.$Root.$.props.dropTarget = null;
+            this.$Root.$Property.dropTarget = null;
         }
         if (oldDropTarget!==this.$DropTarget) {
             if (oldDropTarget instanceof ASNode) {
@@ -556,11 +611,11 @@ export class ASNode extends ASCore {
     }
 
     public get $IsAdoptable(): boolean {
-        return Boolean(this.$.kinds.adoptable);
+        return Boolean(this.$Kind.adoptable);
     }
 
     public set $IsAdoptable(adoptable: boolean) {
-        this.$.kinds.adoptable = adoptable;
+        this.$Kind.adoptable = adoptable;
     }
 
     public get $IsNotAdoptable(): boolean {
@@ -606,30 +661,30 @@ export class ASNode extends ASCore {
                 accumulator += item.$Percent;
             });
             if (accumulator>0 && total>0) {
-                this.$.props.percent = ( accumulator / total ) * 100;
+                this.$Property.percent = ( accumulator / total ) * 100;
             } else {
-                this.$.props.percent = 0;
+                this.$Property.percent = 0;
             }
         }
-        return this.$.props.percent;
+        return this.$Property.percent;
     }
 
     public set $Percent(percentValue: number) {
-        this.$.props.percent = percentValue || 0;
-        if (this.$.props.percent < 0) {
-            this.$.props.percent = 0;
-        } else if (this.$.props.percent > 100){
-            this.$.props.percent = 100;
+        this.$Property.percent = percentValue || 0;
+        if (this.$Property.percent < 0) {
+            this.$Property.percent = 0;
+        } else if (this.$Property.percent > 100){
+            this.$Property.percent = 100;
         }
         this.$drawPercent();
     }
 
     public get $Selected(): ASNode {
-        return <ASNode>this.$Root.$.props.selected;
+        return <ASNode>this.$Root.$Property.selected;
     }
 
     public set $Selected(selected: ASNode) {
-        this.$Root.$.props.selected = selected;
+        this.$Root.$Property.selected = selected;
     }
 
     /**
@@ -693,6 +748,14 @@ export class ASNode extends ASCore {
         } else {
             return this;
         }
+    }
+
+    //
+    protected doCheckItems(): void{
+        ;
+    }
+    protected doCheckParent(): void{
+        ;
     }
 
 }

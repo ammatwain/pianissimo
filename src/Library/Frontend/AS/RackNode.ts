@@ -1,44 +1,38 @@
-import { BranchClass } from "@Frontend/BranchClass";
 import { ASCSS } from "./ASCSS";
+import { IRackFields } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 
 ASCSS.RackNode = {
 };
 
-interface IRackFields {
-	rackId: number;
-	parentRackId: number;
-	sequence: number;
-	status: string;
-	title: string;
-} 
-
 export class RackNode extends LibraryNode {
 
-    private fieldsChanged: boolean = false;
+    constructor (rackFields: IRackFields, parentRack: RackNode)  {
+        super({adoptable: true, canAdopt: true});
+        this.RackFields = rackFields;
+        if (this.ParentRack && this.ParentRack.RackId === this.ParentRackId) {
+            this.ParentRack.$appendNode(this);
+        }
+        this.$Caption = rackFields.title;
+        // else {
+        //    throw new Error("BAD PARENT");
+        //}
+    }
 
-    private rackFields: IRackFields = {
+    protected fields: IRackFields = {
         rackId: undefined,
         parentRackId: undefined,
         sequence: undefined,
         status: undefined,
         title: undefined,
-    }
+    };
 
     private get RackFields(): IRackFields {
-        return this.rackFields;
+        return <IRackFields>this.fields;
     }
 
-    private set RackFields(fields: IRackFields) {
-        this.rackFields = fields;
-    }
-
-    private get FieldsChanged(): boolean {
-        return this.fieldsChanged;
-    }
-
-    private set FieldsChanged(fieldsChanged: boolean) {
-        this.fieldsChanged = fieldsChanged;
+    private set RackFields(rackFields: IRackFields) {
+        this.fields = rackFields;
     }
 
     public get RackId(): number {
@@ -53,10 +47,16 @@ export class RackNode extends LibraryNode {
     }
 
     public get ParentRackId(): number {
-        return this.RackFields.parentRackId;
+        if (this.ParentRack) {
+            return this.ParentRack.RackId;
+        } else if (this.RackFields && this.RackFields.parentRackId){
+            return this.RackFields.parentRackId;
+        } else {
+            return 0;
+        }
     }
 
-    public set ParentRackId(parentRackId: number) {
+    private set ParentRackId(parentRackId: number) {
         if (this.RackFields.parentRackId !== parentRackId) {
             this.RackFields.parentRackId = parentRackId;
             this.FieldsChanged = true;
@@ -96,10 +96,15 @@ export class RackNode extends LibraryNode {
         }
     }
 
-    public get Book(): BranchClass {
-        return <BranchClass>this.$.props.branchClass;
-    }
+    //
 
+    public get ParentRack(): RackNode{
+        if (this.Parent instanceof RackNode) {
+            return this.Parent;
+        } else {
+            return null;
+        }
+    }
 
 }
 

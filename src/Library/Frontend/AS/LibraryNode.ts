@@ -7,6 +7,10 @@ ASCSS.LibraryNode = {
 };
 
 export class LibraryNode extends ASNode {
+
+    private fieldsChanged: boolean = false;
+    protected fields: any;
+
     constructor(args: any){
         super(args);
         if (this.$IsNotRoot && this instanceof LibraryNode && this.constructor.name!=="LibraryNode"){
@@ -20,10 +24,17 @@ export class LibraryNode extends ASNode {
         }
     }
 
-    protected $alwaysConnect(): void {
-        super.$alwaysConnect();
+    protected get FieldsChanged(): boolean {
+        return this.fieldsChanged;
     }
 
+    protected set FieldsChanged(fieldsChanged: boolean) {
+        this.fieldsChanged = fieldsChanged;
+    }
+
+    public get Parent(): ASNode {
+       return this.$Parent;
+    }
 }
 
 customElements.define("library-node", LibraryNode);
