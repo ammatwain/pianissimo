@@ -9,7 +9,7 @@ ASCSS.LibraryNode = {
 export class LibraryNode extends ASNode {
     constructor(args: any){
         super(args);
-        if (this.IsNotRoot && this instanceof LibraryNode && this.constructor.name!=="LibraryNode"){
+        if (this.$IsNotRoot && this instanceof LibraryNode && this.constructor.name!=="LibraryNode"){
             if (args && "branch" in args && args.branch instanceof BranchClass) {
                 this.$.props.branchClass = args.branch;
                 this.$.props.branchClass.ASNode = this;
@@ -20,8 +20,8 @@ export class LibraryNode extends ASNode {
         }
     }
 
-    protected alwaysConnect(): void {
-        super.alwaysConnect();
+    protected $alwaysConnect(): void {
+        super.$alwaysConnect();
     }
 
 }

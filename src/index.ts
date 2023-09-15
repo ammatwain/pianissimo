@@ -1,6 +1,6 @@
 import FS from "fs";
 import PATH from "path";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, protocol, net } from "electron";
 import { Config } from "@Backend/Config";
 import { Package } from "@Backend/Package";
 import { Letture } from "@Backend/Letture";
@@ -146,6 +146,11 @@ app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
+});
+
+app.whenReady().then(() => {
+    protocol.handle("atom", (request: Request) =>
+      net.fetch("file://" + request.url.slice("atom://".length)));
 });
 
 // In this file you can include the rest of your app's specific main process

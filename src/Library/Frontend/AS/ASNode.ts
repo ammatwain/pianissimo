@@ -134,33 +134,33 @@ ASCSS.ASNode = {
 };
 
 export class ASNode extends ASCore {
-    protected preConnect(): void{
-        if("adoptable" in this.$.args && this.$.args.adoptable===false){
+    protected $preConnect(): void{
+        if("adoptable" in this.$.arguments && this.$.arguments.adoptable===false){
             this.$.kinds.adoptable = false;
         } else {
             this.$.kinds.adoptable = true;
         }
 
-        if("canAdopt" in this.$.args && this.$.args.canAdopt===false){
+        if("canAdopt" in this.$.arguments && this.$.arguments.canAdopt===false){
             this.$.kinds.canAdopt = false;
         } else {
             this.$.kinds.canAdopt = true;
         }
 
-        if("draggable" in this.$.args && this.$.args.draggable===false){
+        if("draggable" in this.$.arguments && this.$.arguments.draggable===false){
             this.$.kinds.draggable = false;
         } else {
             this.$.kinds.draggable = true;
         }
 
-        if("caption" in this.$.args && this.$.args.caption !== ""){
-            this.$.props.caption = this.$.args.caption;
+        if("caption" in this.$.arguments && this.$.arguments.caption !== ""){
+            this.$.props.caption = this.$.arguments.caption;
         } else {
             this.$.props.caption = "";
         }
 
-        if("percent" in this.$.args && this.$.args.percent !== null){
-            this.$.props.percent = Number(this.$.args.percent);
+        if("percent" in this.$.arguments && this.$.arguments.percent !== null){
+            this.$.props.percent = Number(this.$.arguments.percent);
         } else {
             this.$.props.percent = 0;
         }
@@ -170,59 +170,59 @@ export class ASNode extends ASCore {
 
         this.$.props.selected = null;
         this.$.props.percent = 0;
-        this.Elements.spacer = document.createElement("div");
-        this.Elements.spacer.classList.add("spacer");
-        this.Elements.switcher = document.createElement("div");
-        this.Elements.switcher.classList.add("switcher");
-        this.Elements.switcher.innerHTML = $_SWITCHER;
-        this.Elements.checkbox = document.createElement("div");
-        this.Elements.checkbox.classList.add("checkbox");
-        this.Elements.checkbox.innerHTML = $_RADIO;
-        this.Elements.label = document.createElement("div");
-        this.Elements.label.classList.add("label");
-        this.Elements.caption = document.createElement("span");
-        this.Elements.caption.classList.add("caption");
-        this.Elements.label.appendChild(this.Elements.caption);
-        this.Elements.edit = document.createElement("div");
-        this.Elements.edit.classList.add("edit");
-        this.Elements.percent = document.createElement("div");
-        this.Elements.percent.classList.add("percent");
-        this.Elements.header = document.createElement("div");
-        this.Elements.header.classList.add("header");
+        this.$Elements.spacer = document.createElement("div");
+        this.$Elements.spacer.classList.add("spacer");
+        this.$Elements.switcher = document.createElement("div");
+        this.$Elements.switcher.classList.add("switcher");
+        this.$Elements.switcher.innerHTML = $_SWITCHER;
+        this.$Elements.checkbox = document.createElement("div");
+        this.$Elements.checkbox.classList.add("checkbox");
+        this.$Elements.checkbox.innerHTML = $_RADIO;
+        this.$Elements.label = document.createElement("div");
+        this.$Elements.label.classList.add("label");
+        this.$Elements.caption = document.createElement("span");
+        this.$Elements.caption.classList.add("caption");
+        this.$Elements.label.appendChild(this.$Elements.caption);
+        this.$Elements.edit = document.createElement("div");
+        this.$Elements.edit.classList.add("edit");
+        this.$Elements.percent = document.createElement("div");
+        this.$Elements.percent.classList.add("percent");
+        this.$Elements.header = document.createElement("div");
+        this.$Elements.header.classList.add("header");
 
-        this.Elements.header.appendChild(this.Elements.spacer);
-        this.Elements.header.appendChild(this.Elements.switcher);
-        this.Elements.header.appendChild(this.Elements.checkbox);
-        this.Elements.header.appendChild(this.Elements.label);
-        this.Elements.header.appendChild(this.Elements.edit);
-        this.Elements.header.appendChild(this.Elements.percent);
+        this.$Elements.header.appendChild(this.$Elements.spacer);
+        this.$Elements.header.appendChild(this.$Elements.switcher);
+        this.$Elements.header.appendChild(this.$Elements.checkbox);
+        this.$Elements.header.appendChild(this.$Elements.label);
+        this.$Elements.header.appendChild(this.$Elements.edit);
+        this.$Elements.header.appendChild(this.$Elements.percent);
 
-        this.Caption = this.$.props.caption;
-        this.Percent = this.$.props.percent;
+        this.$Caption = this.$.props.caption;
+        this.$Percent = this.$.props.percent;
 
-        if (this.CannotAdopt){
-            this.Elements.caption.style.fontSize = "100%";
-            this.Elements.caption.style.fontStyle = "normal";
-            this.Elements.caption.style.fontWeight = "bold";
+        if (this.$CannotAdopt){
+            this.$Elements.caption.style.fontSize = "100%";
+            this.$Elements.caption.style.fontStyle = "normal";
+            this.$Elements.caption.style.fontWeight = "bold";
         }
-        if (this.IsNotAdoptable){
-            this.Elements.caption.style.fontSize = "80%";
-            this.Elements.caption.style.fontStyle = "italic";
-            this.Elements.caption.style.fontWeight = "100";
+        if (this.$IsNotAdoptable){
+            this.$Elements.caption.style.fontSize = "80%";
+            this.$Elements.caption.style.fontStyle = "italic";
+            this.$Elements.caption.style.fontWeight = "100";
         }
-        this.Elements.arrow = this.Elements.switcher.querySelector("svg>path#arrow");
-        this.Elements.check = this.Elements.checkbox.querySelector("svg>path#check");
-        this.Elements.check.style.fillOpacity = String(0);
-        this.Elements.items = document.createElement("div");
-        this.Elements.items.classList.add("items");
-        this.Elements.items.innerHTML = this.$.originalHtml;
+        this.$Elements.arrow = this.$Elements.switcher.querySelector("svg>path#arrow");
+        this.$Elements.check = this.$Elements.checkbox.querySelector("svg>path#check");
+        this.$Elements.check.style.fillOpacity = String(0);
+        this.$Elements.items = document.createElement("div");
+        this.$Elements.items.classList.add("items");
+        this.$Elements.items.innerHTML = this.$.originalHtml;
 
         this.$.props.dragTarget = null;
         this.$.props.dropTarget = null;
         this.$.props.dragAndDropMode = 0;
     }
 
-    getDragAndDropMode(drag: ASNode, drop: ASNode): number {
+    $getDragAndDropMode(drag: ASNode, drop: ASNode): number {
         if (
             drag &&
             drag instanceof ASNode &&
@@ -230,36 +230,36 @@ export class ASNode extends ASCore {
             drop instanceof ASNode &&
             drag !== drop
         ) {
-            if (drag.isSiblingOf(drop)) {
-                if (drop.Empty && drop.CanAdopt && drag.IsAdoptable) {
+            if (drag.$isSiblingOf(drop)) {
+                if (drop.$IsEmpty && drop.$CanAdopt && drag.$IsAdoptable) {
                     return 3;
                 } else {
-                    if (drag.IsNotAdoptable || drop.IsNotAdoptable ) {
-                        if (drag.Index===0 || drop.Index===0){
+                    if (drag.$IsNotAdoptable || drop.$IsNotAdoptable ) {
+                        if (drag.$Index===0 || drop.$Index===0){
                             return 0;
                         }
                     }
-                    if (drag.Index < drop.Index) {
+                    if (drag.$Index < drop.$Index) {
                         return 1;
                     } else {
                         return 2;
                     }
                 }
             } else {
-                if (drag.IsAdoptable) {
-                    if (drop.isNotChildOf(drag)){
-                        if (drop.Empty) {
-                            if(drop.CanAdopt){
+                if (drag.$IsAdoptable) {
+                    if (drop.$isNotChildOf(drag)){
+                        if (drop.$IsEmpty) {
+                            if(drop.$CanAdopt){
                                 return 3;
                             }
                         } else {
-                            if (drop.Parent) {
-                                if(drop.Parent.CanAdopt){
+                            if (drop.$Parent) {
+                                if(drop.$Parent.$CanAdopt){
                                     return 2;
                                 }
                             } else {
-                                if(drag.Parent !== drop){
-                                    if(drop.CanAdopt){
+                                if(drag.$Parent !== drop){
+                                    if(drop.$CanAdopt){
                                         return 3;
                                     }
                                 }
@@ -272,66 +272,66 @@ export class ASNode extends ASCore {
         return 0;
     }
 
-    protected connect(): void{
-        this.appendChild(this.Elements.header);
-        this.appendChild(this.Elements.items);
+    protected $connect(): void{
+        this.appendChild(this.$Elements.header);
+        this.appendChild(this.$Elements.items);
     }
 
-    protected alwaysConnect(): void {
-        if (this.Parent) {
-            this.Parent.Elements.arrow.style.fill = "#000";
+    protected $alwaysConnect(): void {
+        if (this.$Parent) {
+            this.$Parent.$Elements.arrow.style.fill = "#000";
         }
-        this.Elements.header.style.gridTemplateColumns = `${$ms * this.Level}px ${$ms}px ${$ms}px minmax(${$ms * 4}px, 1fr) ${$ms}px ${$ms*4}px`;
+        this.$Elements.header.style.gridTemplateColumns = `${$ms * this.$Level}px ${$ms}px ${$ms}px minmax(${$ms * 4}px, 1fr) ${$ms}px ${$ms*4}px`;
 
-        this.Elements.spacer.onclick = (): void => {
-            if(this.Empty) {
-                this.toggleCheck();
+        this.$Elements.spacer.onclick = (): void => {
+            if(this.$IsEmpty) {
+                this.$toggleCheck();
             } else {
-                this.Closed = !this.Closed;
+                this.$Closed = !this.$Closed;
             }
         };
 
-        this.Elements.switcher.onclick = (): void => {
-            if(this.Empty) {
-                this.toggleCheck();
+        this.$Elements.switcher.onclick = (): void => {
+            if(this.$IsEmpty) {
+                this.$toggleCheck();
             } else {
-                this.Closed = !this.Closed;
+                this.$Closed = !this.$Closed;
             }
         };
 
-        this.Elements.checkbox.onclick = (): void => {
-            this.toggleCheck();
+        this.$Elements.checkbox.onclick = (): void => {
+            this.$toggleCheck();
         };
 
-        this.Elements.label.onclick = (): void => {
-            this.toggleCheck();
+        this.$Elements.label.onclick = (): void => {
+            this.$toggleCheck();
         };
 
         this.ondragend = (event: DragEvent): void => {
             event.stopImmediatePropagation();
-            if (this.DragAndDropMode === 1) {
-                this.DragTarget.insertAfterNode(this.DropTarget);
-            } else if (this.DragAndDropMode === 2) {
-                this.DragTarget.insertBeforeNode(this.DropTarget);
-            } else if (this.DragAndDropMode === 3) {
-                this.DropTarget.appendNode(this.DragTarget);
+            if (this.$DragAndDropMode === 1) {
+                this.$DragTarget.$insertAfterNode(this.$DropTarget);
+            } else if (this.$DragAndDropMode === 2) {
+                this.$DragTarget.$insertBeforeNode(this.$DropTarget);
+            } else if (this.$DragAndDropMode === 3) {
+                this.$DropTarget.$appendNode(this.$DragTarget);
             }
-            this.DragTarget = null;
-            this.DropTarget = null;
+            this.$DragTarget = null;
+            this.$DropTarget = null;
         };
 
         this.ondragenter = (event: DragEvent): void => {
-            if (this.DragTarget) {
-                const dragTarget: ASNode = this.DragTarget;
+            if (this.$DragTarget) {
+                const dragTarget: ASNode = this.$DragTarget;
                 const dropTarget: ASNode = <ASNode>event.currentTarget;
                 if (dropTarget===dragTarget){
                     event.stopImmediatePropagation();
-                    this.DropTarget = null;
+                    this.$DropTarget = null;
                 } if (dropTarget===this){
-                    this.DragAndDropMode = this.getDragAndDropMode(dragTarget, dropTarget);
-                    if (this.DragAndDropMode) {
+                    this.$DragAndDropMode = this.$getDragAndDropMode(dragTarget, dropTarget);
+                    if (this.$DragAndDropMode) {
                         event.stopImmediatePropagation();
-                        this.DropTarget = dropTarget;
+                        this.$DropTarget = dropTarget;
                     }
                 }
             }
@@ -344,34 +344,34 @@ export class ASNode extends ASCore {
                 dragTarget === this
             ) {
                 event.stopImmediatePropagation();
-                this.DropTarget = null;
+                this.$DropTarget = null;
                 event.dataTransfer.setDragImage(
-                    this.Elements.caption,
-                    this.Elements.caption.offsetWidth/2,
-                    this.Elements.caption.offsetHeight/2
+                    this.$Elements.caption,
+                    this.$Elements.caption.offsetWidth/2,
+                    this.$Elements.caption.offsetHeight/2
                 );
-                this.DragTarget = this;
+                this.$DragTarget = this;
             }
         };
     }
 
-    public appendNode(node: ASNode): ASNode {
-        if (!this.Elements.items) {
-            this.Elements.items = document.createElement("div");
-            this.Elements.items.classList.add("items");
+    public $appendNode(node: ASNode): ASNode {
+        if (!this.$Elements.items) {
+            this.$Elements.items = document.createElement("div");
+            this.$Elements.items.classList.add("items");
         }
-        return this.Elements.items.appendChild(node);
+        return this.$Elements.items.appendChild(node);
     }
 
-    public isSiblingOf(node: ASNode): boolean {
+    public $isSiblingOf(node: ASNode): boolean {
         if (node instanceof ASNode) {
-            return this.Parent === node.Parent;
+            return this.$Parent === node.$Parent;
         } else {
             return false;
         }
     }
 
-    public removeNode(): ASNode {
+    public $removeNode(): ASNode {
         if (this.parentNode) {
             return this.parentNode.removeChild(this);
         } else {
@@ -379,216 +379,216 @@ export class ASNode extends ASCore {
         }
     }
 
-    public insertAfterNode(existingNode: ASNode): ASNode {
+    public $insertAfterNode(existingNode: ASNode): ASNode {
         if(existingNode && existingNode.parentNode && this.parentNode){
-            return existingNode.parentNode.insertBefore(this.removeNode(), existingNode.nextSibling);
+            return existingNode.parentNode.insertBefore(this.$removeNode(), existingNode.nextSibling);
         } else {
             return null;
         }
     }
 
-    public insertBeforeNode(existingNode: ASNode): ASNode {
+    public $insertBeforeNode(existingNode: ASNode): ASNode {
         if(existingNode && existingNode.parentNode && this.parentNode){
-            return existingNode.parentNode.insertBefore(this.removeNode(),existingNode);
+            return existingNode.parentNode.insertBefore(this.$removeNode(),existingNode);
         } else {
             return null;
         }
     }
 
 
-    private drawPercent(): void {
-        this.Elements.percent.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${this.Percent}%, rgba(0,0,0,0.333) ${this.Percent}%)`;
-        this.Elements.percent.innerHTML = `${(this.Percent || 0 ).toFixed(0)}%`;
+    private $drawPercent(): void {
+        this.$Elements.percent.style.background = `linear-gradient(to right, rgba(0,0,0,0.666) ${this.$Percent}%, rgba(0,0,0,0.333) ${this.$Percent}%)`;
+        this.$Elements.percent.innerHTML = `${(this.$Percent || 0 ).toFixed(0)}%`;
     }
 
-    public isChildOf(node: ASNode): boolean {
-        if (this.Parent) {
-            if (this.Parent === node) {
+    public $isChildOf(node: ASNode): boolean {
+        if (this.$Parent) {
+            if (this.$Parent === node) {
                 return true;
             } else {
-                return this.Parent.isChildOf(node);
+                return this.$Parent.$isChildOf(node);
             }
         } else {
             return false;
         }
     }
 
-    public isNotChildOf(node: ASNode): boolean {
-        return !this.isChildOf(node);
+    public $isNotChildOf(node: ASNode): boolean {
+        return !this.$isChildOf(node);
     }
 
-    public isNotParentOf(node: ASNode): boolean {
-        return !node.isChildOf(this);
+    public $isNotParentOf(node: ASNode): boolean {
+        return !node.$isChildOf(this);
     }
 
-    public isParentOf(node: ASNode): boolean {
-        return node.isChildOf(this);
+    public $isParentOf(node: ASNode): boolean {
+        return node.$isChildOf(this);
     }
 
-    public toggleCheck(): boolean {
-        this.Checked = !this.Checked;
-        return this.Checked;
+    public $toggleCheck(): boolean {
+        this.$Checked = !this.$Checked;
+        return this.$Checked;
     }
 
-    public get CanAdopt(): boolean {
+    public get $CanAdopt(): boolean {
         if (!("canAdopt" in this.$.kinds)) {
             this.$.kinds.canAdopt = true;
         }
         return Boolean(this.$.kinds.canAdopt);
     }
 
-    public set CanAdopt(canAdopt: boolean) {
+    public set $CanAdopt(canAdopt: boolean) {
         this.$.kinds.canAdopt = canAdopt;
     }
 
-    public get CannotAdopt(): boolean {
-        return !this.CanAdopt;
+    public get $CannotAdopt(): boolean {
+        return !this.$CanAdopt;
     }
 
-    public set CannotAdopt(cannotAdopt: boolean) {
-        this.CanAdopt = !cannotAdopt;
+    public set $CannotAdopt(cannotAdopt: boolean) {
+        this.$CanAdopt = !cannotAdopt;
     }
 
-    public get Caption(): string {
-        return this.Elements.caption.textContent;
+    public get $Caption(): string {
+        return this.$Elements.caption.textContent;
     }
 
-    public set Caption(caption: string) {
-        this.Elements.caption.textContent = caption;
+    public set $Caption(caption: string) {
+        this.$Elements.caption.textContent = caption;
     }
 
-    public get Checked(): boolean {
-        return this.Elements.check.style.fillOpacity === String(1);
+    public get $Checked(): boolean {
+        return this.$Elements.check.style.fillOpacity === String(1);
     }
 
-    public set Checked(checked: boolean) {
+    public set $Checked(checked: boolean) {
         if (checked) {
-            if (this.Selected instanceof ASNode) {
-                this.Selected.Checked = false;
+            if (this.$Selected instanceof ASNode) {
+                this.$Selected.$Checked = false;
             }
-            this.Selected = this;
+            this.$Selected = this;
         }
-        this.Elements.check.style.fillOpacity = String(Number(checked));
-        if (this.Parent) {
-            this.Parent.HalfChecked = checked;
+        this.$Elements.check.style.fillOpacity = String(Number(checked));
+        if (this.$Parent) {
+            this.$Parent.$HalfChecked = checked;
         }
     }
 
-    public get Closed(): boolean {
-        return (this.Items.length === 0) || this.classList.contains("closed");
+    public get $Closed(): boolean {
+        return (this.$Items.length === 0) || this.classList.contains("closed");
     }
 
-    public set Closed(closed: boolean) {
-        if (!closed && this.Items.length>0) {
+    public set $Closed(closed: boolean) {
+        if (!closed && this.$Items.length>0) {
             this.classList.remove("closed");
         } else {
             this.classList.add("closed");
         }
     }
 
-    private get DragAndDropMode(): number {
-        return Number(this.Root.$.props.dragAndDropMode) || 0;
+    private get $DragAndDropMode(): number {
+        return Number(this.$Root.$.props.dragAndDropMode) || 0;
     }
 
-    private set DragAndDropMode(dragAndDropMode: number) {
-        this.Root.$.props.dragAndDropMode = dragAndDropMode;
+    private set $DragAndDropMode(dragAndDropMode: number) {
+        this.$Root.$.props.dragAndDropMode = dragAndDropMode;
     }
 
-    public get DragTarget(): ASNode {
-        return <ASNode>this.Root.$.props.dragTarget || null;
+    public get $DragTarget(): ASNode {
+        return <ASNode>this.$Root.$.props.dragTarget || null;
     }
 
-    public set DragTarget(dragTarget: ASNode) {
-        this.DropTarget = null;
-        this.Root.$.props.dragTarget = dragTarget;
+    public set $DragTarget(dragTarget: ASNode) {
+        this.$DropTarget = null;
+        this.$Root.$.props.dragTarget = dragTarget;
     }
 
-    public get DropTarget(): ASNode {
-        if (this.DragTarget){
-            return <ASNode>this.Root.$.props.dropTarget;
+    public get $DropTarget(): ASNode {
+        if (this.$DragTarget){
+            return <ASNode>this.$Root.$.props.dropTarget;
         } else {
             return null;
         }
     }
 
-    public set DropTarget(dropTarget: ASNode) {
-        const oldDropTarget: ASNode = this.DropTarget;
-        if  (this.DragTarget && dropTarget instanceof ASNode) {
-            this.Root.$.props.dropTarget = dropTarget;
+    public set $DropTarget(dropTarget: ASNode) {
+        const oldDropTarget: ASNode = this.$DropTarget;
+        if  (this.$DragTarget && dropTarget instanceof ASNode) {
+            this.$Root.$.props.dropTarget = dropTarget;
         } else {
-            this.Root.$.props.dropTarget = null;
+            this.$Root.$.props.dropTarget = null;
         }
-        if (oldDropTarget!==this.DropTarget) {
+        if (oldDropTarget!==this.$DropTarget) {
             if (oldDropTarget instanceof ASNode) {
-                oldDropTarget.Elements.label.style.backgroundColor = "";
+                oldDropTarget.$Elements.label.style.backgroundColor = "";
             }
-            if (this.DropTarget instanceof ASNode) {
-                this.DropTarget.Elements.label.style.backgroundColor = "yellow";
+            if (this.$DropTarget instanceof ASNode) {
+                this.$DropTarget.$Elements.label.style.backgroundColor = "yellow";
             }
         }
     }
 
-    public get Empty(): boolean {
-        return !(this.Items.length > 0);
+    public get $IsEmpty(): boolean {
+        return !(this.$Items.length > 0);
     }
 
-    public get HalfChecked(): boolean {
-        return this.Elements.check.style.fillOpacity === String(0.333);
+    public get $HalfChecked(): boolean {
+        return this.$Elements.check.style.fillOpacity === String(0.333);
     }
 
-    public set HalfChecked(halfChecked: boolean) {
+    public set $HalfChecked(halfChecked: boolean) {
         if (halfChecked) {
-            this.Elements.check.style.fillOpacity = String(0.333);
+            this.$Elements.check.style.fillOpacity = String(0.333);
         } else {
-            this.Elements.check.style.fillOpacity = String(0);
+            this.$Elements.check.style.fillOpacity = String(0);
         }
-        if (this.Parent) {
-            this.Parent.HalfChecked = halfChecked;
+        if (this.$Parent) {
+            this.$Parent.$HalfChecked = halfChecked;
         }
     }
 
-    public get Index(): number {
-        if (this.Parent) {
-            return this.Parent.Items.indexOf(this);
+    public get $Index(): number {
+        if (this.$Parent) {
+            return this.$Parent.$Items.indexOf(this);
         } else {
             return 0;
         }
     }
 
-    public get IsAdoptable(): boolean {
+    public get $IsAdoptable(): boolean {
         return Boolean(this.$.kinds.adoptable);
     }
 
-    public set IsAdoptable(adoptable: boolean) {
+    public set $IsAdoptable(adoptable: boolean) {
         this.$.kinds.adoptable = adoptable;
     }
 
-    public get IsNotAdoptable(): boolean {
-        return !this.IsAdoptable;
+    public get $IsNotAdoptable(): boolean {
+        return !this.$IsAdoptable;
     }
 
-    public set IsNotAdoptable(notAdoptable: boolean) {
-        this.IsAdoptable = !notAdoptable;
+    public set $IsNotAdoptable(notAdoptable: boolean) {
+        this.$IsAdoptable = !notAdoptable;
     }
 
-    public get IsNotRoot(): boolean {
-        return !this.IsRoot;
+    public get $IsNotRoot(): boolean {
+        return !this.$IsRoot;
     }
 
-    public get IsRoot(): boolean {
-        return this === this.Root;
+    public get $IsRoot(): boolean {
+        return this === this.$Root;
     }
 
     /**
      * Get an array of children ASNode
      */
-    public get Items(): ASNode[] {
+    public get $Items(): ASNode[] {
         const nodes: ASNode[] = [];
-        if (this.Elements && this.Elements.items && this.Elements.items.children) {
-            for ( let i: number = 0 ; i < this.Elements.items.children.length ; i++ ) {
+        if (this.$Elements && this.$Elements.items && this.$Elements.items.children) {
+            for ( let i: number = 0 ; i < this.$Elements.items.children.length ; i++ ) {
                 try {
-                    if (this.Elements.items.children.item(i) instanceof ASNode) {
-                        nodes.push(<ASNode>this.Elements.items.children.item(i));
+                    if (this.$Elements.items.children.item(i) instanceof ASNode) {
+                        nodes.push(<ASNode>this.$Elements.items.children.item(i));
                     }
                 } catch {
                     console.log("BAD Elements.items");
@@ -598,12 +598,12 @@ export class ASNode extends ASCore {
         return nodes;
     }
 
-    public get Percent(): number {
-        if (this.Items.length) {
-            const total: number = this.Items.length * 100;
+    public get $Percent(): number {
+        if (this.$Items.length) {
+            const total: number = this.$Items.length * 100;
             let accumulator: number = 0;
-            this.Items.forEach((item: ASNode)=>{
-                accumulator += item.Percent;
+            this.$Items.forEach((item: ASNode)=>{
+                accumulator += item.$Percent;
             });
             if (accumulator>0 && total>0) {
                 this.$.props.percent = ( accumulator / total ) * 100;
@@ -614,30 +614,30 @@ export class ASNode extends ASCore {
         return this.$.props.percent;
     }
 
-    public set Percent(percentValue: number) {
+    public set $Percent(percentValue: number) {
         this.$.props.percent = percentValue || 0;
         if (this.$.props.percent < 0) {
             this.$.props.percent = 0;
         } else if (this.$.props.percent > 100){
             this.$.props.percent = 100;
         }
-        this.drawPercent();
+        this.$drawPercent();
     }
 
-    public get Selected(): ASNode {
-        return <ASNode>this.Root.$.props.selected;
+    public get $Selected(): ASNode {
+        return <ASNode>this.$Root.$.props.selected;
     }
 
-    public set Selected(selected: ASNode) {
-        this.Root.$.props.selected = selected;
+    public set $Selected(selected: ASNode) {
+        this.$Root.$.props.selected = selected;
     }
 
     /**
      * get the first child node
      */
-    public get FirstChild(): ASNode {
-        if (this.Items.length) {
-            return this.Items[0];
+    public get $FirstChild(): ASNode {
+        if (this.$Items.length) {
+            return this.$Items[0];
         } else {
             return null;
         }
@@ -646,9 +646,9 @@ export class ASNode extends ASCore {
     /**
      * get the last child node
      */
-    public get LastChild(): ASNode {
-        if (this.Items.length) {
-            return this.Items[this.Items.length-1];
+    public get $LastChild(): ASNode {
+        if (this.$Items.length) {
+            return this.$Items[this.$Items.length-1];
         } else {
             return null;
         }
@@ -657,7 +657,7 @@ export class ASNode extends ASCore {
     /**
      * Get the ASNode parent, if exists
      */
-    public get Parent(): ASNode {
+    public get $Parent(): ASNode {
         if (
             "parentElement" in this &&
             this.parentElement &&
@@ -676,9 +676,9 @@ export class ASNode extends ASCore {
      * Root = 0
      * Children = x +1
      */
-    public get Level(): number {
-        if (this.Parent) {
-            return this.Parent.Level + 1;
+    public get $Level(): number {
+        if (this.$Parent) {
+            return this.$Parent.$Level + 1;
         } else {
             return 0;
         }
@@ -687,9 +687,9 @@ export class ASNode extends ASCore {
     /**
      * Get the Root ASNode, or it self, if not exists
      */
-    public get Root(): ASNode {
-        if (this.Parent) {
-            return this.Parent.Root;
+    public get $Root(): ASNode {
+        if (this.$Parent) {
+            return this.$Parent.$Root;
         } else {
             return this;
         }

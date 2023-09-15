@@ -22,7 +22,7 @@ export class NodeClass extends ASNode{
 
     constructor(branch: IBranchObject, parent: NodeClass = null, args: any) {
         super(args);
-        this.Parent =  parent;
+        this.$Parent =  parent;
         this._branchObject = branch;
         this._branchCustomFreezed = JSON.stringify(this._branchObject.custom);
         // in questo momento custom potrebbe essere una stringa;
@@ -34,8 +34,8 @@ export class NodeClass extends ASNode{
     public get ActiveKeys(): IVariableCOFNumberArray {
         if (this.Type === STR.sheet) {
             return this.getCustom(STR.activeKeys, [this.MainKey]);
-        } else if (this.Type === STR.section && this.Parent.Type === STR.sheet) {
-            return this.Parent.ActiveKeys;
+        } else if (this.Type === STR.section && this.$Parent.Type === STR.sheet) {
+            return this.$Parent.ActiveKeys;
         } else {
             return [];
         }
@@ -55,11 +55,11 @@ export class NodeClass extends ASNode{
         this._branchObject = value || null;
     }
 
-    public get Checked(): boolean {
+    public get $Checked(): boolean {
         return this.getCustom(STR.checked, false);
     }
 
-    public set Checked(value: boolean) {
+    public set $Checked(value: boolean) {
         this.setCustom(STR.checked, value);
     }
 
@@ -129,9 +129,9 @@ export class NodeClass extends ASNode{
         ));
     }
 
-    public get Level(): number {
-        if (this.Parent){
-            return this.Parent.Level + 1;
+    public get $Level(): number {
+        if (this.$Parent){
+            return this.$Parent.$Level + 1;
         } else {
             return 0;
         }
@@ -140,8 +140,8 @@ export class NodeClass extends ASNode{
     public get MainKey(): number {
         if (this.Type === STR.sheet) {
             return (this.getCustom(STR.mainKey, 0));
-        } else if (this.Type === STR.section && this.Parent.Type === STR.sheet) {
-            return this.Parent.MainKey;
+        } else if (this.Type === STR.section && this.$Parent.Type === STR.sheet) {
+            return this.$Parent.MainKey;
         } else {
             return null;
         }
@@ -156,8 +156,8 @@ export class NodeClass extends ASNode{
     public get Measures(): number {
         if (this.Type === STR.sheet ) {
             return <number>this.getCustom(STR.sheet, 0);
-        } else if ((this.Type === STR.sheet) && (this.Parent.Type === STR.sheet)) {
-            return <number>this.Parent.Measures;
+        } else if ((this.Type === STR.sheet) && (this.$Parent.Type === STR.sheet)) {
+            return <number>this.$Parent.Measures;
         } else {
             return 0;
         }
@@ -166,15 +166,15 @@ export class NodeClass extends ASNode{
     public get MeasureEnd(): number {
         if (this.Type === STR.sheet ) {
             return this.Measures-1;
-        } else if ((this.Type === STR.section) && (this.Parent.Type === STR.sheet)) {
-            return <number>this.getCustom(STR.measureEnd, this.Parent.MeasureEnd);
+        } else if ((this.Type === STR.section) && (this.$Parent.Type === STR.sheet)) {
+            return <number>this.getCustom(STR.measureEnd, this.$Parent.MeasureEnd);
         } else {
             return 0;
         }
     }
 
     public get MeasureStart(): number {
-        if ((this.Type === STR.section) && (this.Parent.Type === STR.sheet)) {
+        if ((this.Type === STR.section) && (this.$Parent.Type === STR.sheet)) {
             return <number>this.getCustom(STR.measureEnd, 0);
         } else {
             return 0;
@@ -194,11 +194,11 @@ export class NodeClass extends ASNode{
         this.BranchObject.name = value;
     }
 
-    public get Parent(): NodeClass {
+    public get $Parent(): NodeClass {
         return this._parent || null;
     }
 
-    public set Parent(value: NodeClass) {
+    public set $Parent(value: NodeClass) {
         this._parent = value || null;
     }
 
@@ -210,7 +210,7 @@ export class NodeClass extends ASNode{
         this.BranchObject.parentid = value;
     }
 
-    public get Percent(): number {
+    public get $Percent(): number {
         let shot: number = 0;
         let done: number = 0;
         //let fail: number = 0;
@@ -228,17 +228,17 @@ export class NodeClass extends ASNode{
         } else {
             let percent: number = 0;
             this.Children.forEach((branch: NodeClass)=>{
-                percent += branch.Percent;
+                percent += branch.$Percent;
             });
             return (percent / (this.Children.length * 100) * 100) || 0;
         }
     }
 
-    public get Root(): NodeClass {
-        if(this.Parent!== null || this.ParentId===0) {
+    public get $Root(): NodeClass {
+        if(this.$Parent!== null || this.ParentId===0) {
             return this;
         } else {
-            return this.Parent.Root;
+            return this.$Parent.$Root;
         }
     }
 
@@ -294,8 +294,8 @@ export class NodeClass extends ASNode{
     public closest(type: IBranchType): NodeClass {
         if(this.Type===type) {
             return this;
-        } else if (this.Parent) {
-            return this.Parent.closest(type);
+        } else if (this.$Parent) {
+            return this.$Parent.closest(type);
         } else {
             return null;
         }

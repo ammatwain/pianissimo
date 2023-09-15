@@ -74,12 +74,12 @@ function ø( element: Element | string ): any {
 }
 
 interface IASCoreInternalData {
-    args?: any;
-    fn?: any;
-    props?: any;
-    originalHtml?: string;
-    kinds?: {[key: string]: boolean};
-    elements?: {[index: string]: HTMLElement};
+    arguments: {[index: string]: any};
+    fn: {[index: string]: any};
+    props: {[index: string]: any};
+    kinds: {[key: string]: boolean};
+    elements: {[index: string]: HTMLElement};
+    originalHtml: string;
 }
 
 export class AS extends HTMLElement {
@@ -91,18 +91,19 @@ ASCSS.ASCore = {
 
 export class ASCore extends AS {
 
-    protected $: IASCoreInternalData = {};
+    private $: IASCoreInternalData;;
 
     constructor(args: any = {} ){
         super();
 
-        this.ClassChainArray.forEach((aClass: string)=>{
+        this.$ClassChainArray.forEach((aClass: string)=>{
             this.classList.add(aClass);
         });
-        this.applyDefaultStyle();
+
+        this.$applyDefaultStyle();
 
         this.$ = {
-            args: args,
+            arguments: args,
             fn: {
                 round: Math.round,
                 min: Math.min,
@@ -111,33 +112,31 @@ export class ASCore extends AS {
                 log: console.log,
                 rand: (max: number): number => { return Math.floor(Math.random() * max); },
             },
-            originalHtml: this.innerHTML,
             props: {},
             kinds: {
                 connected: false,
             },
             elements: {},
+            originalHtml: this.innerHTML,
         };
         this.innerHTML = "";
 
-        this.preConnect();
+        this.$preConnect();
     }
 
-    public get Connected(): boolean{
-        return this.$.kinds.connected||false;
+    private connectedCallback(): void{
+        if (this.$Disconnected){
+            this.$connect();
+            this.$.kinds.connected = true;
+        }
+        this.$alwaysConnect();
     }
 
-    public get Disconnected(): boolean{
-        return !this.Connected;
-    }
+    /* ********************************************************************* */
 
-    public get Elements(): {[index: string]: HTMLElement}{
-        return this.$.elements;
-    }
-
-    protected applyDefaultStyle(): void{
+    protected $applyDefaultStyle(): void{
         let classNames: string = "";
-        this.ClassChainArray.forEach((className: string)=>{
+        this.$ClassChainArray.forEach((className: string)=>{
             classNames += `.${className}`;
             if (className in ASCSS) {
                 let css: Element  = <Element>document.head.querySelector(`style[as-class-chain='${classNames}']`);
@@ -146,42 +145,14 @@ export class ASCore extends AS {
                     STYLE[classNames] = ASCSS[className];
                     css = document.createElement("style");
                     css.setAttribute("as-class-chain",classNames);
-                    css.textContent = this.processTemplateObject(STYLE);
+                    css.textContent = this.$processTemplateObject(STYLE);
                     document.head.appendChild(css);
                 }
             }
         });
     }
 
-    protected get ClassChainArray(): string[] {
-        const cn: string[] = this.getConstructorChain(this,"names");
-        const result: string[] = [];
-        for(let i: number = cn.length-1; cn[i]!=="ASCore"; i--) {
-            cn.pop();
-        }
-        for(let i: number = cn.length-1; i>=0; i--) {
-            result.push(cn[i]);
-        }
-        return result;
-    }
-
-    protected get ClassChainString(): string {
-        return `.${this.ClassChainArray.join(".")}`;
-    }
-
-    protected get ClassChainID(): string {
-        return this.ClassChainArray.join("-");
-    }
-
-    private connectedCallback(): void{
-        if (this.Disconnected){
-            this.connect();
-            this.$.kinds.connected = true;
-        }
-        this.alwaysConnect();
-    }
-
-    protected defaultStyle(className: string): any {
+    protected $defaultStyle(className: string): any {
         if (className in ASCSS) {
             return ASCSS[className] || {};
         } else {
@@ -189,7 +160,7 @@ export class ASCore extends AS {
         }
     }
 
-    private getComputedStyle (property: string = null): string {
+    private $getComputedStyle (property: string = null): string {
         const cs: any = window.getComputedStyle(this);
         if (property) {
             return cs[property];
@@ -198,7 +169,7 @@ export class ASCore extends AS {
         }
     }
 
-    protected getConstructorChain(obj: any, type: string): any {
+    protected $getConstructorChain(obj: any, type: string): any {
         const cs: any[] = [];
         let pt: any = obj;
         do {
@@ -212,7 +183,7 @@ export class ASCore extends AS {
         }) : cs;
     }
 
-    private processTemplateObject(cssTemplate: any, parents: string = ""): string{
+    private $processTemplateObject(cssTemplate: any, parents: string = ""): string{
         let s: string = "";
         if (cssTemplate instanceof Object) {
             Object.keys(cssTemplate).forEach((cssTemplateKey)=>{
@@ -220,7 +191,7 @@ export class ASCore extends AS {
                 if (value instanceof Object){
                     if (parents !== "") {s += "}\r\n";}
                     const par: string= `${parents}${cssTemplateKey}`;
-                    s +=`${par}{\r\n${this.processTemplateObject(value,par)}`;
+                    s +=`${par}{\r\n${this.$processTemplateObject(value,par)}`;
                 } else {
                     s += `\t${cssTemplateKey}:${value};\r\n`;
                 }
@@ -230,25 +201,71 @@ export class ASCore extends AS {
         return s;
     }
 
-    public stopEvent(e: Event): boolean{
+    public $stopEvent(e: Event): boolean{
         e.stopPropagation();
         e.stopImmediatePropagation();
         e.preventDefault();
         return false;
     }
 
-    /* ***************************************************************************************************** */
+    /* ************************** PSEUDO-ABSTRACT *************************** */
 
-    protected preConnect(): void {
+    protected $preConnect(): void {
         ;
     }
 
-    protected connect(): void {
+    protected $connect(): void {
         ;
     }
 
-    protected alwaysConnect(): void {
+    protected $alwaysConnect(): void {
         ;
+    }
+
+    /* ********************************************************************* */
+
+    public get $Connected(): boolean{
+        return this.$.kinds.connected||false;
+    }
+
+    public get $Disconnected(): boolean{
+        return !this.$Connected;
+    }
+
+    protected get $ClassChainArray(): string[] {
+        const cn: string[] = this.$getConstructorChain(this,"names");
+        const result: string[] = [];
+        for(let i: number = cn.length-1; cn[i]!=="ASCore"; i--) {
+            cn.pop();
+        }
+        for(let i: number = cn.length-1; i>=0; i--) {
+            result.push(cn[i]);
+        }
+        return result;
+    }
+
+    protected get $ClassChainString(): string {
+        return `.${this.$ClassChainArray.join(".")}`;
+    }
+
+    protected get $ClassChainID(): string {
+        return this.$ClassChainArray.join("-");
+    }
+
+    protected get $Kind(): {[index: string]: boolean} {
+        return this.$.kinds;
+    }
+
+    protected get $Argument(): {[index: string]: any} {
+        return this.$.arguments;
+    }
+
+    protected get $Property(): {[index: string]: any} {
+        return this.$.props;
+    }
+
+    public get $Elements(): {[index: string]: HTMLElement}{
+        return this.$.elements;
     }
 
 }

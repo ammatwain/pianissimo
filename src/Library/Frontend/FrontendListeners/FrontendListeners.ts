@@ -20,7 +20,7 @@ export function FrontendListeners( app: App): void {
 
 function fillNodes(sheetLibrary: IBranchObject[], node: ASNode, rootCaption = ""): void {
     const walk: Walk = new Walk(sheetLibrary);
-    node.Caption = rootCaption;
+    node.$Caption = rootCaption;
     node.setAttribute("draggable","false");
     walk.TreeClasses.forEach((branch: BranchClass) => {
         walkTree(branch, node);
@@ -35,16 +35,16 @@ function walkTree(branchClass: BranchClass, parent: ASNode): void {
     if (branchClass.Type === "book") {
         args.adoptable = true;
         args.canAdopt = true;
-        item =  parent.appendNode(new BookNode(args));
+        item =  parent.$appendNode(new BookNode(args));
     } else if (branchClass.Type === "sheet") {
         args.adoptable = true;
         args.canAdopt = false;
-        item =  parent.appendNode(new SheetNode(args));
+        item =  parent.$appendNode(new SheetNode(args));
     } else if (branchClass.Type === "section") {
         args.adoptable = false;
         args.canAdopt = false;
         args.percent = branchClass.Percent;
-        item =  parent.appendNode(new SectionNode(args));
+        item =  parent.$appendNode(new SectionNode(args));
     }
 
 //    const item: ASNode = parent.appendNode(new ASNode(args));
@@ -53,9 +53,9 @@ function walkTree(branchClass: BranchClass, parent: ASNode): void {
     */
     if (branchClass.Type==="section") {
         args.caption = "A";
-        parent.appendNode(new SectionNode(args));
+        parent.$appendNode(new SectionNode(args));
         args.caption = "B";
-        parent.appendNode(new SectionNode(args));
+        parent.$appendNode(new SectionNode(args));
     }
     /*
     END TEST

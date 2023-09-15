@@ -25,8 +25,14 @@
  *  });
  * ```
  */
+/*
 import { App } from "./Library/Frontend";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const app: App = new App("osmd");
+*/
+
+import { Application } from "@Frontend/Application";
+
+const application: Application = new Application();
 

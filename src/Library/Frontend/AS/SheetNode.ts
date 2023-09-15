@@ -1,7 +1,7 @@
 import { BranchClass } from "@Frontend/BranchClass";
 import { ASCSS } from "./ASCSS";
 import { ASNode } from "./ASNode";
-import { BookNode } from "./BookNode";
+import { RackNode } from "./RackNode";
 import { LibraryNode } from "./LibraryNode";
 
 ASCSS.SheetNode = {
@@ -10,8 +10,8 @@ ASCSS.SheetNode = {
 export class SheetNode extends LibraryNode {
 
     public get Book(): BranchClass {
-        if (this.Parent instanceof BookNode) {
-            return (<BookNode>this.Parent).Sheet;
+        if (this.$Parent instanceof RackNode) {
+            return (<RackNode>this.$Parent).Sheet;
         } else {
             return null;
         }

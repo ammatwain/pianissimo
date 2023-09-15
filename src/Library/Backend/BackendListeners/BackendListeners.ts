@@ -75,10 +75,10 @@ export function BackendListeners(database: Letture): void {
 
         return {
             agenda: database.prepare("SELECT * FROM \"agenda\";").all(),
-            associativeArray: database.prepare("SELECT * FROM \"associativeArray\";").all(),
-            books: database.prepare("SELECT * FROM \"books\";").all(),
-            scores: database.prepare("SELECT * FROM \"scores\";").all(),
-            sheets: database.prepare("SELECT * FROM \"sheets\";").all(),
+            defaults: database.prepare("SELECT * FROM \"defaults\";").all(),
+            racks: database.prepare("SELECT * FROM \"racks\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all(),
+            scores: database.prepare("SELECT * FROM \"scores\" ORDER BY \"rackId\" ASC,\"sequence\" ASC;").all(),
+            sheets: database.prepare("SELECT * FROM \"sheets\" ORDER BY \"scoreId\" ASC,\"sequence\" ASC;").all(),
             zippedScoreFiles: database.prepare("SELECT * FROM \"zippedScoreFiles\";").all(),
         };
     });
