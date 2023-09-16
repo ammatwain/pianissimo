@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { IScoreFields } from "@Common/DataObjects";
+import { TScoreObject, TMajorKey, TFixedNumberArray, TVariableMajorKeyNumberArray, ScoreClass, RackClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
 
@@ -8,60 +8,50 @@ ASCSS.ScoreNode = {
 
 export class ScoreNode extends LibraryNode {
 
-    constructor (scoreFields: IScoreFields, parentRack: RackNode)  {
+    constructor (scoreFields: ScoreClass, parentRack: RackNode)  {
         super({adoptable: true, canAdopt: false});
         this.ScoreFields = scoreFields;
-        if (this.ParentRack && this.ParentRack.RackId === this.RackId) {
-            this.ParentRack.$appendNode(this);
+        console.log("RACK FIELDS",this.ScoreFields);
+        if (parentRack && parentRack instanceof RackNode) {
+            parentRack.$appendNode(this);
         }
-        this.$Caption = scoreFields.title;
-        // else {
-        //    throw new Error("BAD PARENT");
-        //}
-
+        this.$Caption = this.ScoreFields.Title;
     }
 
-    protected fields: IScoreFields = {
-        scoreId: undefined,
-        rackId: undefined,
-        sequence: undefined,
-        status: undefined,
-        title: undefined,
-        subtitle: undefined,
-        author: undefined,
-        mainKey: undefined,
-        measures: undefined,
-        parts: undefined,
-    };
-
-    private get ScoreFields(): IScoreFields {
-        return <IScoreFields>this.fields;
+    public get ScoreFields(): ScoreClass {
+        return <ScoreClass>this.fields;
     }
 
-    private set ScoreFields(scoreFields: IScoreFields) {
+    public set ScoreFields(scoreFields: ScoreClass) {
         this.fields = scoreFields;
     }
 
+    public get Id(): number {
+        return this.ScoreId;
+    }
+
+    public get ParentId(): number {
+        return this.ParentRackId;
+    }
+
+    public set ParentId(parentId: number) {
+        this.ParentRackId = parentId;
+    }
+
     public get ScoreId(): number {
-        return this.ScoreFields.scoreId;
+        return this.ScoreFields.ScoreId;
     }
 
     public set ScoreId(scoreId: number) {
-        if (this.ScoreFields.scoreId !== scoreId) {
-            this.ScoreFields.scoreId = scoreId;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.ScoreId = scoreId;
     }
 
-    public get RackId(): number {
-        return this.ScoreFields.rackId;
+    public get ParentRackId(): number {
+        return this.ScoreFields.ParentRackId;
     }
 
-    public set RackId(rackId: number) {
-        if (this.ScoreFields.rackId !== rackId) {
-            this.ScoreFields.rackId = rackId;
-            this.FieldsChanged = true;
-        }
+    public set ParentRackId(parentRackId: number) {
+        this.ScoreFields.ParentRackId = parentRackId;
     }
 
     public get Sequence(): number {
@@ -69,10 +59,7 @@ export class ScoreNode extends LibraryNode {
     }
 
     public set Sequence(sequence: number) {
-        if (this.ScoreFields.sequence !== sequence) {
-            this.ScoreFields.sequence = sequence;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.Sequence = sequence;
     }
 
     public get Status(): string {
@@ -80,83 +67,62 @@ export class ScoreNode extends LibraryNode {
     }
 
     public set Status(status: string) {
-        if (this.ScoreFields.status !== status) {
-            this.ScoreFields.status = status;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.Status = status;
     }
 
     public get Title(): string {
-        return this.ScoreFields.title;
+        return this.ScoreFields.Title;
     }
 
     public set Title(title: string) {
-        if (this.ScoreFields.title !== title) {
-            this.ScoreFields.title = title;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.Title = title;
     }
 
     public get Subtitle(): string {
-        return this.ScoreFields.subtitle;
+        return this.ScoreFields.Subtitle;
     }
 
     public set Subtitle(subtitle: string) {
-        if (this.ScoreFields.subtitle !== subtitle) {
-            this.ScoreFields.subtitle = subtitle;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.Subtitle = subtitle;
     }
 
     public get Author(): string {
-        return this.ScoreFields.author;
+        return this.ScoreFields.Author;
     }
 
     public set Author(author: string) {
-        if (this.ScoreFields.author !== author) {
-            this.ScoreFields.author = author;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.Author = author;
     }
 
-    public get MainKey(): number {
-        return this.ScoreFields.mainKey;
+    public get MainKey(): TMajorKey {
+        return this.ScoreFields.MainKey;
     }
 
-    public set MainKey(mainKey: number) {
-        if (this.ScoreFields.mainKey !== mainKey) {
-            this.ScoreFields.mainKey = mainKey;
-            this.FieldsChanged = true;
-        }
+    public set MainKey(mainKey: TMajorKey) {
+        this.ScoreFields.MainKey = mainKey;
     }
 
     public get Measures(): number {
-        return this.ScoreFields.measures;
+        return this.ScoreFields.Measures;
     }
 
     public set Measures(measures: number) {
-        if (this.ScoreFields.measures !== measures) {
-            this.ScoreFields.measures = measures;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.Measures = measures;
     }
 
     public get Parts(): string {
-        return this.ScoreFields.parts;
+        return this.ScoreFields.Parts;
     }
 
     public set Parts(parts: string) {
-        if (this.ScoreFields.parts !== parts) {
-            this.ScoreFields.parts = parts;
-            this.FieldsChanged = true;
-        }
+        this.ScoreFields.Parts = parts;
     }
 
     //
 
     public get ParentRack(): RackNode{
-        if (this.Parent instanceof RackNode) {
-            return this.Parent;
+        if (this.$Parent instanceof RackNode) {
+            return this.$Parent;
         } else {
             return null;
         }

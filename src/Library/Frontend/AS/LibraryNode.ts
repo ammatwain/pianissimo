@@ -2,6 +2,7 @@ import { BranchClass } from "@Frontend/BranchClass";
 import { ASCSS } from "./ASCSS";
 import { ASNode } from "./ASNode";
 import { NodeClass } from "./NodeClass";
+import {TMajorKey, TFixedNumberArray, TVariableMajorKeyNumberArray, LibraryClass} from "@Common/DataObjects";
 
 ASCSS.LibraryNode = {
 };
@@ -9,32 +10,54 @@ ASCSS.LibraryNode = {
 export class LibraryNode extends ASNode {
 
     private fieldsChanged: boolean = false;
-    protected fields: any;
+    protected fields: LibraryClass;
 
     constructor(args: any){
         super(args);
-        if (this.$IsNotRoot && this instanceof LibraryNode && this.constructor.name!=="LibraryNode"){
-            if (args && "branch" in args && args.branch instanceof BranchClass) {
-                this.$.props.branchClass = args.branch;
-                this.$.props.branchClass.ASNode = this;
-            } else {
-                this.$.props.branchClass = null;
-                throw new Error(`${this.className} require a BranchClass in arguments`);
-            }
-        }
     }
 
-    protected get FieldsChanged(): boolean {
+    public get FieldsChanged(): boolean {
         return this.fieldsChanged;
     }
 
-    protected set FieldsChanged(fieldsChanged: boolean) {
+    public set FieldsChanged(fieldsChanged: boolean) {
         this.fieldsChanged = fieldsChanged;
     }
 
-    public get Parent(): ASNode {
-       return this.$Parent;
+    public get Id(): number {
+        return 0;
     }
+
+    public get ParentId(): number {
+        return 0;
+    }
+
+    public set ParentId(parentId: number) {
+        ;
+    }
+
+    public get Sequence(): number {
+        return this.fields.Sequence ;
+    }
+
+    public set Sequence(sequence: number) {
+        this.fields.Sequence = sequence;
+    }
+
+    public doCheckItems(): void{
+        this.$Items.forEach((item: LibraryNode) => {
+            item.Sequence = item.$Index;
+        });
+    }
+
+    public doCheckParent(): void{
+        if (this.$Parent instanceof LibraryNode){
+            this.ParentId = this.$Parent.Id;
+        } else {
+            this.ParentId = 0;
+        }
+    }
+
 }
 
 customElements.define("library-node", LibraryNode);

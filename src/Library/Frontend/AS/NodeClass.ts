@@ -51,7 +51,7 @@ export class NodeClass extends ASNode{
         return this._branchObject || null;
     }
 
-    private set BranchObject(value: IBranchObject) {
+    public set BranchObject(value: IBranchObject) {
         this._branchObject = value || null;
     }
 

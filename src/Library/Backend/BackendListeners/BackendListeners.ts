@@ -77,8 +77,8 @@ export function BackendListeners(database: Letture): void {
             agenda: database.prepare("SELECT * FROM \"agenda\";").all(),
             defaults: database.prepare("SELECT * FROM \"defaults\";").all(),
             racks: database.prepare("SELECT * FROM \"racks\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all(),
-            scores: database.prepare("SELECT * FROM \"scores\" ORDER BY \"rackId\" ASC,\"sequence\" ASC;").all(),
-            sheets: database.prepare("SELECT * FROM \"sheets\" ORDER BY \"scoreId\" ASC,\"sequence\" ASC;").all(),
+            scores: database.prepare("SELECT * FROM \"scores\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all(),
+            sheets: database.prepare("SELECT * FROM \"sheets\" ORDER BY \"parentScoreId\" ASC,\"sequence\" ASC;").all(),
             zippedScoreFiles: database.prepare("SELECT * FROM \"zippedScoreFiles\";").all(),
         };
     });

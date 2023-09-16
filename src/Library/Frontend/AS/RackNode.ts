@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { IRackFields } from "@Common/DataObjects";
+import { TRackObject, RackClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 
 ASCSS.RackNode = {
@@ -7,100 +7,87 @@ ASCSS.RackNode = {
 
 export class RackNode extends LibraryNode {
 
-    constructor (rackFields: IRackFields, parentRack: RackNode)  {
+    constructor (rackFields: RackClass, parentRack: RackNode)  {
         super({adoptable: true, canAdopt: true});
         this.RackFields = rackFields;
-        if (this.ParentRack && this.ParentRack.RackId === this.ParentRackId) {
-            this.ParentRack.$appendNode(this);
+        if (parentRack && parentRack instanceof RackNode) {
+            parentRack.$appendNode(this);
         }
-        this.$Caption = rackFields.title;
+        this.$Caption = this.RackFields.Title;
         // else {
         //    throw new Error("BAD PARENT");
         //}
     }
 
-    protected fields: IRackFields = {
-        rackId: undefined,
-        parentRackId: undefined,
-        sequence: undefined,
-        status: undefined,
-        title: undefined,
-    };
-
-    private get RackFields(): IRackFields {
-        return <IRackFields>this.fields;
+    public get RackFields(): RackClass {
+        return <RackClass>this.fields;
     }
 
-    private set RackFields(rackFields: IRackFields) {
+    public set RackFields(rackFields: RackClass) {
         this.fields = rackFields;
     }
 
+    public get Id(): number {
+        return this.RackId;
+    }
+
+    public get ParentId(): number {
+        return this.ParentRackId;
+    }
+
+    public set ParentId(parentId: number) {
+        this.ParentRackId = parentId;
+    }
+
     public get RackId(): number {
-        return this.RackFields.rackId;
+        return this.RackFields.RackId;
     }
 
     public set RackId(rackId: number) {
-        if (this.RackFields.rackId !== rackId) {
-            this.RackFields.rackId = rackId;
-            this.FieldsChanged = true;
-        }
+        this.RackFields.RackId = rackId;
     }
 
     public get ParentRackId(): number {
-        if (this.ParentRack) {
-            return this.ParentRack.RackId;
-        } else if (this.RackFields && this.RackFields.parentRackId){
-            return this.RackFields.parentRackId;
+        if (this.RackFields && this.RackFields.ParentRackId){
+            return this.RackFields.ParentRackId;
         } else {
             return 0;
         }
     }
 
-    private set ParentRackId(parentRackId: number) {
-        if (this.RackFields.parentRackId !== parentRackId) {
-            this.RackFields.parentRackId = parentRackId;
-            this.FieldsChanged = true;
-        }
+    public set ParentRackId(parentRackId: number) {
+        this.RackFields.ParentRackId = parentRackId;
     }
 
     public get Sequence(): number {
-        return this.RackFields.sequence;
+        return this.RackFields.Sequence;
     }
 
     public set Sequence(sequence: number) {
-        if (this.RackFields.sequence !== sequence) {
-            this.RackFields.sequence = sequence;
-            this.FieldsChanged = true;
-        }
+        this.RackFields.Sequence = sequence;
     }
 
     public get Status(): string {
-        return this.RackFields.status;
+        return this.RackFields.Status;
     }
 
     public set Status(status: string) {
-        if (this.RackFields.status !== status) {
-            this.RackFields.status = status;
-            this.FieldsChanged = true;
-        }
+        this.RackFields.Status = status;
     }
 
     public get Title(): string {
-        return this.RackFields.title;
+        return this.RackFields.Title;
     }
 
     public set Title(title: string) {
-        if (this.RackFields.title !== title) {
-            this.RackFields.title = title;
-            this.FieldsChanged = true;
-        }
+        this.RackFields.Title = title;
     }
 
     //
 
     public get ParentRack(): RackNode{
-        if (this.Parent instanceof RackNode) {
-            return this.Parent;
+        if (this.$Parent instanceof RackNode) {
+            return this.$Parent;
         } else {
             return null;
         }

@@ -363,21 +363,22 @@ export class ASNode extends ASCore {
         }
         const oldParent: ASNode = node.$Parent;
         const newParent: ASNode = this;
+        const oldParentId: number = (oldParent instanceof ASNode)?oldParent.Id:0;
+        const newParentId: number = (newParent instanceof ASNode)?newParent.Id:0;
+        node.$removeNode();
         const renewedNode: ASNode = this.$Elements.items.appendChild(node);
-        if (renewedNode) {
-            if (
-                oldParent &&
-                oldParent !== newParent &&
-                oldParent instanceof ASNode &&
-                newParent &&
-                newParent instanceof ASNode
-            ) {
-                renewedNode.doCheckParent();
-                oldParent.doCheckItems();
-            }
-            if (newParent && newParent instanceof ASNode) {
-                newParent.doCheckItems();
-            }
+        if (oldParent && oldParent instanceof ASNode) {
+            oldParent.doCheckItems();
+        }
+        if (
+            newParent &&
+            newParent instanceof ASNode &&
+            newParentId !== oldParentId
+        ) {
+            newParent.doCheckItems();
+        }
+        if (renewedNode && renewedNode instanceof ASNode) {
+            renewedNode.doCheckParent();
         }
         return renewedNode;
     }
@@ -399,24 +400,26 @@ export class ASNode extends ASCore {
     }
 
     public $insertAfterNode(existingNode: ASNode): ASNode {
+        console.log("INSERT AFTER NODE");
         if(existingNode && existingNode.parentNode && this.parentNode){
             const oldParent: ASNode = this.$Parent;
             const newParent: ASNode = existingNode.$Parent;
+            const oldParentId: number = (oldParent instanceof ASNode)?oldParent.Id:0;
+            const newParentId: number = (newParent instanceof ASNode)?newParent.Id:0;
             const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$removeNode(), existingNode.nextSibling);
-            if (renewedNode) {
-                if (
-                    oldParent &&
-                    oldParent !== newParent &&
-                    oldParent instanceof ASNode &&
-                    newParent &&
-                    newParent instanceof ASNode
-                ) {
-                    renewedNode.doCheckParent();
-                    oldParent.doCheckItems();
-                }
-                if (newParent && newParent instanceof ASNode) {
-                    newParent.doCheckItems();
-                }
+            if (oldParent && oldParent instanceof ASNode) {
+                oldParent.doCheckItems();
+            }
+            if (
+                newParent &&
+                newParent instanceof ASNode &&
+                newParentId !== oldParentId
+            ) {
+                console.log(newParentId,oldParentId);
+                newParent.doCheckItems();
+            }
+            if (renewedNode && renewedNode instanceof ASNode) {
+                renewedNode.doCheckParent();
             }
             return renewedNode;
         } else {
@@ -425,24 +428,26 @@ export class ASNode extends ASCore {
     }
 
     public $insertBeforeNode(existingNode: ASNode): ASNode {
+        console.log("INSERT BEFORE NODE");
         if(existingNode && existingNode.parentNode && this.parentNode){
             const oldParent: ASNode = this.$Parent;
             const newParent: ASNode = existingNode.$Parent;
+            const oldParentId: number = (oldParent instanceof ASNode)?oldParent.Id:0;
+            const newParentId: number = (newParent instanceof ASNode)?newParent.Id:0;
             const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$removeNode(),existingNode);
-            if (renewedNode) {
-                if (
-                    oldParent &&
-                    oldParent !== newParent &&
-                    oldParent instanceof ASNode &&
-                    newParent &&
-                    newParent instanceof ASNode
-                ) {
-                    renewedNode.doCheckParent();
-                    oldParent.doCheckItems();
-                }
-                if (newParent && newParent instanceof ASNode) {
-                    newParent.doCheckItems();
-                }
+            if (oldParent && oldParent instanceof ASNode) {
+                oldParent.doCheckItems();
+            }
+            if (
+                newParent &&
+                newParent instanceof ASNode &&
+                newParentId !== oldParentId
+            ) {
+                console.log(newParentId,oldParentId);
+                newParent.doCheckItems();
+            }
+            if (renewedNode && renewedNode instanceof ASNode) {
+                renewedNode.doCheckParent();
             }
             return renewedNode;
         } else {
@@ -685,6 +690,9 @@ export class ASNode extends ASCore {
 
     public set $Selected(selected: ASNode) {
         this.$Root.$Property.selected = selected;
+        if (this.$Root.$Property.selected instanceof ASNode) {
+            this.$Root.$Property.selected.doSelected();
+        };
     }
 
     /**
@@ -751,11 +759,21 @@ export class ASNode extends ASCore {
     }
 
     //
+
     protected doCheckItems(): void{
         ;
     }
+
     protected doCheckParent(): void{
         ;
+    }
+
+    public doSelected(): void {
+        ;
+    }
+
+    public get Id(): number {
+        return 0;
     }
 
 }

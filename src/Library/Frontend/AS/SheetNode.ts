@@ -1,5 +1,12 @@
 import { ASCSS } from "./ASCSS";
-import { ISheetFields } from "@Common/DataObjects";
+import {
+    TSheetObject,
+    TMajorKey,
+    TFixedNumberArray,
+    TVariableMajorKeyNumberArray,
+    SheetClass
+} from "@Common/DataObjects";
+
 import { LibraryNode } from "./LibraryNode";
 import { ScoreNode } from "./ScoreNode";
 
@@ -8,19 +15,19 @@ ASCSS.SheetNode = {
 
 export class SheetNode extends LibraryNode {
 
-    constructor (sheetFields: ISheetFields, parentScore: ScoreNode)  {
+    constructor (sheetFields: SheetClass, parentScore: ScoreNode)  {
         super({adoptable: false, canAdopt: false});
         this.SheetFields = sheetFields;
-        if (this.ParentScore && this.ParentScore.ScoreId === this.ScoreId) {
-            this.ParentScore.$appendNode(this);
+        if (parentScore && parentScore instanceof ScoreNode) {
+            parentScore.$appendNode(this);
         }
-        this.$Caption = sheetFields.title;
+        this.$Caption = sheetFields.Title;
 
     }
-
+/*
     protected fields: ISheetFields = {
         sheetId: undefined,
-        scoreId: undefined,
+        parentScoreId: undefined,
         sequence: undefined,
         status: undefined,
         title: undefined,
@@ -36,137 +43,164 @@ export class SheetNode extends LibraryNode {
         done: undefined,
         loop: undefined,
     };
-
-    private get SheetFields(): ISheetFields {
-        return <ISheetFields>this.fields;
+*/
+    public get SheetFields(): SheetClass {
+        return <SheetClass>this.fields;
     }
 
-    private set SheetFields(sheetFields: ISheetFields) {
+    public set SheetFields(sheetFields: SheetClass) {
         this.fields = sheetFields;
     }
 
-    public get SheetId(): number {
-        return this.SheetFields.sheetId;
+    public get Id(): number {
+        return this.SheetId;
     }
 
-    public set SheetId(sheetId: number) {
-        if (this.SheetFields.sheetId !== sheetId) {
-            this.SheetFields.sheetId = sheetId;
-            this.FieldsChanged = true;
-        }
+    public get ParentId(): number {
+        return this.ParentScoreId;
     }
 
-    public get ScoreId(): number {
-        return this.SheetFields.scoreId;
-    }
-
-    public set ScoreId(scoreId: number) {
-        if (this.SheetFields.scoreId !== scoreId) {
-            this.SheetFields.scoreId = scoreId;
-            this.FieldsChanged = true;
-        }
-    }
-
-    public get Sequence(): number {
-        return this.SheetFields.sequence;
-    }
-
-    public set Sequence(sequence: number) {
-        if (this.SheetFields.sequence !== sequence) {
-            this.SheetFields.sequence = sequence;
-            this.FieldsChanged = true;
-        }
-    }
-
-    public get Status(): string {
-        return this.SheetFields.status;
-    }
-
-    public set Status(status: string) {
-        if (this.SheetFields.status !== status) {
-            this.SheetFields.status = status;
-            this.FieldsChanged = true;
-        }
-    }
-
-    public get Title(): string {
-        return this.SheetFields.title;
-    }
-
-    public set Title(title: string) {
-        if (this.SheetFields.title !== title) {
-            this.SheetFields.title = title;
-            this.FieldsChanged = true;
-        }
-    }
-
-    public get Subtitle(): string {
-        return this.SheetFields.subtitle;
-    }
-
-    public set Subtitle(subtitle: string) {
-        if (this.SheetFields.subtitle !== subtitle) {
-            this.SheetFields.subtitle = subtitle;
-            this.FieldsChanged = true;
-        }
+    public set ParentId(parentId: number) {
+        this.ParentScoreId = parentId;
     }
 
     public get ParentScore(): ScoreNode{
-        if (this.Parent instanceof ScoreNode) {
-            return this.Parent;
+        if (this.$Parent instanceof ScoreNode) {
+            return this.$Parent;
         } else {
             return null;
         }
     }
 
-/*
+    public get SheetId(): number {
+        return this.SheetFields.SheetId;
+    }
+
+    public set SheetId(sheetId: number) {
+        this.SheetFields.SheetId = sheetId;
+    }
+
+    public get ParentScoreId(): number {
+        return this.SheetFields.ParentScoreId;
+    }
+
+    public set ParentScoreId(parentScoreId: number) {
+        this.SheetFields.ParentScoreId = parentScoreId;
+    }
+
+    public get Sequence(): number {
+        return this.SheetFields.Sequence;
+    }
+
+    public set Sequence(sequence: number) {
+        this.SheetFields.Sequence = sequence;
+    }
+
+    public get Status(): string {
+        return this.SheetFields.Status;
+    }
+
+    public set Status(status: string) {
+        this.SheetFields.Status = status;
+    }
+
+    public get Title(): string {
+        return this.SheetFields.Title;
+    }
+
+    public set Title(title: string) {
+        this.SheetFields.Title = title;
+    }
+
+    public get Subtitle(): string {
+        return this.SheetFields.Subtitle;
+    }
+
+    public set Subtitle(subtitle: string) {
+        this.SheetFields.Subtitle = subtitle;
+    }
+
     public get Author(): string {
-        return this.SheetFields.author;
+        return this.ParentScore.Author;
     }
 
-    public set Author(author: string) {
-        if (this.SheetFields.author !== author) {
-            this.SheetFields.author = author;
-            this.FieldsChanged = true;
-        }
-    }
-*/
-/*
-        public get MainKey(): number {
-        return this.SheetFields.mainKey;
+    public get MainKey(): TMajorKey {
+        return this.ParentScore.MainKey;
     }
 
-    public set MainKey(mainKey: number) {
-        if (this.SheetFields.mainKey !== mainKey) {
-            this.SheetFields.mainKey = mainKey;
-            this.FieldsChanged = true;
-        }
-    }
-*/
-/*
     public get Measures(): number {
-        return this.SheetFields.measures;
+        return this.ParentScore.Measures;
     }
 
-    public set Measures(measures: number) {
-        if (this.SheetFields.measures !== measures) {
-            this.SheetFields.measures = measures;
-            this.FieldsChanged = true;
-        }
-    }
-*/
-/*
     public get Parts(): string {
-        return this.SheetFields.parts;
+        return this.ParentScore.Parts;
     }
 
-    public set Parts(parts: string) {
-        if (this.SheetFields.parts !== parts) {
-            this.SheetFields.parts = parts;
+    public get ActiveKey(): TMajorKey {
+        return this.SheetFields.ActiveKey;
+    }
+
+    public set ActiveKey(activeKey: TMajorKey) {
+        if (this.SheetFields.activeKey !== activeKey) {
+            this.SheetFields.activeKey = activeKey;
             this.FieldsChanged = true;
         }
     }
+
+    public get ActiveKeys(): TVariableMajorKeyNumberArray {
+        return <TVariableMajorKeyNumberArray>this.SheetFields.activeKeys.split(",").map(Number);
+    }
+
+    public set ActiveKeys(activeKeys: TVariableMajorKeyNumberArray) {
+        const activeKeyString: string = activeKeys.sort().join(",");
+        if (this.SheetFields.activeKeys !== activeKeyString) {
+            this.SheetFields.activeKeys = activeKeyString;
+            this.FieldsChanged = true;
+        }
+    }
+
+    public addActiveKey(activeKey: TMajorKey): void {
+        if (activeKey>=-7 && activeKey<=7){
+            const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
+            if (activeKeys.indexOf(activeKey)===-1){
+                activeKeys.push(activeKey);
+                this.ActiveKeys = activeKeys.sort();
+            }
+        }
+    }
+
+    public removeActiveKey(activeKey: TMajorKey): void {
+        if (activeKey>=-7 && activeKey<=7){
+            const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
+            if (activeKeys.indexOf(activeKey)>=0){
+                delete activeKeys[activeKeys.indexOf(activeKey)];
+                this.ActiveKeys = activeKeys.sort();
+            }
+        }
+    }
+
+    public hasActiveKey(activeKey: TMajorKey): boolean {
+        if (activeKey>=-7 && activeKey<=7){
+            const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
+            return activeKeys.indexOf(activeKey) >= 0;
+        }
+        return false;
+    }
+
+    /*
+    activeKeys: undefined,
+    measureStart: undefined,
+    measureEnd: undefined,
+    selectedParts: undefined,
+    selectedStaves: undefined,
+    transposeBy: undefined,
+    shot: undefined,
+    done: undefined,
+    loop: undefined,
 */
+    public doSelected(): void{
+        ;
+    }
 }
 
 customElements.define("sheet-node", SheetNode);
