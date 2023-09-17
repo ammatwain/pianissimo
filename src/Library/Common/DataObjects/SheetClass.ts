@@ -2,6 +2,7 @@ import { TSheetObject } from "./TSheetObject";
 import { LibraryClass } from "./LibraryClass";
 import { TMajorKey, TVariableMajorKeyNumberArray, TFixedNumberArray } from "./TFieldTypes";
 
+
 class TActiveKeys extends Set<number> {
 
     protected jsonString: string =  "[]";
@@ -71,6 +72,63 @@ class TActiveKeys extends Set<number> {
 
 }
 
+class TFifteenKeys extends Map<number, number> {
+
+    constructor(){
+        super();
+        for(let i: TMajorKey = -7; i<=7; i++) {
+            this.setKey(i,0);
+        }
+    }
+
+    setKey(key: number, value: number): TFifteenKeys {
+        if (this.isValidKey(key)){
+            this.set(key,value);
+        }
+        return this;
+    }
+
+    getKey(key: number): number {
+        if (this.isValidKey(key)){
+            return Number(this.get(key)) || 0;
+        }
+        return NaN;
+    }
+
+    isValidKey(key: number): boolean {
+        return (key >= -7 && key <= 7 && ((key - Math.floor(key)) === 0));
+    }
+
+    isNotValidKey(key: number): boolean {
+        return !this.isValidKey(key);
+    }
+
+    toJsonString(): string {
+        const array: number[] = [];
+        for(let key: number = -7; key<=7; key++) {
+            if (this.has(key)) {
+                array.push(this.getKey(key));
+            } else {
+                // sanitize
+                this.setKey(key,0);
+                array.push(0);
+            }
+        }
+        return JSON.stringify(array);
+    }
+
+    static fromJsonString(values: string): TFifteenKeys {
+        const mak: TFifteenKeys = new TFifteenKeys();
+        const array: number[] = <number[]>JSON.parse(values);
+        if (array.length===15){
+            for(let i: number = -7; i<=7; i++) {
+                mak.setKey(i,array[i+7]);
+            }
+        }
+        return mak;
+    }
+}
+
 export class SheetClass extends LibraryClass {
 /*
     protected fields: TSheetObject = {
@@ -95,16 +153,16 @@ export class SheetClass extends LibraryClass {
 
     declare protected fields: TSheetObject;
     private activeKeys: TActiveKeys;
-    private shot: TFixedNumberArray;
-    private done: TFixedNumberArray;
-    private loop: TFixedNumberArray;
+    private shot: TFifteenKeys;
+    private done: TFifteenKeys;
+    private loop: TFifteenKeys;
 
     public set Fields(fields: TSheetObject) {
         this.fields = fields;
         this.activeKeys = TActiveKeys.fromJsonString(this.SheetFields.activeKeys);
-        this.shot = <TFixedNumberArray>JSON.parse(this.SheetFields.shot);
-        this.done = <TFixedNumberArray>JSON.parse(this.SheetFields.done);
-        this.loop = <TFixedNumberArray>JSON.parse(this.SheetFields.loop);
+        this.shot = TFifteenKeys.fromJsonString(this.SheetFields.shot);
+        this.done = TFifteenKeys.fromJsonString(this.SheetFields.done);
+        this.loop = TFifteenKeys.fromJsonString(this.SheetFields.loop);
     }
 
     public get SheetFields(): TSheetObject {
@@ -146,6 +204,11 @@ export class SheetClass extends LibraryClass {
         if (this.SheetFields.parentScoreId !== parentScoreId) {
             this.SheetFields.parentScoreId = parentScoreId;
             this.FieldsChanged = true;
+            if (this.updateField("parentScoreId",parentScoreId)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -157,6 +220,11 @@ export class SheetClass extends LibraryClass {
         if (this.SheetFields.sequence !== sequence) {
             this.SheetFields.sequence = sequence;
             this.FieldsChanged = true;
+            if (this.updateField("sequence",sequence)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -208,52 +276,79 @@ export class SheetClass extends LibraryClass {
         }
     }
 
-    public get ActiveKeys(): TVariableMajorKeyNumberArray {
+    public get ActiveKeys(): TActiveKeys {
         return this.activeKeys;
     }
 
-    private set ActiveKeys(activeKeys: TVariableMajorKeyNumberArray) {
-        this.activeKeys = activeKeys;
-        const tmpActiveKeys: string = JSON.stringify(activeKeys);
-        if (this.SheetFields.activeKeys !== tmpActiveKeys) {
-            this.SheetFields.activeKeys = tmpActiveKeys;
+    public activeKeysAdd(key: TMajorKey): boolean {
+        const tmpActiveKeysString: string = this.ActiveKeys.addKey(key).toJsonString();
+        if (this.fields.activeKeys !== tmpActiveKeysString ) {
+            this.fields.activeKeys = tmpActiveKeysString;
             this.FieldsChanged = true;
+            return this.FieldsChanged;
         }
+        return false;
     }
 
-    public addToActiveKeys(activeKey: TMajorKey): void {
-        activeKey = <TMajorKey>Math.floor(activeKey);
-        if (
-            activeKey >= -7 &&
-            activeKey <= 7 &&
-            !this.keyInActiveKeys(activeKey)
-        ) {
-            const tmpActiveKeys: TVariableMajorKeyNumberArray = [];
-            this.activeKeys.push(activeKey);
-            this.activeKeys.sort().forEach((key: TMajorKey)=>{
-                tmpActiveKeys.push(key);
-            });
-            this.ActiveKeys = tmpActiveKeys;
-
+    public activeKeysDel(key: TMajorKey): boolean {
+        const tmpActiveKeysString: string = this.ActiveKeys.delKey(key).toJsonString();
+        if (this.fields.activeKeys !== tmpActiveKeysString ) {
+            this.fields.activeKeys = tmpActiveKeysString;
+            this.FieldsChanged = true;
+            return this.FieldsChanged;
         }
+        return false;
     }
 
-    public keyInActiveKeys(activeKey: TMajorKey): boolean {
-        return this.activeKeys.includes(activeKey);
+    public get Shot(): TFifteenKeys {
+        return this.shot;
     }
 
-    public removeFromActiveKeys(activeKey: TMajorKey): void {
-        activeKey = <TMajorKey>Math.floor(activeKey);
-        if (
-            this.keyInActiveKeys(activeKey)
-        ) {
-            const tmpActiveKeys: TVariableMajorKeyNumberArray = [];
-            delete this.activeKeys[this.activeKeys.indexOf(activeKey)];
-            this.activeKeys.sort().forEach((key: TMajorKey)=>{
-                tmpActiveKeys.push(key);
-            });
-            this.ActiveKeys = tmpActiveKeys;
+    public shotSet(key: number, value: number): boolean {
+        const tmpShotString: string = this.Shot.setKey(key, value).toJsonString();
+        if (this.fields.shot !== tmpShotString ) {
+            this.fields.shot = tmpShotString;
+            this.FieldsChanged = true;
+            return this.FieldsChanged;
         }
+        return false;
+    }
+
+    public get Done(): TFifteenKeys {
+        return this.done;
+    }
+
+    public doneSet(key: number, value: number): boolean {
+        const tmpDoneString: string = this.Done.setKey(key, value).toJsonString();
+        if (this.fields.done !== tmpDoneString ) {
+            this.fields.done = tmpDoneString;
+            this.FieldsChanged = true;
+            return this.FieldsChanged;
+        }
+        return false;
+    }
+
+    public get Loop(): TFifteenKeys {
+        return this.loop;
+    }
+
+    public loopSet(key: number, value: number): boolean {
+        const tmpLoopString: string = this.Loop.setKey(key, value).toJsonString();
+        if (this.fields.loop !== tmpLoopString ) {
+            this.fields.loop = tmpLoopString;
+            this.FieldsChanged = true;
+            return this.FieldsChanged;
+        }
+        return false;
+    }
+    protected updateField(field: string, value: number | string): boolean {
+        return this.$updateField({
+            table:"sheets",
+            pkey:"sheetId",
+            id:this.SheetId,
+            field: field,
+            value: value,
+        });
     }
 
 }

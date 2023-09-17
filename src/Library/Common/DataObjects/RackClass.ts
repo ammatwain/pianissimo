@@ -4,10 +4,6 @@ import { LibraryClass } from "./LibraryClass";
 
 export class RackClass extends LibraryClass {
 
-    constructor(fields: TRackObject){
-        super(fields);
-    }
-
  /*
     protected fields: IRackFields = {
         rackId: undefined,
@@ -47,6 +43,7 @@ export class RackClass extends LibraryClass {
         if (this.RackFields.rackId !== rackId) {
             this.RackFields.rackId = rackId;
             this.FieldsChanged = true;
+            console.log(this.constructor.name, "changed", "RackId");
         }
     }
 
@@ -62,6 +59,11 @@ export class RackClass extends LibraryClass {
         if (this.RackFields.parentRackId !== parentRackId) {
             this.RackFields.parentRackId = parentRackId;
             this.FieldsChanged = true;
+            if (this.updateField("parentRackId",parentRackId)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -73,6 +75,11 @@ export class RackClass extends LibraryClass {
         if (this.RackFields.sequence !== sequence) {
             this.RackFields.sequence = sequence;
             this.FieldsChanged = true;
+            if (this.updateField("sequence",sequence)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -84,6 +91,7 @@ export class RackClass extends LibraryClass {
         if (this.RackFields.status !== status) {
             this.RackFields.status = status;
             this.FieldsChanged = true;
+            console.log(this.constructor.name, "changed", "Status");
         }
     }
 
@@ -99,7 +107,19 @@ export class RackClass extends LibraryClass {
         if (this.RackFields.title !== title) {
             this.RackFields.title = title;
             this.FieldsChanged = true;
+            console.log(this.constructor.name, "changed", "Title");
         }
     }
+
+    protected updateField(field: string, value: number | string): boolean {
+        return this.$updateField({
+            table:"racks",
+            pkey:"rackId",
+            id:this.RackId,
+            field: field,
+            value: value,
+        });
+    }
+
 }
 

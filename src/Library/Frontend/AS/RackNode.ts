@@ -1,8 +1,18 @@
 import { ASCSS } from "./ASCSS";
 import { TRackObject, RackClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
+import { ASModal } from "./ASModal";
 
 ASCSS.RackNode = {
+    ">.header":{
+        ">.switcher":{
+            ">svg":{
+                ">path#arrow":{
+                    "fill":"red",
+                }
+            },
+        }
+    },
 };
 
 export class RackNode extends LibraryNode {
@@ -17,6 +27,28 @@ export class RackNode extends LibraryNode {
         // else {
         //    throw new Error("BAD PARENT");
         //}
+    }
+
+    protected $preConnect(): void {
+        super.$preConnect();
+        this.$Elements.delete.style.display = "";
+        this.$Elements.arrow.style.fill="black";
+    }
+
+    protected $alwaysConnect(): void {
+        super.$alwaysConnect();
+        this.$Elements.add.onclick = (): void => {
+            ASModal.show("Rack Add");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+        this.$Elements.delete.onclick = (): void => {
+            ASModal.show("Rack Delete");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+        this.$Elements.settings.onclick = (): void => {
+            ASModal.show("Rack Settings");
+            console.log(this.constructor.name, "clicked", "add");
+        };
     }
 
     public get RackFields(): RackClass {

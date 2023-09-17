@@ -12,7 +12,34 @@ const $_TRIANGLE: string = ""
 const $_SWITCHER: string = ""
 + "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 160 160\">"
 + "<circle cx=\"80\" cy=\"80\" r=\"60\" style=\"opacity:0;fill:#000;fill-opacity:1;stroke-width:2.00979\"/>"
-+ "<path id=\"arrow\" d=\"M38.43 56 80 80l41.57-24L80 128Z\" style=\"fill:#66F;stroke-width:1.99844\"/>"
++ "<path id=\"arrow\" d=\"M38.43 56 80 80l41.57-24L80 128Z\" style=\"fill:#000;stroke-width:1.99844\"/>"
++ "</svg>";
+
+const $_EDIT: string = ""
++ "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 160 160\">"
++ "<path id=\"check\" "
++ "d=\"m 20.2 139.4 c -1.1 -5 2.6 -10.5 3.5 -15.7 c 2.5 -7.6 4.2 -15.6 8.2 -22.5 "
++ "c 25.1 -24.8 49.8 -49.9 75.2 -74.4 c 3.7 -3.7 8.2 -8.1 14 -6.3 c 5.8 2.1 9.5 7.7 13.9 11.7 "
++ "c 5.3 3.8 7.3 12.2 2.1 17 c -23.5 24.2 -47.6 47.8 -71.6 71.5 c -4.6 4.3 -8.9 9.5 -15.4 10.8 "
++ "c -9.7 3 -19.4 5.7 -29.1 8.5 z m 17.5 -8 c 7.4 -2.5 15.9 -3.5 21.4 -9.7 "
++ "c 19.2 -18.4 38 -37.4 56.9 -56.1 c -7.2 -7.1 -14.4 -14.3 -21.6 -21.4 "
++ "c -19.7 19.7 -39.7 39.1 -59 59.1 c -4.5 4.9 -5 11.9 -7.2 17.9 c -1.1 4.6 -3.2 9.3 -3.7 13.9 "
++ "c 4.4 -1.2 8.8 -2.5 13.2 -3.7 z m 89.5 -76.9 c 3.7 -4.4 11.2 -8.6 8.6 -15.4 "
++ "c -3.5 -5.6 -9 -9.8 -13.9 -14.1 c -6.4 -4.5 -11.3 3.8 -15.6 7.4 c -3.1 3.1 -6.3 6.2 -9.4 9.3 "
++ "c 7.2 7 14.1 14.4 21.6 21.1 c 3.1 -2.6 5.8 -5.5 8.7 -8.3 z\" "
++ "style=\"opacity:1;fill:#000;fill-opacity:1;stroke-width:2.66457\"/>"
++ "</svg>";
+
+const $_PLUS: string = ""
++ "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 160 160\">"
++ "<path id=\"circle\" "
++ "d=\"m 80 10 a 70 70 0 0 0 -70 70 a 70 70 0 0 0 70 70 a 70 70 0 0 0 70 -70 a "
++ "70 70 0 0 0 -70 -70 z m 0 10 a 60 60 0 0 1 60 60 a 60 60 0 0 1 -60 60 a "
++ "60 60 0 0 1 -60 -60 a 60 60 0 0 1 60 -60 z\" "
++ "style=\"opacity:0.5;fill:#000;fill-opacity:1;stroke-width:2.66457\"/>"
++ "<path id=\"plus\" "
++ "d=\"m 75 35 l 0 40 l -40 0 l 0 10 l 40 0 l 0 40 l 10 0 l 0 -40 l 40 0 l 0 -10 l -40 0 l 0 -40 l -10 0 z\" "
++ "style=\"opacity:1;fill:#000;fill-opacity:1;stroke-width:2.66457\"/>"
 + "</svg>";
 
 const $_RADIO: string = ""
@@ -90,11 +117,42 @@ ASCSS.ASNode = {
                 "padding-right": `${$ms/4}px`,
             },
         },
-        ">.edit":{
-            "display": "inline-block",
+        ">.actions":{
+            "box-sizing":"border-box",
             "max-height": `${$ms}px`,
             "min-height": `${$ms}px`,
+            "opacity": "0",
+            "transition": "all 100ms ease-out",
             "vertical-align": "middle",
+            "white-space":"nowrap",
+            ">i":{
+                "border-radius":"50%",
+                "display": "inline-block",
+                "direction": "ltr",
+                "filter": "invert(0%)",
+                "font-family": "icons",
+                "font-size": "24px",
+                "font-style": "normal",
+                "font-weight": "normal",
+                "font-feature-settings": "liga",
+                "font-smoothing": "antialiased",
+                "letter-spacing": "normal",
+                "line-height": "1",
+                "max-height": `${$ms}px`,
+                "max-width": `${$ms}px`,
+                "min-height": `${$ms}px`,
+                "min-width": `${$ms}px`,
+                "opacity": "0.25",
+                "text-transform": "none",
+                "transition":"opacity .3s ease",
+                "white-space": "nowrap",
+                "word-wrap": "normal",
+                "text-rendering": "optimizeLegibility",
+                "-webkit-font-smoothing": "antialiased",
+                ":hover":{
+                    "opacity": "1",
+                }
+            }
         },
         ">.percent":{
             "background-color":"red",
@@ -111,6 +169,9 @@ ASCSS.ASNode = {
                 ">.caption":{
                     "background-color":"rgb(0,0,0,0.1)",
                 },
+            },
+            ">.actions":{
+                "opacity":"1",
             },
         },
     },
@@ -184,8 +245,8 @@ export class ASNode extends ASCore {
         this.$Elements.caption = document.createElement("span");
         this.$Elements.caption.classList.add("caption");
         this.$Elements.label.appendChild(this.$Elements.caption);
-        this.$Elements.edit = document.createElement("div");
-        this.$Elements.edit.classList.add("edit");
+        this.$Elements.actions = document.createElement("div");
+        this.$Elements.actions.classList.add("actions");
         this.$Elements.percent = document.createElement("div");
         this.$Elements.percent.classList.add("percent");
         this.$Elements.header = document.createElement("div");
@@ -195,7 +256,7 @@ export class ASNode extends ASCore {
         this.$Elements.header.appendChild(this.$Elements.switcher);
         this.$Elements.header.appendChild(this.$Elements.checkbox);
         this.$Elements.header.appendChild(this.$Elements.label);
-        this.$Elements.header.appendChild(this.$Elements.edit);
+        this.$Elements.header.appendChild(this.$Elements.actions);
         this.$Elements.header.appendChild(this.$Elements.percent);
 
         this.$Caption = this.$Property.caption;
@@ -231,7 +292,14 @@ export class ASNode extends ASCore {
             drop instanceof ASNode &&
             drag !== drop
         ) {
-            if (drag.$isSiblingOf(drop)) {
+            if (
+                drag.$IsAdoptable &&
+                drag.$CannotAdopt &&
+                drop.$CanAdopt &&
+                drop !== drag.$Parent
+            ) {
+                return 3;
+            } else if (drag.$isSiblingOf(drop)) {
                 if (drop.$IsEmpty && drop.$CanAdopt && drag.$IsAdoptable) {
                     return 3;
                 } else {
@@ -280,9 +348,9 @@ export class ASNode extends ASCore {
 
     protected $alwaysConnect(): void {
         if (this.$Parent) {
-            this.$Parent.$Elements.arrow.style.fill = "#000";
+            //this.$Parent.$Elements.arrow.style.fill = "#000";
         }
-        this.$Elements.header.style.gridTemplateColumns = `${$ms * this.$Level}px ${$ms}px ${$ms}px minmax(${$ms * 4}px, 1fr) ${$ms}px ${$ms*4}px`;
+        this.$Elements.header.style.gridTemplateColumns = `${$ms * this.$Level}px ${$ms}px ${$ms}px minmax(${$ms * 4}px, 1fr) auto ${$ms*4}px`;
 
         this.$Elements.spacer.onclick = (): void => {
             if(this.$IsEmpty) {
@@ -490,6 +558,10 @@ export class ASNode extends ASCore {
         return this.$Checked;
     }
 
+    public get $Actions(): HTMLDivElement {
+        return <HTMLDivElement>this.$Elements.actions;
+    }
+
     public get $CanAdopt(): boolean {
         if (!("canAdopt" in this.$Kind)) {
             this.$Kind.canAdopt = true;
@@ -539,7 +611,7 @@ export class ASNode extends ASCore {
     }
 
     public set $Closed(closed: boolean) {
-        if (!closed && this.$Items.length>0) {
+        if (!closed /* && this.$Items.length>0 */) {
             this.classList.remove("closed");
         } else {
             this.classList.add("closed");

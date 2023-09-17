@@ -16,6 +16,7 @@ export const plugins = [
                 copy: [
                     { source: path.resolve(__dirname, "src/Data"), destination: path.resolve(__dirname, ".webpack/main/Data") },
                     { source: path.resolve(__dirname, "src/pianissimo.png"), destination: path.resolve(__dirname, ".webpack/main/pianissimo.png")},
+                    { source: path.resolve(__dirname, "Fonts/MaterialIconsTwoTone-Regular.otf"), destination: path.resolve(__dirname, ".webpack/renderer/main_window/assets/fonts/MaterialIconsTwoTone-Regular.otf")},
                 ],
             },
         },

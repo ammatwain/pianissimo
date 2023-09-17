@@ -58,6 +58,11 @@ export class ScoreClass extends LibraryClass {
         if (this.ScoreFields.parentRackId !== parentRackId) {
             this.ScoreFields.parentRackId = parentRackId;
             this.FieldsChanged = true;
+            if (this.updateField("parentRackId",parentRackId)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -69,6 +74,11 @@ export class ScoreClass extends LibraryClass {
         if (this.ScoreFields.sequence !== sequence) {
             this.ScoreFields.sequence = sequence;
             this.FieldsChanged = true;
+            if (this.updateField("sequence",sequence)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -151,6 +161,16 @@ export class ScoreClass extends LibraryClass {
             this.ScoreFields.parts = parts;
             this.FieldsChanged = true;
         }
+    }
+
+    protected updateField(field: string, value: number | string): boolean {
+        return this.$updateField({
+            table:"scores",
+            pkey:"scoreId",
+            id:this.ScoreId,
+            field: field,
+            value: value,
+        });
     }
 
 }

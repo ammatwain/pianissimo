@@ -2,6 +2,7 @@ import { ASCSS } from "./ASCSS";
 import { TScoreObject, TMajorKey, TFixedNumberArray, TVariableMajorKeyNumberArray, ScoreClass, RackClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
+import { ASModal } from "./ASModal";
 
 ASCSS.ScoreNode = {
 };
@@ -11,11 +12,32 @@ export class ScoreNode extends LibraryNode {
     constructor (scoreFields: ScoreClass, parentRack: RackNode)  {
         super({adoptable: true, canAdopt: false});
         this.ScoreFields = scoreFields;
-        console.log("RACK FIELDS",this.ScoreFields);
         if (parentRack && parentRack instanceof RackNode) {
             parentRack.$appendNode(this);
         }
         this.$Caption = this.ScoreFields.Title;
+    }
+
+    protected $preConnect(): void {
+        super.$preConnect();
+        this.$Elements.delete.style.display = "";
+        this.$Elements.arrow.style.fill="#66f";
+    }
+
+    protected $alwaysConnect(): void {
+        super.$alwaysConnect();
+        this.$Elements.add.onclick = (): void => {
+            ASModal.show("Score Add");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+        this.$Elements.delete.onclick = (): void => {
+            ASModal.show("Score Delete");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+        this.$Elements.settings.onclick = (): void => {
+            ASModal.show("Score Settings");
+            console.log(this.constructor.name, "clicked", "add");
+        };
     }
 
     public get ScoreFields(): ScoreClass {

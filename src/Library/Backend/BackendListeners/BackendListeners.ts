@@ -131,4 +131,37 @@ export function BackendListeners(database: Letture): void {
             event.reply(STR.responseSheetForSection, {sheetId: ids.sheetId, sectionId: ids.sectionId, xml: null});
         }
     });
+
+    ipcMain.handle("request-update-field", async (
+        event: Electron.IpcMainEvent, query: {table: string, pkey: string, id: number, field: string, value: number | string }
+    ) => {
+        database.exec(`UPDATE "${query.table}" SET
+            "${query.field}"='${String(query.value)}'
+            WHERE
+            "${query.pkey}"=${query.id};
+        `);
+
+        const result: any = database.prepare(`
+        SELECT "${query.field}" FROM
+        "${query.table}"
+        WHERE
+        "${query.pkey}"=${query.id};
+        `).pluck().get();
+        return String(query.value) === String(result);
+    });
+
+    ipcMain.handle("request-rack-sequence-changed", async (
+        event: Electron.IpcMainEvent, obj: {rackId: number, sequence: number}
+    ) => {
+        database.exec(`UPDATE "racks" SET
+            "sequence"=${obj.sequence}
+            WHERE
+            "rackId"=${obj.rackId};
+        `);
+
+        const result: any = database.prepare(`SELECT "sequence" FROM "racks" WHERE "rackId"=${obj.rackId}`).pluck().get();
+        return {old: obj.sequence, new: result};
+        //return (("sequence" in result) && (result.sequence === obj.sequence));
+    });
+
 }

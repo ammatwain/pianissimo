@@ -1,9 +1,10 @@
 import { TLibraryObject } from "./TLibraryObject";
 
 export class LibraryClass {
-
+    protected notificationActive: boolean = false;
     constructor(fields: TLibraryObject){
         this.Fields = fields;
+        this.notificationActive = true;
     }
 
     declare protected fields: TLibraryObject;
@@ -30,11 +31,13 @@ export class LibraryClass {
     }
 
     public get ParentId(): number {
+        /*
         if ("parentRackId" in this.fields) {
             return this.fields.parentRackId;
         } else if ("scoreRackId" in this.fields) {
             return this.fields.scoreRackId;
         }
+        */
         return 0;
     }
 
@@ -49,12 +52,29 @@ export class LibraryClass {
         }
     }
 
-    protected get FieldsChanged(): boolean {
+    public get FieldsChanged(): boolean {
         return this.fieldsChanged;
     }
 
-    protected set FieldsChanged(fieldsChanged: boolean) {
+    public set FieldsChanged(fieldsChanged: boolean) {
         this.fieldsChanged = fieldsChanged;
+        if (this.notificationActive && this.fieldsChanged) {
+            //window.electron.ipcRenderer.invoke("request-field-changed").then((result: any)=>{
+            console.log(this.constructor.name, this.fieldsChanged, this.fields);
+        }
+    }
+
+    protected $updateField(query: {table: string, pkey: string, id: number, field: string, value: number | string }): boolean {
+        return <boolean>window.electron.ipcRenderer.invoke(
+            "request-update-field",
+            query
+        ).then((result: boolean)=>{
+            return result;
+        });
+    }
+
+    protected updateField(field: string, value: number | string): boolean {
+        return null;
     }
 
 }

@@ -9,6 +9,7 @@ import {
 
 import { LibraryNode } from "./LibraryNode";
 import { ScoreNode } from "./ScoreNode";
+import { ASModal } from "./ASModal";
 
 ASCSS.SheetNode = {
 };
@@ -24,6 +25,32 @@ export class SheetNode extends LibraryNode {
         this.$Caption = sheetFields.Title;
 
     }
+
+    protected $preConnect(): void {
+        super.$preConnect();
+        this.$Elements.arrow.style.fill="olive";
+    }
+
+    protected $alwaysConnect(): void {
+        super.$alwaysConnect();
+        if (this.Sequence>0) {
+            this.$Elements.delete.style.display = "";
+        }
+        this.$Elements.add.style.display = "none";
+        this.$Elements.add.onclick = (): void => {
+            ASModal.show("Sheet Add");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+        this.$Elements.delete.onclick = (): void => {
+            ASModal.show("Sheet Delete");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+        this.$Elements.settings.onclick = (): void => {
+            ASModal.show("Sheet Settings");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+    }
+
 /*
     protected fields: ISheetFields = {
         sheetId: undefined,
@@ -200,6 +227,7 @@ export class SheetNode extends LibraryNode {
 */
     public doSelected(): void{
         ;
+        console.log(this.SheetId, "SELECTED!");
     }
 }
 
