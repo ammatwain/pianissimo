@@ -1,8 +1,6 @@
-import { BranchClass } from "@Frontend/BranchClass";
 import { ASCSS } from "./ASCSS";
 import { ASNode } from "./ASNode";
-import { NodeClass } from "./NodeClass";
-import {TMajorKey, TFixedNumberArray, TVariableMajorKeyNumberArray, LibraryClass} from "@Common/DataObjects";
+import {LibraryClass, TRackObject, RackClass} from "@Common/DataObjects";
 import { ASModal } from "./ASModal";
 
 ASCSS.LibraryNode = {
@@ -11,9 +9,26 @@ ASCSS.LibraryNode = {
 export class LibraryNode extends ASNode {
 
     protected fields: LibraryClass;
+    protected library: any;
+
 
     constructor(args: any){
         super(args);
+        if (
+            this instanceof LibraryNode &&
+            this.constructor.name === "LibraryNode"
+        ) {
+            if (
+                args &&
+                "library" in args &&
+                args.library &&
+                args.library.constructor.name === "TLibrary"
+            ) {
+                this.Library = args.library;
+            } else {
+                throw new Error(`${this.constructor.name}: Bad Library Object`);
+            }
+        }
     }
 
     protected $preConnect(): void {
@@ -27,6 +42,11 @@ export class LibraryNode extends ASNode {
         this.$Elements.add.classList.add("icons");
         this.$Elements.add.innerHTML = "add_circle";
         this.$Actions.prepend(this.$Elements.add);
+
+        this.$Elements.addRack = <HTMLElement>document.createElement("i");
+        this.$Elements.addRack.classList.add("icons");
+        this.$Elements.addRack.innerHTML = "create_new_folder";
+        this.$Actions.prepend(this.$Elements.addRack);
 
         this.$Elements.delete = <HTMLElement>document.createElement("i");
         this.$Elements.delete.classList.add("icons");
@@ -47,6 +67,9 @@ export class LibraryNode extends ASNode {
             ASModal.show("Library Add");
             console.log(this.constructor.name, "***clicked", "add");
         };
+        this.$Elements.addRack.onclick = (): void => {
+            console.log(this.constructor.name, "***clicked", "add");
+        };
         this.$Elements.delete.onclick = (): void => {
             ASModal.show("Library Delete");
             console.log(this.constructor.name, "***clicked", "add");
@@ -57,6 +80,28 @@ export class LibraryNode extends ASNode {
         };
     }
 
+    private newRackObject(): TRackObject {
+        return {
+            rackId: Number(`2${Date.now()}`),
+            parentRackId: this.Id,
+            sequence: -1,
+            status: null,
+            title: "Default Title",
+        };
+    }
+
+    protected newRackClass(): RackClass{
+        const rackObject: TRackObject = this.newRackObject();
+        return new RackClass(rackObject);
+    }
+
+    protected newRackNode(): RackNode {
+        const rackClass: RackClass = this.newRackClass();
+        const rackNode: RackNode = new RackNode(rackClass, this);
+        this.$Closed = false;
+        return rackNode;
+    }
+
     public get FieldsChanged(): boolean {
         return this.fields.FieldsChanged;
     }
@@ -65,12 +110,33 @@ export class LibraryNode extends ASNode {
         return 0;
     }
 
+    public get Library(): any {
+        return this.Root.library;
+    }
+
+    public set Library(library: any) {
+        if (this.Root) {
+            this.Root.library = library;
+        }
+    }
+
     public get ParentId(): number {
         return 0;
     }
 
     public set ParentId(parentId: number) {
         ;
+    }
+
+    public get Root(): LibraryNode {
+        if (
+            this.$Root &&
+            this.$Root instanceof LibraryNode
+        ) {
+            return <LibraryNode>this.$Root;
+        } else {
+            return null;
+        }
     }
 
     public get Sequence(): number {

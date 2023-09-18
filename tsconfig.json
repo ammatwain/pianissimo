@@ -15,6 +15,7 @@
         "paths": {
             "@Library/*": ["src/Library/*"],
             "@Common/*": ["src/Library/Common/*"],
+            "@DataObjects/*": ["src/Library/Common/DataObjects/*"],
             "@Global/*": ["src/Library/Global/*"],
             "@Backend/*": ["src/Library/Backend/*"],
             "@Frontend/*": ["src/Library/Frontend/*"],

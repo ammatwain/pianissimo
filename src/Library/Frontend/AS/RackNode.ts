@@ -17,10 +17,16 @@ ASCSS.RackNode = {
 
 export class RackNode extends LibraryNode {
 
-    constructor (rackFields: RackClass, parentRack: RackNode)  {
+    constructor (rackFields: RackClass, parentRack: RackNode | LibraryNode)  {
         super({adoptable: true, canAdopt: true});
         this.RackFields = rackFields;
-        if (parentRack && parentRack instanceof RackNode) {
+        if (
+            parentRack &&
+            (
+                parentRack instanceof RackNode ||
+                parentRack instanceof LibraryNode
+            )
+        ) {
             parentRack.$appendNode(this);
         }
         this.$Caption = this.RackFields.Title;
@@ -38,7 +44,12 @@ export class RackNode extends LibraryNode {
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
         this.$Elements.add.onclick = (): void => {
-            ASModal.show("Rack Add");
+            //ASModal.show("Rack Add");
+            console.log(this.constructor.name, "clicked", "add");
+        };
+        this.$Elements.addRack.onclick = (): void => {
+            //ASModal.show("Rack Add");
+            this.newRackNode();
             console.log(this.constructor.name, "clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {
@@ -49,6 +60,28 @@ export class RackNode extends LibraryNode {
             ASModal.show("Rack Settings");
             console.log(this.constructor.name, "clicked", "add");
         };
+    }
+
+    private newRackObject(): TRackObject {
+        return {
+            rackId: Number(`2${Date.now()}`),
+            parentRackId: this.Id,
+            sequence: -1,
+            status: null,
+            title: "Default Title",
+        };
+    }
+
+    protected newRackClass(): RackClass{
+        const rackObject: TRackObject = this.newRackObject();
+        return new RackClass(rackObject);
+    }
+
+    protected newRackNode(): RackNode {
+        const rackClass: RackClass = this.newRackClass();
+        const rackNode: RackNode = new RackNode(rackClass, this);
+        this.$Closed = false;
+        return rackNode;
     }
 
     public get RackFields(): RackClass {

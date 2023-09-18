@@ -4,17 +4,23 @@ import { LibraryClass } from "./LibraryClass";
 
 export class RackClass extends LibraryClass {
 
- /*
-    protected fields: IRackFields = {
-        rackId: undefined,
-        parentRackId: undefined,
-        sequence: undefined,
-        status: undefined,
-        title: undefined,
-    };
-*/
     declare protected fields: TRackObject;
+/*
+    private newRackObject(): TRackObject {
+        return {
+            rackId: Number(`2${Date.now()}`),
+            parentRackId: this.RackId,
+            sequence: -1,
+            status: this.Status,
+            title: "Default Title",
+        };
+    }
 
+    protected newRackClass(): RackClass{
+        const rackObject: TRackObject = this.newRackObject();
+        return new RackClass(rackObject);
+    }
+*/
     public set Fields(fields: TRackObject) {
         super.Fields = fields;
     }

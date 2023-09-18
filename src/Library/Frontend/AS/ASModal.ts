@@ -4,7 +4,6 @@ import { AS, ASCore } from "./ASCore";
 ASCSS.ASModal = {
     "animation": "fadeOut 0.3s",
     "background-color":"rgba(0,0,0,0.4)",
-    "display":"block",
     "height":"100vh",
     "left":"0px",
     "opacity":"0",
@@ -13,8 +12,9 @@ ASCSS.ASModal = {
     "width":"100vw",
     ">.window":{
         "background-color":"#1f1f1f",
-        "box-shadow": "2vmin 2vmin 10vmin black",
+        "box-shadow": "2vmin 2vmin 10vmin #0c0a0f",
         "box-sizing":"border-box",
+        "cursor":"default",
         "display":"block",
         "height":"50vh",
         "left":"25vw",
@@ -102,11 +102,40 @@ export class ASModal extends ASCore {
         this.$Elements.cancel.onclick = (): void => {
             this.classList.remove("visible");
         };
+
         this.addEventListener("animationend", (event: AnimationEvent) => {
             if (event.animationName==="fadeOut"){
                 this.parentElement.removeChild(this);
             }
         });
+
+        this.$Elements.caption.onmousedown = (mouseEvent: MouseEvent): void => {
+            let initialX: number = mouseEvent.clientX;
+            let initialY: number = mouseEvent.clientY;
+
+            const moveElement: any = (event: MouseEvent): void => {
+              const currentX: number = event.clientX;
+              const currentY: number = event.clientY;
+
+              const deltaX: number = currentX - initialX;
+              const deltaY: number = currentY - initialY;
+
+              this.$Elements.window.style.left = this.$Elements.window.offsetLeft + deltaX + "px";
+              this.$Elements.window.style.top = this.$Elements.window.offsetTop + deltaY + "px";
+
+              initialX = currentX;
+              initialY = currentY;
+            };
+
+            function stopElement(event: MouseEvent): void {
+                document.removeEventListener("mousemove", moveElement);
+                document.removeEventListener("mouseup", stopElement);
+            }
+
+            document.addEventListener("mousemove", moveElement);
+            document.addEventListener("mouseup", stopElement);
+
+        };
     }
 
     static show(caption: string): ASModal {

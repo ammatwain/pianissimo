@@ -29,6 +29,7 @@ export class SheetNode extends LibraryNode {
     protected $preConnect(): void {
         super.$preConnect();
         this.$Elements.arrow.style.fill="olive";
+        this.$Elements.addRack.style.display = "";
     }
 
     protected $alwaysConnect(): void {

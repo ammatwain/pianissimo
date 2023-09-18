@@ -8,6 +8,7 @@ import { LibraryClass } from "@Library/Common/DataObjects/LibraryClass";
 import { RackClass } from "@Common/DataObjects/RackClass";
 import { ScoreClass } from "@Common/DataObjects/ScoreClass";
 import { SheetClass } from "@Common/DataObjects/SheetClass";
+import { Library } from "../Library/Library";
 
 export class Application {
     private header: HTMLDivElement;
@@ -21,30 +22,46 @@ export class Application {
         this.setListeners();
     }
 
-    buildTree(library: any): void {
-        console.log(library);
-        const root: LibraryNode = new LibraryNode({caption: "TEST"});
+    buildTree(data: any): void {
+        console.log(data);
+//        const root: LibraryNode = new LibraryNode({library: data, Library: this.library, caption: "TEST"});
+        const root: LibraryNode = Library.RootNode;
+
         this.left.appendChild(root);
-        library.rackClasses=[];
-        library.scoreClasses=[];
-        library.sheetClasses=[];
-        library.rackNodes=[];
-        library.scoreNodes=[];
-        library.sheetNodes=[];
 
-        library.racks.forEach((rack: TRackObject)=>{
-            library.rackClasses.push(new RackClass(rack));
+        data.racks.forEach((rack: TRackObject)=>{
+            Library.addRack(rack.rackId, rack);
+        });
+        data.scores.forEach((score: TScoreObject)=>{
+            Library.addScore(score.scoreId, score);
+        });
+        data.sheets.forEach((sheet: TSheetObject)=>{
+            Library.addSheet(sheet.sheetId, sheet);
         });
 
-        library.rackClasses.forEach((rack: RackClass)=>{
-            library.rackNodes.push(new RackNode(rack,null));
+        Library.buildTree();
+
+/*
+        data.rackClasses=[];
+        data.scoreClasses=[];
+        data.sheetClasses=[];
+        data.rackNodes=[];
+        data.scoreNodes=[];
+        data.sheetNodes=[];
+        data.racks.forEach((rack: TRackObject)=>{
+            Library.setRackObject(rack.rackId, rack);
+            data.rackClasses.push(new RackClass(rack));
         });
 
-        library.rackNodes.forEach((rackNode: RackNode)=>{
+        data.rackClasses.forEach((rack: RackClass)=>{
+            data.rackNodes.push(new RackNode(rack,null));
+        });
+
+        data.rackNodes.forEach((rackNode: RackNode)=>{
             if (rackNode.ParentRackId===0){
                 root.$appendNode(rackNode);
             } else {
-                const parent: RackNode = library.rackNodes.find((parentNode: RackNode)=>{
+                const parent: RackNode = data.rackNodes.find((parentNode: RackNode)=>{
                     return parentNode.RackId === rackNode.ParentRackId;
                 });
                 if (parent){
@@ -53,19 +70,19 @@ export class Application {
             }
         });
 
-        library.scores.forEach((score: TScoreObject)=>{
-            library.scoreClasses.push(new ScoreClass(score));
+        data.scores.forEach((score: TScoreObject)=>{
+            data.scoreClasses.push(new ScoreClass(score));
         });
 
-        library.scoreClasses.forEach((score: ScoreClass)=>{
-            library.scoreNodes.push(new ScoreNode(score,null));
+        data.scoreClasses.forEach((score: ScoreClass)=>{
+            data.scoreNodes.push(new ScoreNode(score,null));
         });
 
-        library.scoreNodes.forEach((scoreNode: ScoreNode)=>{
+        data.scoreNodes.forEach((scoreNode: ScoreNode)=>{
             if (scoreNode.ParentRackId===0){
                 root.$appendNode(scoreNode);
             } else {
-                const parent: RackNode = library.rackNodes.find((parentNode: RackNode)=>{
+                const parent: RackNode = data.rackNodes.find((parentNode: RackNode)=>{
                     return parentNode.RackId === scoreNode.ParentRackId;
                 });
                 if (parent){
@@ -74,18 +91,18 @@ export class Application {
             }
         });
 
-        library.sheets.forEach((sheet: TScoreObject)=>{
-            library.sheetClasses.push(new SheetClass(sheet));
+        data.sheets.forEach((sheet: TScoreObject)=>{
+            data.sheetClasses.push(new SheetClass(sheet));
         });
 
-        library.sheetClasses.forEach((sheet: SheetClass)=>{
-            library.sheetNodes.push(new SheetNode(sheet,null));
+        data.sheetClasses.forEach((sheet: SheetClass)=>{
+            data.sheetNodes.push(new SheetNode(sheet,null));
         });
-        library.sheetNodes.forEach((sheetNode: SheetNode)=>{
+        data.sheetNodes.forEach((sheetNode: SheetNode)=>{
             if (sheetNode.ParentScoreId===0){
                 //root.$appendNode(scoreNode);
             } else {
-                const parent: ScoreNode = library.scoreNodes.find((parentNode: ScoreNode)=>{
+                const parent: ScoreNode = data.scoreNodes.find((parentNode: ScoreNode)=>{
                     return parentNode.ScoreId === sheetNode.ParentScoreId;
                 });
                 if (parent){
@@ -93,6 +110,7 @@ export class Application {
                 }
             }
         });
+    */
     }
 
     setListeners(): void{

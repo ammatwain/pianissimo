@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { TScoreObject, TMajorKey, TFixedNumberArray, TVariableMajorKeyNumberArray, ScoreClass, RackClass } from "@Common/DataObjects";
+import { TMajorKey, ScoreClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
 import { ASModal } from "./ASModal";
@@ -21,6 +21,7 @@ export class ScoreNode extends LibraryNode {
     protected $preConnect(): void {
         super.$preConnect();
         this.$Elements.delete.style.display = "";
+        this.$Elements.addRack.style.display = "";
         this.$Elements.arrow.style.fill="#66f";
     }
 
