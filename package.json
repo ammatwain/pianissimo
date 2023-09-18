@@ -1,7 +1,7 @@
 {
     "name": "pianissimo",
     "productName": "pianissimo",
-    "version": "0.2.639",
+    "version": "0.2.648",
     "description": "pianissimo",
     "main": ".webpack/main",
     "scripts": {
@@ -41,7 +41,6 @@
         "auto-version-js": "^0.3.10",
         "css-loader": "^6.8.1",
         "css-modules-typescript-loader": "^4.0.1",
-        "dpdm": "^3.14.0",
         "electron": "^25.8.0",
         "eslint": "^8.46.0",
         "eslint-plugin-import": "^2.28.0",

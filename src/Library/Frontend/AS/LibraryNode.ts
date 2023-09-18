@@ -68,6 +68,9 @@ export class LibraryNode extends ASNode {
             console.log(this.constructor.name, "***clicked", "add");
         };
         this.$Elements.addRack.onclick = (): void => {
+            this.Root.Library.newRackObject();
+            this.$Closed=false;
+            console.log(this.Id);
             console.log(this.constructor.name, "***clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {
@@ -78,28 +81,6 @@ export class LibraryNode extends ASNode {
             ASModal.show("Library Settings");
             console.log(this.constructor.name, "***clicked", "add");
         };
-    }
-
-    private newRackObject(): TRackObject {
-        return {
-            rackId: Number(`2${Date.now()}`),
-            parentRackId: this.Id,
-            sequence: -1,
-            status: null,
-            title: "Default Title",
-        };
-    }
-
-    protected newRackClass(): RackClass{
-        const rackObject: TRackObject = this.newRackObject();
-        return new RackClass(rackObject);
-    }
-
-    protected newRackNode(): RackNode {
-        const rackClass: RackClass = this.newRackClass();
-        const rackNode: RackNode = new RackNode(rackClass, this);
-        this.$Closed = false;
-        return rackNode;
     }
 
     public get FieldsChanged(): boolean {

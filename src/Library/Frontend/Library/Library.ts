@@ -131,6 +131,30 @@ export class TLibrary {
         return this;
     }
 
+    insertRack(rackObject: TRackObject): TLibrary {
+        const id: number =  rackObject.rackId;
+        if (!this.LibraryObjects.has(id)){
+            this.setRackObject(id,rackObject);
+            if (!this.LibraryClasses.has(id)){
+                const rackClass: RackClass = new RackClass(rackObject);
+                this.setRackClass(id,rackClass);
+                if (!this.LibraryNodes.has(id)){
+                    let rackNode: RackNode;
+                    if (rackClass.ParentRackId>0){
+                        const parentRackNode: RackNode =  this.RackNodes.get(rackClass.ParentRackId) || null;
+                        rackNode = new RackNode(rackClass, parentRackNode);
+                    } else if (rackClass.ParentRackId === 0 && this.RootNode) {
+                        rackNode = new RackNode(rackClass, this.RootNode);
+                    } else {
+                        rackNode = new RackNode(rackClass, null);
+                    }
+                    this.setRackNode(id,rackNode);
+                }
+            }
+        }
+        return this;
+    }
+
     addScore(id: number, scoreObject: TScoreObject): TLibrary{
         if (!this.LibraryObjects.has(id)){
             this.setScoreObject(id,scoreObject);
@@ -226,6 +250,49 @@ export class TLibrary {
         return this;
     }
 
+    public newRackObject(parentId: number = 0): void {
+        const rackObject: TRackObject = {
+            rackId: Number(`2${Date.now()}`),
+            parentRackId: parentId,
+            sequence: -1,
+            status: null,
+            title: "Default Title",
+        };
+        console.log(rackObject);
+
+        window.electron.ipcRenderer.invoke("request-insert-rack", rackObject ).then((result: TRackObject)=>{
+            if (
+                result &&
+                rackObject.rackId === result.rackId &&
+                rackObject.parentRackId === result.parentRackId
+            ) {
+                this.insertRack(result);
+            }
+        });
+    }
+
+    protected newRackClass(parentId: number = 0): RackClass{
+        const rackObject: TRackObject = this.newRackObject(parentId);
+        return new RackClass(rackObject);
+    }
+
+    protected newRackNode(parentId: number = 0): RackNode {
+        parentId = Number(parentId);
+        const rackClass: RackClass = this.newRackClass(parentId);
+        let rackNode: RackNode;
+        if (parentId) {
+            const parentRackNode: RackNode = this.RackNodes.get(parentId);
+            if (parentRackNode) {
+                rackNode = new RackNode(rackClass, parentRackNode);
+                parentRackNode.$Closed = false;
+            }
+        } else if (this.RootNode ){
+            rackNode = new RackNode(rackClass, this.RootNode);
+            this.RootNode.$Closed = false;
+        }
+        return rackNode;
+    }
+
     buildTree(): TLibrary {
         if (
             this.RootNode &&
@@ -244,6 +311,30 @@ export class TLibrary {
                     }
                 }
             });
+
+            this.ScoreNodes.forEach((scoreNode: ScoreNode)=>{
+                console.log(scoreNode.ParentRackId);
+                if (scoreNode.ParentRackId===0){
+                    this.RootNode.$appendNode(scoreNode);
+                } else {
+                    const parent: RackNode = this.RackNodes.get(scoreNode.ParentRackId);
+                    if (parent){
+                        parent.$appendNode(scoreNode);
+                    }
+                }
+            });
+
+            this.SheetNodes.forEach((sheetNode: SheetNode)=>{
+                if (sheetNode.ParentScoreId===0){
+                    //root.$appendNode(scoreNode);
+                } else {
+                    const parent: ScoreNode = this.ScoreNodes.get(sheetNode.ParentScoreId);
+                    if (parent){
+                        parent.$appendNode(sheetNode);
+                    }
+                }
+            });
+
         }
         return this;
     }

@@ -414,11 +414,13 @@ export class ASNode extends ASCore {
             ) {
                 event.stopImmediatePropagation();
                 this.$DropTarget = null;
-                event.dataTransfer.setDragImage(
-                    this.$Elements.caption,
-                    this.$Elements.caption.offsetWidth/2,
-                    this.$Elements.caption.offsetHeight/2
-                );
+                if (event.dataTransfer) {
+                    event.dataTransfer.setDragImage(
+                        this.$Elements.caption,
+                        this.$Elements.caption.offsetWidth/2,
+                        this.$Elements.caption.offsetHeight/2
+                    );
+                }
                 this.$DragTarget = this;
             }
         };
@@ -630,7 +632,7 @@ export class ASNode extends ASCore {
         return <ASNode>this.$Root.$Property.dragTarget || null;
     }
 
-    public set $DragTarget(dragTarget: ASNode) {
+    public set $DragTarget(dragTarget: ASNode | null) {
         this.$DropTarget = null;
         this.$Root.$Property.dragTarget = dragTarget;
     }
@@ -643,7 +645,7 @@ export class ASNode extends ASCore {
         }
     }
 
-    public set $DropTarget(dropTarget: ASNode) {
+    public set $DropTarget(dropTarget: ASNode | null) {
         const oldDropTarget: ASNode = this.$DropTarget;
         if  (this.$DragTarget && dropTarget instanceof ASNode) {
             this.$Root.$Property.dropTarget = dropTarget;

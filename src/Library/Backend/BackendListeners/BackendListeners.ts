@@ -1,4 +1,5 @@
 import { ipcMain } from "electron";
+import { TRackObject } from "@DataObjects/TRackObject";
 import { STR } from "@Global/STR";
 import { Package } from "@Backend/Package";
 import { FSWalk } from "@Backend/FSWalk";
@@ -148,6 +149,36 @@ export function BackendListeners(database: Letture): void {
         "${query.pkey}"=${query.id};
         `).pluck().get();
         return String(query.value) === String(result);
+    });
+
+    ipcMain.handle("request-insert-rack", async (
+        event: Electron.IpcMainEvent, rack: TRackObject
+    ) => {
+        console.log(rack);
+        database.exec(`INSERT INTO "racks"
+            (
+                "rackId",
+                "parentRackId",
+                "sequence",
+                "status",
+                "title"
+            ) VALUES (
+                '${rack.rackId}',
+                '${rack.parentRackId}',
+                '${rack.sequence}',
+                '${rack.status}',
+                '${rack.title}'
+            );
+        `);
+
+        const result: any = database.prepare(`
+        SELECT * FROM
+        "racks"
+        WHERE
+        "rackId"=${rack.rackId};
+        `).get();
+        console.log("RESULT",result);
+        return result;
     });
 
     ipcMain.handle("request-rack-sequence-changed", async (
