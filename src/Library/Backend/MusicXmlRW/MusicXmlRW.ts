@@ -78,6 +78,10 @@ export class MusicXmlRW {
         return this.Identification.childNamed("miscellaneous");
     }
 
+    public get Title(): string {
+        return this.ScorePartWise.descendantWithPath("work.work-title").val;
+    }
+
     public get Pianissimo(): PianissimoID {
         let source: PianissimoID;
         if (this.Source) {

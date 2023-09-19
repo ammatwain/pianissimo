@@ -211,7 +211,7 @@ WHERE
                         score.scoreId = ppId.id;
                     }
                     mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: score.scoreId};
-                    score.title = filename;
+                    score.title = mmxl.Title;
                     score.mainKey = mmxl.MainKey;
                     score.parts = JSON.stringify(mmxl.Instruments);
                     score.measures = mmxl.MeasureCount;
