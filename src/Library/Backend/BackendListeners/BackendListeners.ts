@@ -11,6 +11,7 @@ import { IBranchObject } from "@Library/Common/Interfaces/IBranchObject";
 import { IDiaryObject } from "@Library/Common/Interfaces/IDiaryObject";
 import { TScoreObject } from "@Library/Common/DataObjects/TScoreObject";
 import { MusicXmlRW, PianissimoID } from "@Library/Backend/MusicXmlRW/MusicXmlRW";
+import { TZippedObject } from "@Library/Common/DataObjects/TZippedObject";
 
 export function BackendListeners(database: Letture): void {
 
@@ -197,7 +198,7 @@ WHERE
         event: Electron.IpcMainEvent,
         score: TScoreObject
     ) => {
-        dialog.showOpenDialog({properties: ["openFile"] }).then(function (response) {
+        const data: any = dialog.showOpenDialog({properties: ["openFile"] }).then(function (response) {
             if (!response.canceled) {
                 // handle fully qualified file name
                 console.log(response);
@@ -210,6 +211,7 @@ WHERE
                         score.scoreId = ppId.id;
                     }
                     mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: score.scoreId};
+                    score.title = filename;
                     score.mainKey = mmxl.MainKey;
                     score.parts = JSON.stringify(mmxl.Instruments);
                     score.measures = mmxl.MeasureCount;
@@ -221,45 +223,105 @@ WHERE
                             "zipped"
                         ) VALUES (
                             '${score.scoreId}',
-                            x'${mmxl.Zipped}'
+                            x'${mmxl.Zipped.toString("hex")}'
                         );
                     `);
 
-                    database.exec(`
-                        REPLACE INTO "scores" (
-                            "scoreId",
-                            "parentScoreId",
-                            "sequence",
-                            "status",
-                            "title",
-                            "subtitle",
-                            "author",
-                            "measures",
-                            "parts",
-                            "mainKey",
-                            "mainTempo"
-                        ) VALUES (
-                            '${score.scoreId}',
-                            '${score.parentRackId}',
-                            '${score.sequence}',
-                            '${score.status}',
-                            '${score.title}',
-                            '${score.subtitle}',
-                            '${score.author}',
-                            '${score.measures}',
-                            '${score.parts}',
-                            '${score.mainKey}',
-                            '${score.mainTempo}'
-                        );
-                    `);
+                    const resultZipped: TZippedObject = <TZippedObject>database.prepare(`
+                    SELECT * FROM
+                    "zippeds"
+                    WHERE
+                    "parentScoreId"=${score.scoreId};
+                    `).get();
+                    if (resultZipped){
+                        database.exec(`
+                            REPLACE INTO "scores" (
+                                "scoreId",
+                                "parentRackId",
+                                "sequence",
+                                "status",
+                                "title",
+                                "subtitle",
+                                "author",
+                                "measures",
+                                "parts",
+                                "mainKey",
+                                "mainTempo"
+                            ) VALUES (
+                                '${score.scoreId}',
+                                '${score.parentRackId}',
+                                '${score.sequence}',
+                                '${score.status}',
+                                '${score.title}',
+                                '${score.subtitle}',
+                                '${score.author}',
+                                '${score.measures}',
+                                '${score.parts}',
+                                '${score.mainKey}',
+                                '${score.mainTempo}'
+                            );
+                        `);
 
+                        const sheetId: number = Number(`4${Date.now()}`);
+                        const resultScore: TRackObject = <TRackObject>database.prepare(`
+                        SELECT * FROM
+                        "scores"
+                        WHERE
+                        "scoreId"=${score.scoreId};
+                        `).get();
+                        if (resultScore) {
+                            database.exec(`
+                                REPLACE INTO "sheets" (
+                                    "sheetId",
+                                    "parentScoreId",
+                                    "sequence",
+                                    "status",
+                                    "title",
+                                    "subtitle",
+                                    "activeKey",
+                                    "activeKeys",
+                                    "measureStart",
+                                    "measureEnd"
+                                ) VALUES (
+                                    '${sheetId}',
+                                    '${score.scoreId}',
+                                    '0',
+                                    null,
+                                    '${score.title}',
+                                    '${score.subtitle}',
+                                    '${score.mainKey}',
+                                    '[${score.mainKey}]',
+                                    '${0}',
+                                    '${score.measures-1}'
+                                );`
+                            );
+                            const resultSheet: number = <number>database.prepare(`
+                            SELECT * FROM
+                            "sheets"
+                            WHERE
+                            "sheetId"=${sheetId};
+                            `).get();
+
+                            if (resultSheet) {
+                                console.log(resultSheet);
+                                return {
+                                    score: resultScore,
+                                    sheet: resultSheet,
+                                    zipped: resultZipped
+                                };
+                            } else {
+                                return {error:2};
+                            }
+
+                        }
+                    }
                     console.log(mmxl.Zipped,score);
                 }
             } else {
                 console.log("no file selected");
             }
         });
-        return score;
+        return data;
     });
 
     ipcMain.handle("request-rack-sequence-changed", async (

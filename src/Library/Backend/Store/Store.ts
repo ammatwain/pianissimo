@@ -50,6 +50,9 @@ export class Store {
     }
 
     public exec(sql: string): BetterSqlite3.Database {
+        console.log("***********************************************************************************************");
+        console.log(sql);
+        console.log("***********************************************************************************************");
         return this.Db.exec(sql);
     }
 

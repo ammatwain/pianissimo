@@ -293,13 +293,9 @@ export class TLibrary {
             mainTempo: null,
         };
 
-        window.electron.ipcRenderer.invoke("request-add-score", scoreObject ).then((result: TScoreObject)=>{
-            if (
-                result &&
-                scoreObject.scoreId === result.scoreId &&
-                scoreObject.parentRackId === result.parentRackId
-            ) {
-                //this.insertScore(result);
+        window.electron.ipcRenderer.invoke("request-add-score", scoreObject ).then((result: any)=>{
+            if (result) {
+                console.log(result);
             }
         });
     }
