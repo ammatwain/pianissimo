@@ -1,8 +1,5 @@
 import { ASCSS } from "./ASCSS";
 import {
-    TSheetObject,
-    TMajorKey,
-    TFixedNumberArray,
     TVariableMajorKeyNumberArray,
     SheetClass
 } from "@Common/DataObjects";
@@ -152,7 +149,7 @@ export class SheetNode extends LibraryNode {
         return this.ParentScore.Author;
     }
 
-    public get MainKey(): TMajorKey {
+    public get MainKey(): number {
         return this.ParentScore.MainKey;
     }
 
@@ -164,19 +161,19 @@ export class SheetNode extends LibraryNode {
         return this.ParentScore.Parts;
     }
 
-    public get ActiveKey(): TMajorKey {
+    public get ActiveKey(): number {
         return this.SheetFields.ActiveKey;
     }
 
-    public set ActiveKey(activeKey: TMajorKey) {
-        if (this.SheetFields.activeKey !== activeKey) {
-            this.SheetFields.activeKey = activeKey;
+    public set ActiveKey(activeKey: number) {
+        if (this.SheetFields.ActiveKey !== activeKey) {
+            this.SheetFields.ActiveKey = activeKey;
             this.FieldsChanged = true;
         }
     }
 
-    public get ActiveKeys(): TVariableMajorKeyNumberArray {
-        return <TVariableMajorKeyNumberArray>this.SheetFields.activeKeys.split(",").map(Number);
+    public get ActiveKeys(): number[] {
+        return this.SheetFields.ActiveKeys.split(",").map(Number);
     }
 
     public set ActiveKeys(activeKeys: TVariableMajorKeyNumberArray) {
@@ -187,7 +184,7 @@ export class SheetNode extends LibraryNode {
         }
     }
 
-    public addActiveKey(activeKey: TMajorKey): void {
+    public addActiveKey(activeKey: number): void {
         if (activeKey>=-7 && activeKey<=7){
             const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
             if (activeKeys.indexOf(activeKey)===-1){
@@ -197,7 +194,7 @@ export class SheetNode extends LibraryNode {
         }
     }
 
-    public removeActiveKey(activeKey: TMajorKey): void {
+    public removeActiveKey(activeKey: number): void {
         if (activeKey>=-7 && activeKey<=7){
             const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
             if (activeKeys.indexOf(activeKey)>=0){
@@ -207,7 +204,7 @@ export class SheetNode extends LibraryNode {
         }
     }
 
-    public hasActiveKey(activeKey: TMajorKey): boolean {
+    public hasActiveKey(activeKey: number): boolean {
         if (activeKey>=-7 && activeKey<=7){
             const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
             return activeKeys.indexOf(activeKey) >= 0;

@@ -1,5 +1,3 @@
-import {TMajorKey} from "./TFieldTypes";
-
 export type TSheetObject = {
     sheetId: number;
 	parentScoreId: number;
@@ -7,7 +5,7 @@ export type TSheetObject = {
 	status: string;
 	title: string;
 	subtitle: string;
-	activeKey: TMajorKey;
+	activeKey: number;
 	activeKeys: string;
 	measureStart: number;
 	measureEnd: number;

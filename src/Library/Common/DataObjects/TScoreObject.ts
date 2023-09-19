@@ -1,5 +1,3 @@
-import {TMajorKey} from "./TFieldTypes";
-
 export type TScoreObject = {
     scoreId: number;
 	parentRackId: number;
@@ -8,7 +6,8 @@ export type TScoreObject = {
 	title: string;
 	subtitle: string;
 	author: string;
-	mainKey: TMajorKey;
 	measures: number;
 	parts: string;
+	mainKey: number;
+	mainTempo: string;
 };

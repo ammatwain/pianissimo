@@ -1,4 +1,5 @@
-import { ipcMain } from "electron";
+import { default as FS } from "fs";
+import { dialog, ipcMain } from "electron";
 import { TRackObject } from "@DataObjects/TRackObject";
 import { STR } from "@Global/STR";
 import { Package } from "@Backend/Package";
@@ -8,8 +9,11 @@ import { Walk } from "@Common/Walk";
 import { IBranchCustom } from "@Library/Common/Interfaces/IBranchCustom";
 import { IBranchObject } from "@Library/Common/Interfaces/IBranchObject";
 import { IDiaryObject } from "@Library/Common/Interfaces/IDiaryObject";
+import { TScoreObject } from "@Library/Common/DataObjects/TScoreObject";
+import { MusicXmlRW, PianissimoID } from "@Library/Backend/MusicXmlRW/MusicXmlRW";
 
 export function BackendListeners(database: Letture): void {
+
     ipcMain.on("_request-dir-listing", async (event: Electron.IpcMainEvent,dir: string) => {
         console.log(event);
         const walk: FSWalk = new FSWalk(dir);
@@ -80,28 +84,33 @@ export function BackendListeners(database: Letture): void {
             racks: database.prepare("SELECT * FROM \"racks\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all(),
             scores: database.prepare("SELECT * FROM \"scores\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all(),
             sheets: database.prepare("SELECT * FROM \"sheets\" ORDER BY \"parentScoreId\" ASC,\"sequence\" ASC;").all(),
-            zippedScoreFiles: database.prepare("SELECT * FROM \"zippedScoreFiles\";").all(),
+            zippeds: database.prepare("SELECT * FROM \"zippeds\";").all(),
         };
     });
 
     ipcMain.handle(STR.requestSaveDiaryAndSection, async (
         event: Electron.IpcMainEvent, objs: {diaryObject: IDiaryObject, sectionObject: IBranchObject}
     ) => {
-        database.exec(`INSERT INTO "${STR.diary}" (
-            "${STR.datetime}",
-            "${STR.duration}",
-            "${STR.id}",
-            "${STR.key}",
-            "${STR.bpm}",
-            "${STR.score}"
-        ) VALUES (
-            ${objs.diaryObject.datetime},
-            ${objs.diaryObject.duration},
-            ${objs.diaryObject.id},
-            ${objs.diaryObject.key},
-            ${objs.diaryObject.bpm},
-            ${objs.diaryObject.score}
-        );`);
+
+/* TEXT MODE *************************************************************** */
+database.exec(
+`INSERT INTO "${STR.diary}" (
+"${STR.datetime}",
+"${STR.duration}",
+"${STR.id}",
+"${STR.key}",
+"${STR.bpm}",
+"${STR.score}"
+) VALUES (
+${objs.diaryObject.datetime},
+${objs.diaryObject.duration},
+${objs.diaryObject.id},
+${objs.diaryObject.key},
+${objs.diaryObject.bpm},
+${objs.diaryObject.score}
+);`
+);
+/* TEXT MODE *************************************************************** */
 
         const sql: string = `UPDATE "${STR.library}"
         SET
@@ -179,6 +188,75 @@ export function BackendListeners(database: Letture): void {
         `).get();
         console.log("RESULT",result);
         return result;
+    });
+
+    ipcMain.handle("request-add-score", async (
+        event: Electron.IpcMainEvent,
+        score: TScoreObject
+    ) => {
+        dialog.showOpenDialog({properties: ["openFile"] }).then(function (response) {
+            if (!response.canceled) {
+                // handle fully qualified file name
+                console.log(response);
+                const filename: string = response.filePaths[0];
+                if (FS.existsSync(filename)){
+                    const mmxl: MusicXmlRW = new MusicXmlRW();
+                    mmxl.loadXml(filename);
+                    const ppId: PianissimoID = mmxl.Pianissimo;
+                    if (ppId!==null && ppId.id>0) {
+                        score.scoreId = ppId.id;
+                    }
+                    mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: score.scoreId};
+                    score.mainKey = mmxl.MainKey;
+                    score.parts = JSON.stringify(mmxl.Instruments);
+                    score.measures = mmxl.MeasureCount;
+                    score.mainTempo = JSON.stringify(mmxl.Tempo);
+
+                    database.exec(`
+                        REPLACE INTO "zippeds" (
+                            "parentScoreId",
+                            "zipped"
+                        ) VALUES (
+                            '${score.scoreId}',
+                            x'${mmxl.Zipped}'
+                        );
+                    `);
+
+                    database.exec(`
+                        REPLACE INTO "scores" (
+                            "scoreId",
+                            "parentScoreId",
+                            "sequence",
+                            "status",
+                            "title",
+                            "subtitle",
+                            "author",
+                            "measures",
+                            "parts",
+                            "mainKey",
+                            "mainTempo"
+                        ) VALUES (
+                            '${score.scoreId}',
+                            '${score.parentRackId}',
+                            '${score.sequence}',
+                            '${score.status}',
+                            '${score.title}',
+                            '${score.subtitle}',
+                            '${score.author}',
+                            '${score.measures}',
+                            '${score.parts}',
+                            '${score.mainKey}',
+                            '${score.mainTempo}'
+                        );
+                    `);
+
+                    console.log(mmxl.Zipped,score);
+                }
+            } else {
+                console.log("no file selected");
+            }
+        });
+        return score;
     });
 
     ipcMain.handle("request-rack-sequence-changed", async (

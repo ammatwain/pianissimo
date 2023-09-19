@@ -110,27 +110,31 @@ export class ASModal extends ASCore {
         });
 
         this.$Elements.caption.onmousedown = (mouseEvent: MouseEvent): void => {
-            let initialX: number = mouseEvent.clientX;
-            let initialY: number = mouseEvent.clientY;
+//            this.requestPointerLock();
 
             const moveElement: any = (event: MouseEvent): void => {
-              const currentX: number = event.clientX;
-              const currentY: number = event.clientY;
+                const currentX: number = event.clientX;
+                const currentY: number = event.clientY;
+                const left: number = (this.$Elements.window.offsetLeft + event.movementX);
+                const top: number = (this.$Elements.window.offsetTop + event.movementY);
+                const right: number = (this.$Elements.window.offsetLeft + this.$Elements.window.offsetWidth + event.movementX);
+                const bottom: number = (this.$Elements.window.offsetTop + this.$Elements.window.offsetHeight + event.movementY);
+                if (
+                    left >=0 &&
+                    top >= 0 &&
+                    right <= this.offsetWidth &&
+                    bottom <= this.offsetHeight
+                ) {
+                    this.$Elements.window.style.left = `${left}px`;
+                    this.$Elements.window.style.top = `${top}px`;
+                }
+        };
 
-              const deltaX: number = currentX - initialX;
-              const deltaY: number = currentY - initialY;
-
-              this.$Elements.window.style.left = this.$Elements.window.offsetLeft + deltaX + "px";
-              this.$Elements.window.style.top = this.$Elements.window.offsetTop + deltaY + "px";
-
-              initialX = currentX;
-              initialY = currentY;
-            };
-
-            function stopElement(event: MouseEvent): void {
+            const stopElement: any = (event: MouseEvent): void => {
+//                document.exitPointerLock();
                 document.removeEventListener("mousemove", moveElement);
                 document.removeEventListener("mouseup", stopElement);
-            }
+            };
 
             document.addEventListener("mousemove", moveElement);
             document.addEventListener("mouseup", stopElement);

@@ -1,4 +1,5 @@
 import fs from "fs";
+import zlib from "zlib";
 import { XmlDocument, XmlElement } from "xmldoc";
 
 export type PianissimoID =  {
@@ -11,6 +12,11 @@ export class MusicXmlRW {
     private filename: string;
     private xmlStr: string;
     private xmlDom: XmlDocument;
+
+    public get Zipped(): Buffer {
+        return zlib.deflateRawSync(this.xmlStr);
+    }
+
     public get XmlStr(): string {
         let data: string = "";
         data += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";

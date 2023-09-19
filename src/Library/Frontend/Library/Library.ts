@@ -12,7 +12,8 @@ import { ScoreNode } from "@Frontend/AS/ScoreNode";
 import { SheetNode } from "@Frontend/AS/SheetNode";
 
 class LibraryObjectMap extends Map<number, TLibraryObject> {};
-class RackObjectMap extends Map<number, TRackObject> {};
+class RackObjectMap extends Map<number, TRackObject> {
+};
 class ScoreObjectMap extends Map<number, TScoreObject> {};
 class SheetObjectMap extends Map<number, TSheetObject> {};
 class LibraryClassMap extends Map<number, LibraryClass> {};
@@ -238,6 +239,13 @@ export class TLibrary {
         return this;
     }
 
+    getScoreNode(id: number): ScoreNode {
+        if (this.ScoreNodes.has(id)){
+            return this.ScoreNodes.get(id);
+        }
+        return null;
+    }
+
     setScoreNode(id: number, node: ScoreNode): TLibrary {
         this.LibraryNodes.set(id,node);
         this.ScoreNodes.set(id,node);
@@ -250,13 +258,13 @@ export class TLibrary {
         return this;
     }
 
-    public newRackObject(parentId: number = 0): void {
+    public newRackObject(parentId: number = 0, sequence: number = 0): void {
         const rackObject: TRackObject = {
             rackId: Number(`2${Date.now()}`),
             parentRackId: parentId,
-            sequence: -1,
+            sequence: sequence,
             status: null,
-            title: "Default Title",
+            title: `Default Title #${sequence}`,
         };
         console.log(rackObject);
 
@@ -270,27 +278,30 @@ export class TLibrary {
             }
         });
     }
+    public newScoreObject(parentId: number = 0, sequence: number = 0): void {
+        const scoreObject: TScoreObject = {
+            scoreId: Number(`3${Date.now()}`),
+            parentRackId: parentId,
+            sequence: sequence,
+            status: "",
+            title: `Default Title #${sequence}`,
+            subtitle: "",
+            author: "",
+            measures: null,
+            parts: null,
+            mainKey: null,
+            mainTempo: null,
+        };
 
-    protected newRackClass(parentId: number = 0): RackClass{
-        const rackObject: TRackObject = this.newRackObject(parentId);
-        return new RackClass(rackObject);
-    }
-
-    protected newRackNode(parentId: number = 0): RackNode {
-        parentId = Number(parentId);
-        const rackClass: RackClass = this.newRackClass(parentId);
-        let rackNode: RackNode;
-        if (parentId) {
-            const parentRackNode: RackNode = this.RackNodes.get(parentId);
-            if (parentRackNode) {
-                rackNode = new RackNode(rackClass, parentRackNode);
-                parentRackNode.$Closed = false;
+        window.electron.ipcRenderer.invoke("request-add-score", scoreObject ).then((result: TScoreObject)=>{
+            if (
+                result &&
+                scoreObject.scoreId === result.scoreId &&
+                scoreObject.parentRackId === result.parentRackId
+            ) {
+                //this.insertScore(result);
             }
-        } else if (this.RootNode ){
-            rackNode = new RackNode(rackClass, this.RootNode);
-            this.RootNode.$Closed = false;
-        }
-        return rackNode;
+        });
     }
 
     buildTree(): TLibrary {
@@ -305,21 +316,29 @@ export class TLibrary {
                 if (rackNode.ParentRackId===0){
                     this.RootNode.$appendNode(rackNode);
                 } else {
-                    const parent: RackNode = this.rackNodes.get(rackNode.ParentRackId);
+                    const parent: RackNode = this.RackNodes.get(rackNode.ParentRackId);
+                    if (rackNode.ParentRackId===21693149332714){
+                        console.log("rackNode.ParentRack", rackNode.ParentRackId, parent);
+                    }
+
                     if (parent){
-                        parent.$appendNode(rackNode);
+                        parent.$appendNode(rackNode, false);
                     }
                 }
             });
 
+            console.log("RackNodes Completed");
+
             this.ScoreNodes.forEach((scoreNode: ScoreNode)=>{
                 console.log(scoreNode.ParentRackId);
                 if (scoreNode.ParentRackId===0){
-                    this.RootNode.$appendNode(scoreNode);
+                    this.RootNode.$appendNode(scoreNode, false);
                 } else {
                     const parent: RackNode = this.RackNodes.get(scoreNode.ParentRackId);
                     if (parent){
-                        parent.$appendNode(scoreNode);
+                        parent.$appendNode(scoreNode, false);
+                    } else {
+                        throw new Error("ERRORE NEL PARENT RACK ID");
                     }
                 }
             });
@@ -328,9 +347,9 @@ export class TLibrary {
                 if (sheetNode.ParentScoreId===0){
                     //root.$appendNode(scoreNode);
                 } else {
-                    const parent: ScoreNode = this.ScoreNodes.get(sheetNode.ParentScoreId);
+                    const parent: ScoreNode = this.getScoreNode(sheetNode.ParentScoreId);
                     if (parent){
-                        parent.$appendNode(sheetNode);
+                        parent.$appendNode(sheetNode, false);
                     }
                 }
             });

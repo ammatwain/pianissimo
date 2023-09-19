@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { TMajorKey, ScoreClass } from "@Common/DataObjects";
+import { ScoreClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
 import { ASModal } from "./ASModal";
@@ -78,7 +78,7 @@ export class ScoreNode extends LibraryNode {
     }
 
     public get Sequence(): number {
-        return this.ScoreFields.sequence;
+        return this.ScoreFields.Sequence;
     }
 
     public set Sequence(sequence: number) {
@@ -86,7 +86,7 @@ export class ScoreNode extends LibraryNode {
     }
 
     public get Status(): string {
-        return this.ScoreFields.status;
+        return this.ScoreFields.Status;
     }
 
     public set Status(status: string) {
@@ -117,11 +117,11 @@ export class ScoreNode extends LibraryNode {
         this.ScoreFields.Author = author;
     }
 
-    public get MainKey(): TMajorKey {
+    public get MainKey(): number {
         return this.ScoreFields.MainKey;
     }
 
-    public set MainKey(mainKey: TMajorKey) {
+    public set MainKey(mainKey: number) {
         this.ScoreFields.MainKey = mainKey;
     }
 

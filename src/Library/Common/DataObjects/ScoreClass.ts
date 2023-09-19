@@ -1,6 +1,5 @@
 import { TScoreObject } from "./TScoreObject";
 import { LibraryClass } from "./LibraryClass";
-import { TMajorKey } from "./TFieldTypes";
 
 export class ScoreClass extends LibraryClass {
 /*
@@ -12,9 +11,10 @@ export class ScoreClass extends LibraryClass {
         title: undefined,
         subtitle: undefined,
         author: undefined,
-        mainKey: undefined,
         measures: undefined,
         parts: undefined,
+        mainKey: undefined,
+        tempot: undefined,
     };
 */
     declare protected fields: TScoreObject;
@@ -51,7 +51,7 @@ export class ScoreClass extends LibraryClass {
     }
 
     public get ParentRackId(): number {
-        return this.ScoreFields.parentRackId;
+        return Number(this.ScoreFields.parentRackId);
     }
 
     public set ParentRackId(parentRackId: number) {
@@ -126,17 +126,17 @@ export class ScoreClass extends LibraryClass {
         }
     }
 
-    public get MainKey(): TMajorKey {
+    public get MainKey(): number {
         return this.ScoreFields.mainKey;
     }
 
-    public set MainKey(mainKey: TMajorKey) {
+    public set MainKey(mainKey: number) {
         if (
             this.ScoreFields.mainKey !== mainKey &&
             mainKey >= -7 &&
             mainKey <= 7
         ) {
-            this.ScoreFields.mainKey = <TMajorKey>Math.floor(mainKey);
+            this.ScoreFields.mainKey = Math.floor(mainKey);
             this.FieldsChanged = true;
         }
     }

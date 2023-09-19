@@ -1,7 +1,5 @@
 import { TSheetObject } from "./TSheetObject";
 import { LibraryClass } from "./LibraryClass";
-import { TMajorKey, TVariableMajorKeyNumberArray, TFixedNumberArray } from "./TFieldTypes";
-
 
 class TActiveKeys extends Set<number> {
 
@@ -76,7 +74,7 @@ class TFifteenKeys extends Map<number, number> {
 
     constructor(){
         super();
-        for(let i: TMajorKey = -7; i<=7; i++) {
+        for(let i: number = -7; i<=7; i++) {
             this.setKey(i,0);
         }
     }
@@ -261,17 +259,17 @@ export class SheetClass extends LibraryClass {
         }
     }
 
-    public get ActiveKey(): TMajorKey {
+    public get ActiveKey(): number {
         return this.SheetFields.activeKey;
     }
 
-    public set ActiveKey(activeKey: TMajorKey) {
+    public set ActiveKey(activeKey: number) {
         if (
             this.SheetFields.activeKey !== activeKey &&
             activeKey >= -7 &&
             activeKey <= 7
         ) {
-            this.SheetFields.activeKey = <TMajorKey>Math.floor(activeKey);
+            this.SheetFields.activeKey = Math.floor(activeKey);
             this.FieldsChanged = true;
         }
     }
@@ -280,7 +278,7 @@ export class SheetClass extends LibraryClass {
         return this.activeKeys;
     }
 
-    public activeKeysAdd(key: TMajorKey): boolean {
+    public activeKeysAdd(key: number): boolean {
         const tmpActiveKeysString: string = this.ActiveKeys.addKey(key).toJsonString();
         if (this.fields.activeKeys !== tmpActiveKeysString ) {
             this.fields.activeKeys = tmpActiveKeysString;
@@ -290,7 +288,7 @@ export class SheetClass extends LibraryClass {
         return false;
     }
 
-    public activeKeysDel(key: TMajorKey): boolean {
+    public activeKeysDel(key: number): boolean {
         const tmpActiveKeysString: string = this.ActiveKeys.delKey(key).toJsonString();
         if (this.fields.activeKeys !== tmpActiveKeysString ) {
             this.fields.activeKeys = tmpActiveKeysString;

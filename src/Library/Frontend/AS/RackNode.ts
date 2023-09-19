@@ -44,12 +44,14 @@ export class RackNode extends LibraryNode {
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
         this.$Elements.add.onclick = (): void => {
-            //ASModal.show("Rack Add");
+            this.Root.Library.newScoreObject(this.Id, this.$Items.length);
+            this.$Closed=false;
             console.log(this.constructor.name, "clicked", "add");
         };
         this.$Elements.addRack.onclick = (): void => {
             //ASModal.show("Rack Add");
-            this.Root.Library.newRackNode(this.RackId);
+            this.Root.Library.newRackObject(this.Id, this.$Items.length);
+            this.$Closed=false;
             console.log(this.constructor.name, "clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {

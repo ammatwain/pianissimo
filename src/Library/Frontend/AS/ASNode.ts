@@ -426,7 +426,7 @@ export class ASNode extends ASCore {
         };
     }
 
-    public $appendNode(node: ASNode): ASNode {
+    public $appendNode(node: ASNode, check: boolean = true): ASNode {
         if (!this.$Elements.items) {
             this.$Elements.items = document.createElement("div");
             this.$Elements.items.classList.add("items");
@@ -435,19 +435,22 @@ export class ASNode extends ASCore {
         const newParent: ASNode = this;
         const oldParentId: number = (oldParent instanceof ASNode)?oldParent.Id:0;
         const newParentId: number = (newParent instanceof ASNode)?newParent.Id:0;
-        node.$removeNode();
+        if (oldParent) {
+            node.$removeNode();
+        }
         const renewedNode: ASNode = this.$Elements.items.appendChild(node);
-        if (oldParent && oldParent instanceof ASNode) {
+        if (check && oldParent && oldParent instanceof ASNode) {
             oldParent.doCheckItems();
         }
         if (
+            check &&
             newParent &&
             newParent instanceof ASNode &&
             newParentId !== oldParentId
         ) {
             newParent.doCheckItems();
         }
-        if (renewedNode && renewedNode instanceof ASNode) {
+        if (check && renewedNode && renewedNode instanceof ASNode) {
             renewedNode.doCheckParent();
         }
         return renewedNode;

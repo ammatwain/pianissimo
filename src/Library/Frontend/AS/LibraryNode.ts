@@ -64,13 +64,13 @@ export class LibraryNode extends ASNode {
             this.$Closed = true;
         }
         this.$Elements.add.onclick = (): void => {
-            ASModal.show("Library Add");
+            this.Root.Library.newScoreObject(this.Id, this.$Items.length);
+            this.$Closed=false;
             console.log(this.constructor.name, "***clicked", "add");
         };
         this.$Elements.addRack.onclick = (): void => {
-            this.Root.Library.newRackObject();
+            this.Root.Library.newRackObject(this.Id, this.$Items.length);
             this.$Closed=false;
-            console.log(this.Id);
             console.log(this.constructor.name, "***clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {
