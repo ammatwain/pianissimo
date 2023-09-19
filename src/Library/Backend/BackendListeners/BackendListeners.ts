@@ -112,12 +112,15 @@ ${objs.diaryObject.score}
 );
 /* TEXT MODE *************************************************************** */
 
-        const sql: string = `UPDATE "${STR.library}"
-        SET
-            "${STR.custom}" = '${JSON.stringify(objs.sectionObject.custom)}'
-        WHERE
-            "${STR.id}" = ${objs.sectionObject.id}
-        ;`;
+/* TEXT MODE *************************************************************** */
+const sql: string = `UPDATE "${STR.library}"
+SET
+"${STR.custom}" = '${JSON.stringify(objs.sectionObject.custom)}'
+WHERE
+"${STR.id}" = ${objs.sectionObject.id}
+;`;
+/* TEXT MODE *************************************************************** */
+
         console.log(sql);
         database.exec(sql);
 
