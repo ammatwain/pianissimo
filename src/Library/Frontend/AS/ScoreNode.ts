@@ -35,7 +35,10 @@ export class ScoreNode extends LibraryNode {
         super.$alwaysConnect();
 
         this.$Elements.add.onclick = (): void => {
+            console.log(this.$Items.length);
             this.Root.Library.newSheetObject(this.Id, this.$Items.length);
+            console.log(this.$Items.length);
+            this.$Closed = false;
             console.log(this.constructor.name, "clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {
@@ -46,6 +49,26 @@ export class ScoreNode extends LibraryNode {
             ASModal.show("Score Settings");
             console.log(this.constructor.name, "clicked", "settings");
         };
+    }
+
+    protected $getClosed(): boolean {
+        return (this.$Items.length > 1) && this.classList.contains("closed");
+    }
+
+    public $selfRemove(): ScoreNode {
+        const parentLibraryNode: LibraryNode = this.ParentRack || this.Root || null;
+        super.$selfRemove();
+        if (parentLibraryNode &&
+            parentLibraryNode instanceof LibraryNode
+        ) {
+            if (this.$Checked) {
+                parentLibraryNode.$Checked = true;
+            }
+            if (parentLibraryNode.$Items.length < 1){
+                parentLibraryNode.classList.add("closed");
+            }
+        }
+        return this;
     }
 
     public get ScoreFields(): ScoreClass {

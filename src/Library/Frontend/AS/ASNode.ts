@@ -619,8 +619,12 @@ export class ASNode extends ASCore {
         }
     }
 
-    public get $Closed(): boolean {
+    protected $getClosed(): boolean {
         return (this.$Items.length === 0) || this.classList.contains("closed");
+    }
+
+    public get $Closed(): boolean {
+        return this.$getClosed();
     }
 
     public set $Closed(closed: boolean) {

@@ -7,6 +7,7 @@ import {
 import { LibraryNode } from "./LibraryNode";
 import { ScoreNode } from "./ScoreNode";
 import { ASModal } from "./ASModal";
+import { ASNode } from "./ASNode";
 
 ASCSS.SheetNode = {
 };
@@ -31,7 +32,9 @@ export class SheetNode extends LibraryNode {
 
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
-        if (this.Sequence>0) {
+        if (this.Sequence===0) {
+            this.style.display = "none";
+        } else if (this.Sequence>0) {
             this.$Elements.delete.style.display = "";
         }
         this.$Elements.add.style.display = "none";
@@ -41,12 +44,29 @@ export class SheetNode extends LibraryNode {
         };
         this.$Elements.delete.onclick = (): void => {
             this.Library.deleteLibraryObject(this.SheetId);
+            console.log(this.ParentScore.$Items.length);
             console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
             ASModal.show("Sheet Settings");
             console.log(this.constructor.name, "clicked", "settings");
         };
+    }
+
+    public $selfRemove(): SheetNode {
+        const parentScoreNode: ScoreNode = this.ParentScore;
+        super.$selfRemove();
+        if (parentScoreNode &&
+            parentScoreNode instanceof ScoreNode
+        ) {
+            if (this.$Checked) {
+                parentScoreNode.$Checked = true;
+            }
+            if (parentScoreNode.$Items.length <= 1) {
+                parentScoreNode.classList.add("closed");
+            }
+        }
+        return this;
     }
 
 /*

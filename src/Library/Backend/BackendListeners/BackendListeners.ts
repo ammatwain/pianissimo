@@ -254,8 +254,8 @@ WHERE
         score: TScoreObject
     ) => {
         const data: any = {};
+        browserWindow.setAlwaysOnTop(false);
         const fileNames: string[] = dialog.showOpenDialogSync(
-            browserWindow,
             {
                 filters: [
                     { name: "musicxml", extensions: ["musicxml"] },

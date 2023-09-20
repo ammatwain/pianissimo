@@ -348,8 +348,8 @@ export class TLibrary {
     public deleteLibraryObject(id: number): void {
         const libraryNode: LibraryNode = this.LibraryNodes.get(id);
         if (libraryNode && libraryNode instanceof LibraryNode) {
-            window.electron.ipcRenderer.invoke("request-consens-for-library-object-deletion", id ).then((result: TLibraryObject)=>{
-                if (libraryNode && libraryNode instanceof LibraryNode) {
+            window.electron.ipcRenderer.invoke("request-consens-for-library-object-deletion", id ).then((canDelete: boolean)=>{
+                if (canDelete && libraryNode && libraryNode instanceof LibraryNode) {
                     const deletableSheets: number[] = [];
                     const deletableScores: number[] = [];
                     const deletableRacks: number[] = [];

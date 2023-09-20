@@ -64,6 +64,22 @@ export class RackNode extends LibraryNode {
         };
     }
 
+    public $selfRemove(): RackNode {
+        const parentLibraryNode: LibraryNode = this.ParentRack || this.Root || null;
+        super.$selfRemove();
+        if (parentLibraryNode &&
+            parentLibraryNode instanceof LibraryNode
+        ) {
+            if (this.$Checked) {
+                parentLibraryNode.$Checked = true;
+            }
+            if (parentLibraryNode.$Items.length < 1){
+                parentLibraryNode.classList.add("closed");
+            }
+        }
+        return this;
+    }
+
     public get RackFields(): RackClass {
         return <RackClass>this.fields;
     }
