@@ -1,5 +1,5 @@
 import { default as FS } from "fs";
-import { dialog, ipcMain } from "electron";
+import { BrowserWindow, dialog, ipcMain } from "electron";
 import { TRackObject } from "@DataObjects/TRackObject";
 import { STR } from "@Global/STR";
 import { Package } from "@Backend/Package";
@@ -9,11 +9,12 @@ import { Walk } from "@Common/Walk";
 import { IBranchCustom } from "@Library/Common/Interfaces/IBranchCustom";
 import { IBranchObject } from "@Library/Common/Interfaces/IBranchObject";
 import { IDiaryObject } from "@Library/Common/Interfaces/IDiaryObject";
-import { TScoreObject } from "@Library/Common/DataObjects/TScoreObject";
+import { TScoreObject } from "@DataObjects/TScoreObject";
+import { TSheetObject } from "@DataObjects/TSheetObject";
 import { MusicXmlRW, PianissimoID } from "@Library/Backend/MusicXmlRW/MusicXmlRW";
 import { TZippedObject } from "@Library/Common/DataObjects/TZippedObject";
 
-export function BackendListeners(database: Letture): void {
+export function BackendListeners(browserWindow: BrowserWindow, database: Letture): void {
 
     ipcMain.on("_request-dir-listing", async (event: Electron.IpcMainEvent,dir: string) => {
         console.log(event);
@@ -194,134 +195,228 @@ WHERE
         return result;
     });
 
+    ipcMain.handle("request-add-sheet", async (
+        event: Electron.IpcMainEvent,
+        sheet: TSheetObject
+    ) => {
+        const resultScore: TScoreObject = <TScoreObject>database.prepare(`SELECT * FROM
+        "scores"
+        WHERE
+        "scoreId"=${sheet.parentScoreId};
+        `).get();
+        if (resultScore) {
+            database.exec(`
+                REPLACE INTO "sheets" (
+                    "sheetId",
+                    "parentScoreId",
+                    "sequence",
+                    "status",
+                    "title",
+                    "subtitle",
+                    "activeKey",
+                    "activeKeys",
+                    "measureStart",
+                    "measureEnd"
+                ) VALUES (
+                    '${sheet.sheetId}',
+                    '${sheet.parentScoreId}',
+                    '${sheet.sequence}',
+                    null,
+                    '${resultScore.title}',
+                    '${resultScore.subtitle}',
+                    '${resultScore.mainKey}',
+                    '[${resultScore.mainKey}]',
+                    '${0}',
+                    '${resultScore.measures-1}'
+                );`
+            );
+            const resultSheet: number = <number>database.prepare(`
+            SELECT * FROM
+            "sheets"
+            WHERE
+            "sheetId"=${sheet.sheetId};
+            `).get();
+
+            if (resultSheet) {
+                console.log(resultSheet);
+                return {
+                    sheet: resultSheet,
+                };
+            } else {
+                return {error:2};
+            }
+        }
+
+    });
+
     ipcMain.handle("request-add-score", async (
         event: Electron.IpcMainEvent,
         score: TScoreObject
     ) => {
-        const data: any = dialog.showOpenDialog({properties: ["openFile"] }).then(function (response) {
-            if (!response.canceled) {
-                // handle fully qualified file name
-                console.log(response);
-                const filename: string = response.filePaths[0];
-                if (FS.existsSync(filename)){
-                    const mmxl: MusicXmlRW = new MusicXmlRW();
-                    mmxl.loadXml(filename);
-                    const ppId: PianissimoID = mmxl.Pianissimo;
-                    if (ppId!==null && ppId.id>0) {
-                        score.scoreId = ppId.id;
-                    }
-                    mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: score.scoreId};
-                    score.title = mmxl.Title;
-                    score.mainKey = mmxl.MainKey;
-                    score.parts = JSON.stringify(mmxl.Instruments);
-                    score.measures = mmxl.MeasureCount;
-                    score.mainTempo = JSON.stringify(mmxl.Tempo);
+        const data: any = {};
+        const fileNames: string[] = dialog.showOpenDialogSync(
+            browserWindow,
+            {
+                filters: [
+                    { name: "musicxml", extensions: ["musicxml"] },
+                ],
+                properties: ["openFile"]
+            }
+        );
+        if (Array.isArray(fileNames) && fileNames.length>0) {
+            const filename: string = fileNames[0];
+            if (FS.existsSync(filename)){
+                const mmxl: MusicXmlRW = new MusicXmlRW();
+                mmxl.loadXml(filename);
+                const ppId: PianissimoID = mmxl.Pianissimo;
+                if (ppId!==null && ppId.id>0) {
+                    score.scoreId = ppId.id;
+                }
+                mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: score.scoreId};
+                score.title = mmxl.Title;
+                score.subtitle = mmxl.Subtitle;
+                score.mainKey = mmxl.MainKey;
+                score.parts = JSON.stringify(mmxl.Instruments);
+                score.measures = mmxl.MeasureCount;
+                score.mainTempo = JSON.stringify(mmxl.Tempo);
 
+                database.exec(`
+                    REPLACE INTO "zippeds" (
+                        "parentScoreId",
+                        "zipped"
+                    ) VALUES (
+                        '${score.scoreId}',
+                        x'${mmxl.Zipped.toString("hex")}'
+                    );
+                `);
+
+                const resultZipped: TZippedObject = <TZippedObject>database.prepare(`
+                SELECT * FROM
+                "zippeds"
+                WHERE
+                "parentScoreId"=${score.scoreId};
+                `).get();
+                if (resultZipped){
                     database.exec(`
-                        REPLACE INTO "zippeds" (
-                            "parentScoreId",
-                            "zipped"
+                        REPLACE INTO "scores" (
+                            "scoreId",
+                            "parentRackId",
+                            "sequence",
+                            "status",
+                            "title",
+                            "subtitle",
+                            "author",
+                            "measures",
+                            "parts",
+                            "mainKey",
+                            "mainTempo"
                         ) VALUES (
                             '${score.scoreId}',
-                            x'${mmxl.Zipped.toString("hex")}'
+                            '${score.parentRackId}',
+                            '${score.sequence}',
+                            '${score.status}',
+                            '${score.title}',
+                            '${score.subtitle}',
+                            '${score.author}',
+                            '${score.measures}',
+                            '${score.parts}',
+                            '${score.mainKey}',
+                            '${score.mainTempo}'
                         );
                     `);
 
-                    const resultZipped: TZippedObject = <TZippedObject>database.prepare(`
+                    const sheetId: number = Number(`4${Date.now()}`);
+                    const resultScore: TRackObject = <TRackObject>database.prepare(`
                     SELECT * FROM
-                    "zippeds"
+                    "scores"
                     WHERE
-                    "parentScoreId"=${score.scoreId};
+                    "scoreId"=${score.scoreId};
                     `).get();
-                    if (resultZipped){
+                    if (resultScore) {
                         database.exec(`
-                            REPLACE INTO "scores" (
-                                "scoreId",
-                                "parentRackId",
+                            REPLACE INTO "sheets" (
+                                "sheetId",
+                                "parentScoreId",
                                 "sequence",
                                 "status",
                                 "title",
                                 "subtitle",
-                                "author",
-                                "measures",
-                                "parts",
-                                "mainKey",
-                                "mainTempo"
+                                "activeKey",
+                                "activeKeys",
+                                "measureStart",
+                                "measureEnd"
                             ) VALUES (
+                                '${sheetId}',
                                 '${score.scoreId}',
-                                '${score.parentRackId}',
-                                '${score.sequence}',
-                                '${score.status}',
+                                '0',
+                                null,
                                 '${score.title}',
                                 '${score.subtitle}',
-                                '${score.author}',
-                                '${score.measures}',
-                                '${score.parts}',
                                 '${score.mainKey}',
-                                '${score.mainTempo}'
-                            );
-                        `);
-
-                        const sheetId: number = Number(`4${Date.now()}`);
-                        const resultScore: TRackObject = <TRackObject>database.prepare(`
+                                '[${score.mainKey}]',
+                                '${0}',
+                                '${score.measures-1}'
+                            );`
+                        );
+                        const resultSheet: number = <number>database.prepare(`
                         SELECT * FROM
-                        "scores"
+                        "sheets"
                         WHERE
-                        "scoreId"=${score.scoreId};
+                        "sheetId"=${sheetId};
                         `).get();
-                        if (resultScore) {
-                            database.exec(`
-                                REPLACE INTO "sheets" (
-                                    "sheetId",
-                                    "parentScoreId",
-                                    "sequence",
-                                    "status",
-                                    "title",
-                                    "subtitle",
-                                    "activeKey",
-                                    "activeKeys",
-                                    "measureStart",
-                                    "measureEnd"
-                                ) VALUES (
-                                    '${sheetId}',
-                                    '${score.scoreId}',
-                                    '0',
-                                    null,
-                                    '${score.title}',
-                                    '${score.subtitle}',
-                                    '${score.mainKey}',
-                                    '[${score.mainKey}]',
-                                    '${0}',
-                                    '${score.measures-1}'
-                                );`
-                            );
-                            const resultSheet: number = <number>database.prepare(`
-                            SELECT * FROM
-                            "sheets"
-                            WHERE
-                            "sheetId"=${sheetId};
-                            `).get();
 
-                            if (resultSheet) {
-                                console.log(resultSheet);
-                                return {
-                                    score: resultScore,
-                                    sheet: resultSheet,
-                                    zipped: resultZipped
-                                };
-                            } else {
-                                return {error:2};
-                            }
-
+                        if (resultSheet) {
+                            console.log(resultSheet);
+                            return {
+                                score: resultScore,
+                                sheet: resultSheet,
+                                zipped: resultZipped
+                            };
+                        } else {
+                            return {error:2};
                         }
+
                     }
-                    console.log(mmxl.Zipped,score);
                 }
-            } else {
-                console.log("no file selected");
+                console.log(mmxl.Zipped,score);
             }
-        });
+        } else {
+            console.log("no file selected");
+        }
         return data;
+    });
+
+    ipcMain.handle("request-consens-for-library-object-deletion", async (
+        event: Electron.IpcMainEvent
+    ) => {
+        return dialog.showMessageBoxSync(
+            browserWindow,
+            {
+                message: "Warning! This action will permanently remove the selected item and all child elements belonging to the same object.",
+                type: "warning",
+                buttons: ["Cancel","OK"],
+                defaultId: 1,
+                title: "Warning!",
+            }
+        ) === 1;
+    });
+
+    ipcMain.handle("request-delete-library-objects", async (
+        event: Electron.IpcMainEvent, ids: { rackIds: number[], scoreIds: number[], sheetIds: number[]}
+    ) => {
+        const sql: string[] = [];
+        if (ids && "sheetIds" in ids && Array.isArray(ids.sheetIds) && ids.sheetIds.length) {
+            sql.push(`DELETE FROM  "sheets" WHERE "sheetId" IN (${ids.sheetIds.join(",")})`);
+        }
+        if (ids && "scoreIds" in ids && Array.isArray(ids.scoreIds) && ids.scoreIds.length) {
+            sql.push(`DELETE FROM  "zippeds" WHERE "parentScoreId" IN (${ids.scoreIds.join(",")})`);
+            sql.push(`DELETE FROM  "scores" WHERE "scoreId" IN (${ids.scoreIds.join(",")})`);
+        }
+        if (ids && "rackIds" in ids && Array.isArray(ids.rackIds) && ids.rackIds.length) {
+            sql.push(`DELETE FROM  "racks" WHERE "rackId" IN (${ids.rackIds.join(",")})`);
+        }
+        database.exec(sql.join(";")+";");
+        return true;
     });
 
     ipcMain.handle("request-rack-sequence-changed", async (

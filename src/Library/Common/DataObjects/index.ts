@@ -2,7 +2,7 @@ export * from "./TFieldTypes";
 export * from "./TRackObject";
 export * from "./TScoreObject";
 export * from "./TSheetObject";
-export * from "./TZippedScoreFilesObject";
+export * from "./TZippedObject";
 export * from "./TLibraryObject";
 export * from "./LibraryClass";
 export * from "./RackClass";

@@ -79,7 +79,27 @@ export class MusicXmlRW {
     }
 
     public get Title(): string {
-        return this.ScorePartWise.descendantWithPath("work.work-title").val;
+        try {
+            return this.ScorePartWise.descendantWithPath("work.work-title").val;
+        } catch {
+            return "";
+        }
+    }
+
+    public get Subtitle(): string {
+        try {
+            return this.ScorePartWise.descendantWithPath("movement-title").val;
+        } catch {
+            return "";
+        }
+    }
+
+    public get Author(): string {
+        try {
+            return this.ScorePartWise.descendantWithPath("identification.creator@composer").val;
+        } catch {
+            return "";
+        }
     }
 
     public get Pianissimo(): PianissimoID {

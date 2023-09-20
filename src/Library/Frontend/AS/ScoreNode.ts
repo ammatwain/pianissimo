@@ -9,10 +9,16 @@ ASCSS.ScoreNode = {
 
 export class ScoreNode extends LibraryNode {
 
-    constructor (scoreFields: ScoreClass, parentRack: RackNode)  {
+    constructor (scoreFields: ScoreClass, parentRack: RackNode | LibraryNode)  {
         super({adoptable: true, canAdopt: false});
         this.ScoreFields = scoreFields;
-        if (parentRack && parentRack instanceof RackNode) {
+        if (
+            parentRack &&
+            (
+                parentRack instanceof RackNode ||
+                parentRack instanceof LibraryNode
+            )
+        ) {
             parentRack.$appendNode(this);
         }
         this.$Caption = this.ScoreFields.Title;
@@ -21,23 +27,24 @@ export class ScoreNode extends LibraryNode {
     protected $preConnect(): void {
         super.$preConnect();
         this.$Elements.delete.style.display = "";
-        this.$Elements.addRack.style.display = "";
+        this.$Elements.addRack.style.display = "none";
         this.$Elements.arrow.style.fill="#66f";
     }
 
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
+
         this.$Elements.add.onclick = (): void => {
-            ASModal.show("Score Add");
+            this.Root.Library.newSheetObject(this.Id, this.$Items.length);
             console.log(this.constructor.name, "clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {
-            ASModal.show("Score Delete");
-            console.log(this.constructor.name, "clicked", "add");
+            this.Library.deleteLibraryObject(this.ScoreId);
+            console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
             ASModal.show("Score Settings");
-            console.log(this.constructor.name, "clicked", "add");
+            console.log(this.constructor.name, "clicked", "settings");
         };
     }
 

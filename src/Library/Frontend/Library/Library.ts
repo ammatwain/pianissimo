@@ -10,6 +10,7 @@ import { LibraryNode } from "@Frontend/AS/LibraryNode";
 import { RackNode } from "@Frontend/AS/RackNode";
 import { ScoreNode } from "@Frontend/AS/ScoreNode";
 import { SheetNode } from "@Frontend/AS/SheetNode";
+import { ASNode } from "../AS";
 
 class LibraryObjectMap extends Map<number, TLibraryObject> {};
 class RackObjectMap extends Map<number, TRackObject> {
@@ -132,6 +133,78 @@ export class TLibrary {
         return this;
     }
 
+    addScore(id: number, scoreObject: TScoreObject): TLibrary{
+        if (!this.LibraryObjects.has(id)){
+            this.setScoreObject(id,scoreObject);
+            if (!this.LibraryClasses.has(id)){
+                const scoreClass: ScoreClass = new ScoreClass(scoreObject);
+                this.setScoreClass(id,scoreClass);
+                if (!this.LibraryNodes.has(id)){
+                    const scoreNode: ScoreNode = new ScoreNode(scoreClass, null);
+                    this.setScoreNode(id,scoreNode);
+                }
+            }
+        }
+        return this;
+    }
+
+    addSheet(id: number, sheetObject: TSheetObject): TLibrary {
+        if (!this.LibraryObjects.has(id)){
+            this.setSheetObject(id,sheetObject);
+            if (!this.LibraryClasses.has(id)){
+                const sheetClass: SheetClass = new SheetClass(sheetObject);
+                this.setSheetClass(id,sheetClass);
+                if (!this.LibraryNodes.has(id)){
+                    const sheetNode: SheetNode = new SheetNode(sheetClass, null);
+                    this.setSheetNode(id,sheetNode);
+                }
+            }
+        }
+        return this;
+    }
+
+    deleteRack(id: number): TLibrary {
+        const rackNode: RackNode = this.RackNodes.get(id);
+        if (rackNode) {
+            rackNode.$selfRemove();
+        }
+        this.LibraryNodes.delete(id);
+        this.RackNodes.delete(id);
+        this.LibraryClasses.delete(id);
+        this.RackClasses.delete(id);
+        this.LibraryObjects.delete(id);
+        this.RackObjects.delete(id);
+        return this;
+    }
+
+    deleteScore(id: number): TLibrary {
+        const scoreNode: ScoreNode = this.ScoreNodes.get(id);
+        if (scoreNode) {
+            scoreNode.$selfRemove();
+        }
+        this.LibraryNodes.delete(id);
+        this.ScoreNodes.delete(id);
+        this.LibraryClasses.delete(id);
+        this.ScoreClasses.delete(id);
+        this.LibraryObjects.delete(id);
+        this.ScoreObjects.delete(id);
+        return this;
+    }
+
+    deleteSheet(id: number): TLibrary {
+        const sheetNode: SheetNode = this.SheetNodes.get(id);
+        if (sheetNode) {
+            sheetNode.$selfRemove();
+        }
+        this.LibraryNodes.delete(id);
+        this.SheetNodes.delete(id);
+        this.LibraryClasses.delete(id);
+        this.SheetClasses.delete(id);
+        this.LibraryObjects.delete(id);
+        this.SheetObjects.delete(id);
+        return this;
+    }
+
     insertRack(rackObject: TRackObject): TLibrary {
         const id: number =  rackObject.rackId;
         if (!this.LibraryObjects.has(id)){
@@ -156,14 +229,22 @@ export class TLibrary {
         return this;
     }
 
-    addScore(id: number, scoreObject: TScoreObject): TLibrary{
+    insertScore(id: number, scoreObject: TScoreObject): TLibrary{
         if (!this.LibraryObjects.has(id)){
             this.setScoreObject(id,scoreObject);
             if (!this.LibraryClasses.has(id)){
                 const scoreClass: ScoreClass = new ScoreClass(scoreObject);
                 this.setScoreClass(id,scoreClass);
                 if (!this.LibraryNodes.has(id)){
-                    const scoreNode: ScoreNode = new ScoreNode(scoreClass, null);
+                    let scoreNode: ScoreNode;
+                    if (scoreClass.ParentRackId>0){
+                        const parentRackNode: RackNode =  this.RackNodes.get(scoreClass.ParentRackId) || null;
+                        scoreNode = new ScoreNode(scoreClass, parentRackNode);
+                    } else if (scoreClass.ParentRackId === 0 && this.RootNode) {
+                        scoreNode = new ScoreNode(scoreClass, this.RootNode);
+                    } else {
+                        scoreNode = new ScoreNode(scoreClass, null);
+                    }
                     this.setScoreNode(id,scoreNode);
                 }
             }
@@ -171,14 +252,20 @@ export class TLibrary {
         return this;
     }
 
-    addSheet(id: number, sheetObject: TSheetObject): TLibrary {
+    insertSheet(id: number, sheetObject: TSheetObject): TLibrary {
         if (!this.LibraryObjects.has(id)){
             this.setSheetObject(id,sheetObject);
             if (!this.LibraryClasses.has(id)){
                 const sheetClass: SheetClass = new SheetClass(sheetObject);
                 this.setSheetClass(id,sheetClass);
                 if (!this.LibraryNodes.has(id)){
-                    const sheetNode: SheetNode = new SheetNode(sheetClass, null);
+                    let sheetNode: SheetNode;
+                    if (sheetClass.ParentScoreId>0){
+                        const parentScoreNode: ScoreNode =  this.ScoreNodes.get(sheetClass.ParentScoreId) || null;
+                        sheetNode = new SheetNode(sheetClass, parentScoreNode);
+                    } else {
+                        sheetNode = new SheetNode(sheetClass, null);
+                    }
                     this.setSheetNode(id,sheetNode);
                 }
             }
@@ -258,6 +345,41 @@ export class TLibrary {
         return this;
     }
 
+    public deleteLibraryObject(id: number): void {
+        const libraryNode: LibraryNode = this.LibraryNodes.get(id);
+        if (libraryNode && libraryNode instanceof LibraryNode) {
+            window.electron.ipcRenderer.invoke("request-consens-for-library-object-deletion", id ).then((result: TLibraryObject)=>{
+                if (libraryNode && libraryNode instanceof LibraryNode) {
+                    const deletableSheets: number[] = [];
+                    const deletableScores: number[] = [];
+                    const deletableRacks: number[] = [];
+                    libraryNode.getAllChildren().forEach((item: {class: string, node: LibraryNode}) => {
+                        if (item.class==="SheetNode") {
+                            this.deleteSheet((<SheetNode>item.node).SheetId);
+                            deletableSheets.push((<SheetNode>item.node).SheetId);
+                        } else if(item.class==="ScoreNode"){
+                            this.deleteScore((<ScoreNode>item.node).ScoreId);
+                            deletableScores.push((<ScoreNode>item.node).ScoreId);
+                        } else if(item.class==="RackNode"){
+                            this.deleteRack((<RackNode>item.node).RackId);
+                            deletableRacks.push((<RackNode>item.node).RackId);
+                        }
+                    });
+                    window.electron.ipcRenderer.invoke(
+                        "request-delete-library-objects",
+                        {
+                            sheetIds: deletableSheets,
+                            scoreIds: deletableScores,
+                            rackIds: deletableRacks,
+                        }
+                    ).then((deleteResult: boolean)=>{
+                        console.log("deleted", deleteResult);
+                    });
+                }
+            });
+        }
+    }
+
     public newRackObject(parentId: number = 0, sequence: number = 0): void {
         const rackObject: TRackObject = {
             rackId: Number(`2${Date.now()}`),
@@ -278,6 +400,7 @@ export class TLibrary {
             }
         });
     }
+
     public newScoreObject(parentId: number = 0, sequence: number = 0): void {
         const scoreObject: TScoreObject = {
             scoreId: Number(`3${Date.now()}`),
@@ -294,7 +417,45 @@ export class TLibrary {
         };
 
         window.electron.ipcRenderer.invoke("request-add-score", scoreObject ).then((result: any)=>{
-            if (result) {
+            if (
+                result &&
+                result.score &&
+                result.sheet &&
+                result.zipped
+            ) {
+                this.insertScore(result.score.scoreId, result.score );
+                this.insertSheet(result.sheet.sheetId, result.sheet );
+                console.log(result);
+            }
+        });
+    }
+
+    public newSheetObject(parentId: number = 0, sequence: number = 0): void {
+        const sheetObject: TSheetObject = {
+            sheetId: Number(`4${Date.now()}`),
+            parentScoreId: parentId,
+            sequence: sequence,
+            status: "",
+            title: `Default Title #${sequence}`,
+            subtitle: "",
+            activeKey: null,
+            activeKeys: null,
+            measureStart: null,
+            measureEnd: null,
+            selectedParts: null,
+            selectedStaves: null,
+            transposeBy: null,
+            shot: null,
+            done: null,
+            loop: null,
+        };
+
+        window.electron.ipcRenderer.invoke("request-add-sheet", sheetObject ).then((result: any)=>{
+            if (
+                result &&
+                result.sheet
+            ) {
+                this.insertSheet(result.sheet.sheetId, result.sheet );
                 console.log(result);
             }
         });

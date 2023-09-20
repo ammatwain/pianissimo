@@ -26,7 +26,7 @@ export class SheetNode extends LibraryNode {
     protected $preConnect(): void {
         super.$preConnect();
         this.$Elements.arrow.style.fill="olive";
-        this.$Elements.addRack.style.display = "";
+        this.$Elements.addRack.style.display = "none";
     }
 
     protected $alwaysConnect(): void {
@@ -40,12 +40,12 @@ export class SheetNode extends LibraryNode {
             console.log(this.constructor.name, "clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {
-            ASModal.show("Sheet Delete");
-            console.log(this.constructor.name, "clicked", "add");
+            this.Library.deleteLibraryObject(this.SheetId);
+            console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
             ASModal.show("Sheet Settings");
-            console.log(this.constructor.name, "clicked", "add");
+            console.log(this.constructor.name, "clicked", "settings");
         };
     }
 

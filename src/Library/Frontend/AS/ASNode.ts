@@ -436,7 +436,7 @@ export class ASNode extends ASCore {
         const oldParentId: number = (oldParent instanceof ASNode)?oldParent.Id:0;
         const newParentId: number = (newParent instanceof ASNode)?newParent.Id:0;
         if (oldParent) {
-            node.$removeNode();
+            node.$selfRemove();
         }
         const renewedNode: ASNode = this.$Elements.items.appendChild(node);
         if (check && oldParent && oldParent instanceof ASNode) {
@@ -456,6 +456,14 @@ export class ASNode extends ASCore {
         return renewedNode;
     }
 
+    public getAllChildren(children: {class: string, node: any}[] = []): {class: string, node: any}[] {
+        this.$Items.forEach((item: ASNode)=>{
+            item.getAllChildren(children);
+        });
+        children.push({class: this.constructor.name, node: this});
+        return children;
+    }
+
     public $isSiblingOf(node: ASNode): boolean {
         if (node instanceof ASNode) {
             return this.$Parent === node.$Parent;
@@ -464,7 +472,7 @@ export class ASNode extends ASCore {
         }
     }
 
-    public $removeNode(): ASNode {
+    public $selfRemove(): ASNode {
         if (this.parentNode) {
             return this.parentNode.removeChild(this);
         } else {
@@ -479,7 +487,7 @@ export class ASNode extends ASCore {
             const newParent: ASNode = existingNode.$Parent;
             const oldParentId: number = (oldParent instanceof ASNode)?oldParent.Id:0;
             const newParentId: number = (newParent instanceof ASNode)?newParent.Id:0;
-            const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$removeNode(), existingNode.nextSibling);
+            const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$selfRemove(), existingNode.nextSibling);
             if (oldParent && oldParent instanceof ASNode) {
                 oldParent.doCheckItems();
             }
@@ -507,7 +515,7 @@ export class ASNode extends ASCore {
             const newParent: ASNode = existingNode.$Parent;
             const oldParentId: number = (oldParent instanceof ASNode)?oldParent.Id:0;
             const newParentId: number = (newParent instanceof ASNode)?newParent.Id:0;
-            const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$removeNode(),existingNode);
+            const renewedNode: ASNode = existingNode.parentNode.insertBefore(this.$selfRemove(),existingNode);
             if (oldParent && oldParent instanceof ASNode) {
                 oldParent.doCheckItems();
             }

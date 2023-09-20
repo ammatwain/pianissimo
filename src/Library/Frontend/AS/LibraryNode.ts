@@ -2,6 +2,7 @@ import { ASCSS } from "./ASCSS";
 import { ASNode } from "./ASNode";
 import {LibraryClass, TRackObject, RackClass} from "@Common/DataObjects";
 import { ASModal } from "./ASModal";
+import { TLibrary } from "../Library/Library";
 
 ASCSS.LibraryNode = {
 };
@@ -9,7 +10,7 @@ ASCSS.LibraryNode = {
 export class LibraryNode extends ASNode {
 
     protected fields: LibraryClass;
-    protected library: any;
+    protected library: TLibrary;
 
 
     constructor(args: any){
@@ -91,11 +92,11 @@ export class LibraryNode extends ASNode {
         return 0;
     }
 
-    public get Library(): any {
+    public get Library(): TLibrary {
         return this.Root.library;
     }
 
-    public set Library(library: any) {
+    public set Library(library: TLibrary) {
         if (this.Root) {
             this.Root.library = library;
         }

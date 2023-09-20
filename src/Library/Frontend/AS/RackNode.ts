@@ -55,12 +55,12 @@ export class RackNode extends LibraryNode {
             console.log(this.constructor.name, "clicked", "add");
         };
         this.$Elements.delete.onclick = (): void => {
-            ASModal.show("Rack Delete");
-            console.log(this.constructor.name, "clicked", "add");
+            this.Library.deleteLibraryObject(this.RackId);
+            console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
             ASModal.show("Rack Settings");
-            console.log(this.constructor.name, "clicked", "add");
+            console.log(this.constructor.name, "clicked", "settings");
         };
     }
 

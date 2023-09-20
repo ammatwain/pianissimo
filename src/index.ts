@@ -111,6 +111,7 @@ if (require("electron-squirrel-startup")) {
 const createWindow: () => void = (): void => {
     // Create the browser window.
     const mainWindow: BrowserWindow = new BrowserWindow({
+        alwaysOnTop: false,
         width: 1800,
         height: 1000,
         title: `${Package.name.charAt(0).toUpperCase() + Package.name.slice(1)} - v${Package.version}`,
@@ -119,7 +120,7 @@ const createWindow: () => void = (): void => {
             preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         },
     });
-    BackendListeners(letture);
+    BackendListeners(mainWindow, letture);
     mainWindow.setIcon(PATH.resolve(__dirname,"pianissimo.png"));
     // and load the index.html of the app.
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
