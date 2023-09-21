@@ -3,6 +3,7 @@ import { ScoreClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
 import { ASModal } from "./ASModal";
+import { ASModalScore } from "./ASModalScore";
 
 ASCSS.ScoreNode = {
 };
@@ -46,7 +47,7 @@ export class ScoreNode extends LibraryNode {
             console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
-            ASModal.show("Score Settings");
+            ASModalScore.showFromNode(this, "Rack Settings");
             console.log(this.constructor.name, "clicked", "settings");
         };
     }

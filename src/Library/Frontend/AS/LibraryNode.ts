@@ -3,6 +3,7 @@ import { ASNode } from "./ASNode";
 import {LibraryClass, TRackObject, RackClass} from "@Common/DataObjects";
 import { ASModal } from "./ASModal";
 import { TLibrary } from "../Library/Library";
+import { ASModalLibrary } from "./ASModalLibrary";
 
 ASCSS.LibraryNode = {
 };
@@ -79,7 +80,7 @@ export class LibraryNode extends ASNode {
             console.log(this.constructor.name, "***clicked", "add");
         };
         this.$Elements.settings.onclick = (): void => {
-            ASModal.show("Library Settings");
+            ASModalLibrary.showFromNode(this, "Library Settings");
             console.log(this.constructor.name, "***clicked", "add");
         };
     }
@@ -127,6 +128,21 @@ export class LibraryNode extends ASNode {
 
     public set Sequence(sequence: number) {
         this.fields.Sequence = sequence;
+    }
+
+    public get Title(): string {
+        return this.$Caption;
+    }
+
+    public set Title(title: string) {
+        window.electron.ipcRenderer.invoke(
+            "request-set-config-key-value",
+            {key: "libraryName", value: title}
+        ).then((result: boolean)=>{
+            if (result) {
+                this.$Caption = title;
+            }
+        });
     }
 
     public doCheckItems(): void{

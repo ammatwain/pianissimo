@@ -10,18 +10,23 @@ class _Config {
         }
 
         if (!FS.existsSync(this.ConfigFile)) {
-            FS.writeFileSync(this.ConfigFile, JSON.stringify(_Config.configDefault));
+            this.config = _Config.configDefault;
+            this.saveConfig();
+        } else {
+            this.config = this.loadConfig();
         }
-
-        this.config = FS.readFileSync(this.ConfigFile).toJSON();
-
     }
 
     private static configDefault: {[index: string]: any} = {
-        database: `./${Package.name}.db`,
+        "database": `./${Package.name}.db`,
+        "libraryName": "Piano Library",
     };
 
     private config: any = {};
+
+    public loadConfig(): any {
+        return JSON.parse(FS.readFileSync(this.ConfigFile).toString("utf-8"));
+    }
 
     public saveConfig(): void {
         FS.writeFileSync(this.ConfigFile, JSON.stringify(this.config, null, 2));
@@ -35,11 +40,11 @@ class _Config {
         return PATH.resolve(this.HomeDir,"config.json");
     }
 
-    private getKeyValue(key: string): any {
+    public getKeyValue(key: string): string {
         return this.config[key] || _Config.configDefault[key];
     }
 
-    private setKeyValue(key: string, value: any): void {
+    public setKeyValue(key: string, value: any): void {
         if (this.config[key] !== value) {
             this.config[key] = value;
             this.saveConfig();
@@ -53,9 +58,19 @@ class _Config {
     }
 
     public set Database(database: string){
+        throw new Error("SET DATABASE");
         database = database.replace(`${this.HomeDir}/`,"./");
         this.setKeyValue("database", database);
     }
+
+    public get LibraryName(): string{
+        return this.getKeyValue("libraryName") || _Config.configDefault.libraryName;
+    }
+
+    public set LibraryName(libraryName: string){
+        this.setKeyValue("libraryName", libraryName);
+    }
+
 }
 
 export const Config: _Config  = new _Config();

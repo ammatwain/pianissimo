@@ -113,7 +113,11 @@ export class RackClass extends LibraryClass {
         if (this.RackFields.title !== title) {
             this.RackFields.title = title;
             this.FieldsChanged = true;
-            console.log(this.constructor.name, "changed", "Title");
+            if (this.updateField("title",title)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 

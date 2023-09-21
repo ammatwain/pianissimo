@@ -7,7 +7,7 @@ preventDefault               No            Yes             No
 stopPropagation              Yes           No              No
 stopImmediatePropagation     Yes           No              Yes
 */
-import "./AS.scss";
+import "./assets/AS.scss";
 
 import { ASCSS } from "./ASCSS";
 

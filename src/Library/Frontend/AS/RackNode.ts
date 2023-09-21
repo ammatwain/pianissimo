@@ -2,6 +2,7 @@ import { ASCSS } from "./ASCSS";
 import { TRackObject, RackClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { ASModal } from "./ASModal";
+import { ASModalRack } from "./ASModalRack";
 
 ASCSS.RackNode = {
     ">.header":{
@@ -59,7 +60,7 @@ export class RackNode extends LibraryNode {
             console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
-            ASModal.show("Rack Settings");
+            ASModalRack.showFromNode(this, "Rack Settings");
             console.log(this.constructor.name, "clicked", "settings");
         };
     }
@@ -142,6 +143,7 @@ export class RackNode extends LibraryNode {
 
     public set Title(title: string) {
         this.RackFields.Title = title;
+        this.$Caption = title;
     }
 
     //

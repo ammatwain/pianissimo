@@ -13,6 +13,7 @@ import { TScoreObject } from "@DataObjects/TScoreObject";
 import { TSheetObject } from "@DataObjects/TSheetObject";
 import { MusicXmlRW, PianissimoID } from "@Library/Backend/MusicXmlRW/MusicXmlRW";
 import { TZippedObject } from "@Library/Common/DataObjects/TZippedObject";
+import { Config } from "../Config";
 
 export function BackendListeners(browserWindow: BrowserWindow, database: Letture): void {
 
@@ -81,6 +82,7 @@ export function BackendListeners(browserWindow: BrowserWindow, database: Letture
     ) => {
 
         return {
+            libraryName: Config.LibraryName,
             agenda: database.prepare("SELECT * FROM \"agenda\";").all(),
             defaults: database.prepare("SELECT * FROM \"defaults\";").all(),
             racks: database.prepare("SELECT * FROM \"racks\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all(),
@@ -399,6 +401,20 @@ WHERE
                 title: "Warning!",
             }
         ) === 1;
+    });
+
+    ipcMain.handle("request-set-config-key-value", async (
+        event: Electron.IpcMainEvent, conf: {key: string, value: string}
+    ) => {
+        console.log(conf);
+        Config.setKeyValue(conf.key, conf.value);
+        return Config.getKeyValue(conf.key)===conf.value;
+    });
+
+    ipcMain.handle("request-get-config-key-value", async (
+        event: Electron.IpcMainEvent, key: string
+    ) => {
+        return Config.getKeyValue(key);
     });
 
     ipcMain.handle("request-delete-library-objects", async (

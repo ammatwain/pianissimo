@@ -24,7 +24,8 @@ export class Application {
 
     buildTree(data: any): void {
         console.log(data);
-//        const root: LibraryNode = new LibraryNode({library: data, Library: this.library, caption: "TEST"});
+        Library.LibraryName = data.libraryName;
+
         const root: LibraryNode = Library.RootNode;
 
         this.left.appendChild(root);

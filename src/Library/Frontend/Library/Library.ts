@@ -13,8 +13,7 @@ import { SheetNode } from "@Frontend/AS/SheetNode";
 import { ASNode } from "../AS";
 
 class LibraryObjectMap extends Map<number, TLibraryObject> {};
-class RackObjectMap extends Map<number, TRackObject> {
-};
+class RackObjectMap extends Map<number, TRackObject> {};
 class ScoreObjectMap extends Map<number, TScoreObject> {};
 class SheetObjectMap extends Map<number, TSheetObject> {};
 class LibraryClassMap extends Map<number, LibraryClass> {};
@@ -53,8 +52,20 @@ export class TLibrary {
         this.rackNodes = new RackNodesMap();
         this.scoreNodes = new ScoreNodesMap();
         this.sheetNodes = new SheetNodesMap();
-        this.RootNode =  new LibraryNode({library: this, caption: "Library"});
+        this.RootNode =  new LibraryNode({library: this, caption: this.libraryName});
         console.log(this.RootNode);
+    }
+
+    public get LibraryName(): string {
+        return this.RootNode.$Caption;
+    }
+
+    public set LibraryName(libraryName: string) {
+        window.electron.ipcRenderer.invoke("request-set-config-key-value", {key: "libraryName", value: libraryName}).then((result: boolean)=>{
+            if (result) {
+                this.RootNode.$Caption = libraryName;
+            }
+        });
     }
 
     public get LibraryObjects(): LibraryObjectMap {
