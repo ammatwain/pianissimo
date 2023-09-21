@@ -4,6 +4,7 @@ import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
 import { ASModal } from "./ASModal";
 import { ASModalScore } from "./ASModalScore";
+import { SheetNode } from "./SheetNode";
 
 ASCSS.ScoreNode = {
 };
@@ -78,6 +79,10 @@ export class ScoreNode extends LibraryNode {
 
     public set ScoreFields(scoreFields: ScoreClass) {
         this.fields = scoreFields;
+    }
+
+    public get DefaultSheet(): SheetNode{
+        return <SheetNode>this.$Items[0];
     }
 
     public get Id(): number {

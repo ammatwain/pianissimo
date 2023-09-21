@@ -35,7 +35,7 @@ export class ASModalRack extends ASModal {
 
     protected $preConnect(): void {
         super.$preConnect();
-        const labelTitle = <HTMLDivElement>document.createElement("div");
+        const labelTitle: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelTitle.classList.add("label");
         labelTitle.textContent = "Title:";
         this.$Elements.title = <HTMLInputElement>document.createElement("input");

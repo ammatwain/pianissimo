@@ -1,0 +1,74 @@
+SplineFontDB: 3.2
+FontName: Untitled1
+FullName: Untitled1
+FamilyName: Untitled1
+Weight: Regular
+Copyright: Copyright (c) 2023, Amedeo Sorpreso
+UComments: "2023-9-21: Created with FontForge (http://fontforge.org)"
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -524.288
+UnderlineWidth: 262.144
+Ascent: 1536
+Descent: 512
+InvalidEm: 0
+LayerCount: 2
+Layer: 0 0 "Back" 1
+Layer: 1 0 "Fore" 0
+XUID: [1021 390 -422268906 14244414]
+OS2Version: 0
+OS2_WeightWidthSlopeOnly: 0
+OS2_UseTypoMetrics: 1
+CreationTime: 1695312773
+ModificationTime: 1695312968
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2TypoLinegap: 0
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
+HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2Vendor: 'PfEd'
+MarkAttachClasses: 1
+DEI: 91125
+Encoding: ISO8859-1
+UnicodeInterp: none
+NameList: AGL For New Fonts
+DisplaySize: -48
+AntiAlias: 1
+FitToEm: 0
+WinInfo: 0 38 14
+BeginPrivate: 0
+EndPrivate
+BeginChars: 256 1
+
+StartChar: plus
+Encoding: 43 43 0
+Width: 2048
+Flags: H
+LayerCount: 2
+Fore
+SplineSet
+960 1024 m 1
+ 1088 1024 l 1
+ 1088 576 l 1
+ 1536 576 l 1
+ 1536 448 l 1
+ 1088 448 l 1
+ 1088 0 l 1
+ 960 0 l 1
+ 960 448 l 1
+ 512 448 l 1
+ 512 576 l 1
+ 960 576 l 1
+ 960 1024 l 1
+EndSplineSet
+EndChar
+EndChars
+EndSplineFont

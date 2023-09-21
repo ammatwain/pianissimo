@@ -3,6 +3,7 @@ import { ASCSS } from "./ASCSS";
 import { AS, ASCore } from "./ASCore";
 import { ASModal } from "./ASModal";
 import { ScoreNode } from "./ScoreNode";
+import { MajorKeys } from "./MajorKeys";
 
 ASCSS.ASModalRack = {
     ">.window":{
@@ -36,22 +37,22 @@ export class ASModalScore extends ASModal {
 
     protected $preConnect(): void {
         super.$preConnect();
-        const labelTitle = <HTMLDivElement>document.createElement("div");
+        const labelTitle: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelTitle.classList.add("label");
         labelTitle.textContent = "Title:";
         this.$Elements.title = <HTMLInputElement>document.createElement("input");
 
-        const labelSubtitle = <HTMLDivElement>document.createElement("div");
+        const labelSubtitle: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelSubtitle.classList.add("label");
         labelSubtitle.textContent = "Subtitle:";
         this.$Elements.subtitle = <HTMLInputElement>document.createElement("input");
 
-        const labelAuthor = <HTMLDivElement>document.createElement("div");
+        const labelAuthor: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelAuthor.classList.add("label");
         labelAuthor.textContent = "Author:";
         this.$Elements.author = <HTMLInputElement>document.createElement("input");
 
-        const labelMainKey = <HTMLDivElement>document.createElement("div");
+        const labelMainKey: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMainKey.classList.add("label");
         labelMainKey.textContent = "Main Key:";
         this.$Elements.mainKey = <HTMLInputElement>document.createElement("input");
@@ -59,27 +60,37 @@ export class ASModalScore extends ASModal {
         this.$Elements.mainKey.setAttribute("min","-7");
         this.$Elements.mainKey.setAttribute("max","7");
 
-        const labelMeasures = <HTMLDivElement>document.createElement("div");
+        const labelActiveKeys: HTMLDivElement = <HTMLDivElement>document.createElement("div");
+        labelActiveKeys.classList.add("label");
+        labelActiveKeys.textContent = "Active Keys:";
+
+        this.$Elements.activeKeys = new MajorKeys();
+
+
+        const labelMeasures: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMeasures.classList.add("label");
         labelMeasures.textContent = "Measures:";
         this.$Elements.measures = <HTMLInputElement>document.createElement("input");
 
-        const labelParts = <HTMLDivElement>document.createElement("div");
+        const labelParts: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelParts.classList.add("label");
         labelParts.textContent = "Parts:";
         this.$Elements.parts = <HTMLInputElement>document.createElement("input");
 
         this.$Elements.main.appendChild(labelTitle);
         this.$Elements.main.appendChild(this.$Elements.title);
- 
+
         this.$Elements.main.appendChild(labelSubtitle);
         this.$Elements.main.appendChild(this.$Elements.subtitle);
- 
+
         this.$Elements.main.appendChild(labelAuthor);
         this.$Elements.main.appendChild(this.$Elements.author);
 
         this.$Elements.main.appendChild(labelMainKey);
         this.$Elements.main.appendChild(this.$Elements.mainKey);
+
+        this.$Elements.main.appendChild(labelActiveKeys);
+        this.$Elements.main.appendChild(this.$Elements.activeKeys);
 
         this.$Elements.main.appendChild(labelMeasures);
         this.$Elements.main.appendChild(this.$Elements.measures);
