@@ -5,8 +5,8 @@ export type TSheetObject = {
 	status: string;
 	title: string;
 	subtitle: string;
+	practiceKeys: string;
 	activeKey: number;
-	activeKeys: string;
 	measureStart: number;
 	measureEnd: number;
 	selectedParts: string;

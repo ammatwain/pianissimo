@@ -4,6 +4,7 @@ import { AS, ASCore } from "./ASCore";
 ASCSS.ASModal = {
     "animation": "fadeOut 0.3s",
     "background-color":"rgba(0,0,0,0.4)",
+    "cursor":"no-drop",
     "height":"100vh",
     "left":"0px",
     "opacity":"0",
@@ -22,17 +23,21 @@ ASCSS.ASModal = {
         "left":"50%",
         "position":"absolute",
         "top":"50%",
-        "transform":"translate(-50%,-75%)",
+        //"transform":"translate(-50%,-75%)",
         "user-select":"none",
         ">.header": {
             "background-color":"#2b2b2b",
             "box-sizing":"content-box",
+            "cursor":"grab",
             "display":"grid",
             "grid-template-columns":"1fr 24px",
             "line-height": "24px",
             "max-height": "24px",
             "min-height": "24px",
             "padding":"4px",
+            ":active":{
+                "cursor":"grabbing",
+            },
             ">.caption":{
                 "box-sizing":"content-box",
                 "color": "#FFFFFF",
@@ -84,10 +89,13 @@ ASCSS.ASModal = {
             "background-color":"#1f1f1f",
             "display":"grid",
             "gap":"4px",
-            "grid-template-columns":"1fr auto auto",
-            "padding":"4px",
+            "grid-template-columns":"1fr 33% 33%",
+            "padding":"12px",
+            "padding-left":"24px",
+            "padding-right":"24px",
             ">button":{
                 "cursor":"pointer",
+                "padding":"12px",
             },
         },
     },
@@ -145,7 +153,6 @@ export class ASModal extends ASCore {
 
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
-        this.classList.add("visible");
         this.$Elements.cancelIcon.onclick = (): void => {
             this.classList.remove("visible");
         };
@@ -175,6 +182,7 @@ export class ASModal extends ASCore {
                 const top: number = (this.$Elements.window.offsetTop + event.movementY);
                 const right: number = (this.$Elements.window.offsetLeft + this.$Elements.window.offsetWidth + event.movementX);
                 const bottom: number = (this.$Elements.window.offsetTop + this.$Elements.window.offsetHeight + event.movementY);
+
                 if (
                     left >=0 &&
                     top >= 0 &&
@@ -198,10 +206,19 @@ export class ASModal extends ASCore {
         };
     }
 
-    static show(caption: string): ASModal {
-        const modal: ASModal = new ASModal({caption: caption});
-        document.body.appendChild(modal);
-        return modal;
+    public center(): ASModal {
+        const left: number = (this.offsetWidth - this.$Elements.window.offsetWidth) * 0.5;
+        const top: number = (this.offsetHeight - this.$Elements.window.offsetHeight) * 0.25;
+        this.$Elements.window.style.left = `${left}px`;
+        this.$Elements.window.style.top = `${top}px`;
+        return this;
+    }
+
+    public show(): ASModal {
+        console.log("SHOW");
+        this.classList.add("visible");
+        document.body.appendChild(this);
+        return this.center();
     }
 
     public okAction(): void {

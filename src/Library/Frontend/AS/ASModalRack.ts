@@ -50,9 +50,11 @@ export class ASModalRack extends ASModal {
     }
 
     static showFromNode(rackNode: RackNode, caption: string): ASModalRack {
-        const modal: ASModalRack = new ASModalRack({rackNode: rackNode, caption: caption});
-        document.body.appendChild(modal);
-        return modal;
+        return new ASModalRack({rackNode: rackNode, caption: caption}).show();
+    }
+
+    public show(): ASModalRack {
+        return <ASModalRack>super.show();
     }
 
     public get Title(): HTMLInputElement {

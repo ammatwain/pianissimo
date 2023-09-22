@@ -1,18 +1,18 @@
 import { TSheetObject } from "./TSheetObject";
 import { LibraryClass } from "./LibraryClass";
 
-class TActiveKeys extends Set<number> {
+class TPracticeKeys extends Set<number> {
 
     protected jsonString: string =  "[]";
 
-    addKey(key: number): TActiveKeys {
+    addKey(key: number): TPracticeKeys {
         if (this.isValidKey(key)) {
             super.add(key);
         }
         return this;
     }
 
-    delKey(key: number): TActiveKeys {
+    delKey(key: number): TPracticeKeys {
         super.delete(key);
         return this;
     }
@@ -50,7 +50,7 @@ class TActiveKeys extends Set<number> {
         return JSON.stringify(Array.from(this));
     }
 
-    uSort(): TActiveKeys {
+    uSort(): TPracticeKeys {
         const sortedArray: number[] = [...this].sort();
         this.clear();
         sortedArray.forEach((key: number) => {
@@ -61,8 +61,8 @@ class TActiveKeys extends Set<number> {
         return this;
     }
 
-    static fromJsonString(keys: string): TActiveKeys {
-        const tak: TActiveKeys = new TActiveKeys(JSON.parse(keys));
+    static fromJsonString(keys: string): TPracticeKeys {
+        const tak: TPracticeKeys = new TPracticeKeys(JSON.parse(keys));
         tak.uSort();
         tak.jsonString = JSON.stringify(tak);
         return tak;
@@ -137,7 +137,7 @@ export class SheetClass extends LibraryClass {
         title: undefined,
         subtitle: undefined,
         activeKey: undefined,
-        activeKeys: undefined,
+        practiceKeys: undefined,
         measureStart: undefined,
         measureEnd: undefined,
         selectedParts: undefined,
@@ -150,14 +150,14 @@ export class SheetClass extends LibraryClass {
 */
 
     declare protected fields: TSheetObject;
-    private activeKeys: TActiveKeys;
+    private practiceKeys: TPracticeKeys;
     private shot: TFifteenKeys;
     private done: TFifteenKeys;
     private loop: TFifteenKeys;
 
     public set Fields(fields: TSheetObject) {
         this.fields = fields;
-        this.activeKeys = TActiveKeys.fromJsonString(this.SheetFields.activeKeys);
+        this.practiceKeys = TPracticeKeys.fromJsonString(this.SheetFields.practiceKeys);
         this.shot = TFifteenKeys.fromJsonString(this.SheetFields.shot);
         this.done = TFifteenKeys.fromJsonString(this.SheetFields.done);
         this.loop = TFifteenKeys.fromJsonString(this.SheetFields.loop);
@@ -274,24 +274,24 @@ export class SheetClass extends LibraryClass {
         }
     }
 
-    public get ActiveKeys(): TActiveKeys {
-        return this.activeKeys;
+    public get PracticeKeys(): TPracticeKeys {
+        return this.practiceKeys;
     }
 
-    public activeKeysAdd(key: number): boolean {
-        const tmpActiveKeysString: string = this.ActiveKeys.addKey(key).toJsonString();
-        if (this.fields.activeKeys !== tmpActiveKeysString ) {
-            this.fields.activeKeys = tmpActiveKeysString;
+    public practiceKeysAdd(key: number): boolean {
+        const tmpActiveKeysString: string = this.PracticeKeys.addKey(key).toJsonString();
+        if (this.fields.practiceKeys !== tmpActiveKeysString ) {
+            this.fields.practiceKeys = tmpActiveKeysString;
             this.FieldsChanged = true;
             return this.FieldsChanged;
         }
         return false;
     }
 
-    public activeKeysDel(key: number): boolean {
-        const tmpActiveKeysString: string = this.ActiveKeys.delKey(key).toJsonString();
-        if (this.fields.activeKeys !== tmpActiveKeysString ) {
-            this.fields.activeKeys = tmpActiveKeysString;
+    public practiceKeysDel(key: number): boolean {
+        const tmpActiveKeysString: string = this.PracticeKeys.delKey(key).toJsonString();
+        if (this.fields.practiceKeys !== tmpActiveKeysString ) {
+            this.fields.practiceKeys = tmpActiveKeysString;
             this.FieldsChanged = true;
             return this.FieldsChanged;
         }

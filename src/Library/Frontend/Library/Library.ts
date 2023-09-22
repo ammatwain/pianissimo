@@ -450,7 +450,7 @@ export class TLibrary {
             title: `Default Title #${sequence}`,
             subtitle: "",
             activeKey: null,
-            activeKeys: null,
+            practiceKeys: null,
             measureStart: null,
             measureEnd: null,
             selectedParts: null,

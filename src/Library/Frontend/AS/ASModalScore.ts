@@ -56,17 +56,17 @@ export class ASModalScore extends ASModal {
         const labelMainKey: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMainKey.classList.add("label");
         labelMainKey.textContent = "Main Key:";
-        this.$Elements.mainKey = <HTMLInputElement>document.createElement("input");
-        this.$Elements.mainKey.setAttribute("type","number");
-        this.$Elements.mainKey.setAttribute("min","-7");
-        this.$Elements.mainKey.setAttribute("max","7");
+        this.$Elements.mainKey = new MajorKeys({boxType:"radio"});
 
-        const labelActiveKeys: HTMLDivElement = <HTMLDivElement>document.createElement("div");
-        labelActiveKeys.classList.add("label");
-        labelActiveKeys.textContent = "Active Keys:";
+        const labelPracticeKeys: HTMLDivElement = <HTMLDivElement>document.createElement("div");
+        labelPracticeKeys.classList.add("label");
+        labelPracticeKeys.textContent = "Practice Keys:";
+        this.$Elements.activeKeys = new MajorKeys({boxType:"checkbox"});
 
-        this.$Elements.activeKeys = new MajorKeys({boxType:"radio"});
-
+        const labelActiveKey: HTMLDivElement = <HTMLDivElement>document.createElement("div");
+        labelActiveKey.classList.add("label");
+        labelActiveKey.textContent = "Active Key:";
+        this.$Elements.activeKey = new MajorKeys({boxType:"radio"});
 
         const labelMeasures: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMeasures.classList.add("label");
@@ -90,8 +90,11 @@ export class ASModalScore extends ASModal {
         this.$Elements.main.appendChild(labelMainKey);
         this.$Elements.main.appendChild(this.$Elements.mainKey);
 
-        this.$Elements.main.appendChild(labelActiveKeys);
+        this.$Elements.main.appendChild(labelPracticeKeys);
         this.$Elements.main.appendChild(this.$Elements.activeKeys);
+
+        this.$Elements.main.appendChild(labelActiveKey);
+        this.$Elements.main.appendChild(this.$Elements.activeKey);
 
         this.$Elements.main.appendChild(labelMeasures);
         this.$Elements.main.appendChild(this.$Elements.measures);
@@ -111,9 +114,11 @@ export class ASModalScore extends ASModal {
     }
 
     static showFromNode(scoreNode: ScoreNode, caption: string): ASModalScore {
-        const modal: ASModalScore = new ASModalScore({scoreNode: scoreNode, caption: caption});
-        document.body.appendChild(modal);
-        return modal;
+        return new ASModalScore({scoreNode: scoreNode, caption: caption}).show();
+    }
+
+    public show(): ASModalScore {
+        return <ASModalScore>super.show();
     }
 
     public get Title(): HTMLInputElement {

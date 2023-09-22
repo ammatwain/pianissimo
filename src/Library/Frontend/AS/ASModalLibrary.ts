@@ -47,10 +47,13 @@ export class ASModalLibrary extends ASModal {
     }
 
     static showFromNode(libraryNode: LibraryNode, caption: string): ASModalLibrary {
-        const modal: ASModalLibrary = new ASModalLibrary({libraryNode: libraryNode, caption: caption});
-        document.body.appendChild(modal);
-        return modal;
+        return new ASModalLibrary({libraryNode: libraryNode, caption: caption}).show();
     }
+
+    public show(): ASModalLibrary {
+        return <ASModalLibrary>super.show();
+    }
+
 
     public get Title(): HTMLInputElement {
         return <HTMLInputElement>this.$Elements.title;

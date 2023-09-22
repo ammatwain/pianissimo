@@ -22,6 +22,7 @@ ASCSS.DualRange = {
         }
 },
     ">div":{
+        "background":"linear-gradient(transparent 0px, transparent 11px, #888 12px, #888 13px, transparent 14px,transparent 24px)",
         "box-sizing": "content-box",
         "position":"relative",
         ">input[type=\"range\"]":{
@@ -39,17 +40,32 @@ ASCSS.DualRange = {
                 "pointer-events":"none",
             },
             "::-webkit-slider-thumb":{
+//                "appareance":"none",
+//                "border": "1px solid #000000",
+                "background-color":"#00f",
+                "border-radius": "0%",
+                "width":"24px",
+                "height":"24px",
                 "min-width":"24px",
                 "min-height":"24px",
                 "pointer-events":"all",
+//                "-webkit-appearance":"none;",
             },
             "#min":{
                 "left":"0px",
                 "top":"0px",
+//                "::-webkit-slider-thumb":{
+//                    "border-top-left-radius": "50%",
+//                    "border-bottom-left-radius": "50%",
+//                }
             },
             "#max":{
                 "left":"24px",
                 "top":"0px",
+//                "::-webkit-slider-thumb":{
+//                    "border-top-right-radius": "50%",
+//                    "border-bottom-right-radius": "50%",
+//                }
             }
         },
     }

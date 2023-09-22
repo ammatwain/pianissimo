@@ -186,47 +186,44 @@ export class SheetNode extends LibraryNode {
     }
 
     public set ActiveKey(activeKey: number) {
-        if (this.SheetFields.ActiveKey !== activeKey) {
-            this.SheetFields.ActiveKey = activeKey;
-            this.FieldsChanged = true;
-        }
+        this.SheetFields.ActiveKey = activeKey;
     }
 
-    public get ActiveKeys(): number[] {
-        return this.SheetFields.ActiveKeys.split(",").map(Number);
+    public get PracticeKeys(): number[] {
+        return this.SheetFields.PracticeKeys.split(",").map(Number);
     }
 
-    public set ActiveKeys(activeKeys: TVariableMajorKeyNumberArray) {
+    public set PracticeKeys(activeKeys: TVariableMajorKeyNumberArray) {
         const activeKeyString: string = activeKeys.sort().join(",");
-        if (this.SheetFields.activeKeys !== activeKeyString) {
-            this.SheetFields.activeKeys = activeKeyString;
+        if (this.SheetFields.PracticeKeys !== activeKeyString) {
+            this.SheetFields.PracticeKeys = activeKeyString;
             this.FieldsChanged = true;
         }
     }
 
     public addActiveKey(activeKey: number): void {
         if (activeKey>=-7 && activeKey<=7){
-            const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
+            const activeKeys: TVariableMajorKeyNumberArray = this.PracticeKeys;
             if (activeKeys.indexOf(activeKey)===-1){
                 activeKeys.push(activeKey);
-                this.ActiveKeys = activeKeys.sort();
+                this.PracticeKeys = activeKeys.sort();
             }
         }
     }
 
     public removeActiveKey(activeKey: number): void {
         if (activeKey>=-7 && activeKey<=7){
-            const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
+            const activeKeys: TVariableMajorKeyNumberArray = this.PracticeKeys;
             if (activeKeys.indexOf(activeKey)>=0){
                 delete activeKeys[activeKeys.indexOf(activeKey)];
-                this.ActiveKeys = activeKeys.sort();
+                this.PracticeKeys = activeKeys.sort();
             }
         }
     }
 
     public hasActiveKey(activeKey: number): boolean {
         if (activeKey>=-7 && activeKey<=7){
-            const activeKeys: TVariableMajorKeyNumberArray = this.ActiveKeys;
+            const activeKeys: TVariableMajorKeyNumberArray = this.PracticeKeys;
             return activeKeys.indexOf(activeKey) >= 0;
         }
         return false;

@@ -1,7 +1,7 @@
 {
     "name": "pianissimo",
     "productName": "pianissimo",
-    "version": "0.2.794",
+    "version": "0.2.798",
     "description": "pianissimo",
     "main": ".webpack/main",
     "scripts": {
