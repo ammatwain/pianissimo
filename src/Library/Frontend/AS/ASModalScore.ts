@@ -4,6 +4,7 @@ import { AS, ASCore } from "./ASCore";
 import { ASModal } from "./ASModal";
 import { ScoreNode } from "./ScoreNode";
 import { MajorKeys } from "./MajorKeys";
+import { DualRange } from "./DualRange";
 
 ASCSS.ASModalRack = {
     ">.window":{
@@ -64,13 +65,13 @@ export class ASModalScore extends ASModal {
         labelActiveKeys.classList.add("label");
         labelActiveKeys.textContent = "Active Keys:";
 
-        this.$Elements.activeKeys = new MajorKeys();
+        this.$Elements.activeKeys = new MajorKeys({boxType:"radio"});
 
 
         const labelMeasures: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMeasures.classList.add("label");
         labelMeasures.textContent = "Measures:";
-        this.$Elements.measures = <HTMLInputElement>document.createElement("input");
+        this.$Elements.measures = new DualRange(0,32);
 
         const labelParts: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelParts.classList.add("label");
