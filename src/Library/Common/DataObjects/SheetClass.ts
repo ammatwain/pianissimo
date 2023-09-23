@@ -139,6 +139,22 @@ class TFifteenKeys extends Map<number, number> {
         }
         return mak;
     }
+
+    public get Values(): number[] {
+        const values: number[] = [];
+        for(let i: number = -7; i<=7 ; i++){
+            values.push(this.get(i));
+        }
+        return values;
+    }
+
+    public set Values(values: number[]) {
+        if (values.length===15){
+            for(let i: number = -7; i<=7 ; i++){
+                this.setKey(i,values[i+7]);
+            }
+        }
+    }
 }
 
 export class SheetClass extends LibraryClass {
@@ -172,15 +188,13 @@ export class SheetClass extends LibraryClass {
     constructor(fields: TSheetObject){
         super(fields);
         this.practiceKeys = new TPracticeKeys();
-    }
-
-
-    public set Fields(fields: TSheetObject) {
-        this.fields = fields;
-        this.practiceKeys.setFromJsonString(this.SheetObject.practiceKeys);
-        this.shot = TFifteenKeys.fromJsonString(this.SheetObject.shot);
-        this.done = TFifteenKeys.fromJsonString(this.SheetObject.done);
-        this.loop = TFifteenKeys.fromJsonString(this.SheetObject.loop);
+        this.shot = new TFifteenKeys();
+        this.done = new TFifteenKeys();
+        this.loop = new TFifteenKeys();
+        this.practiceKeys.Values = this.SheetObject.practiceKeys;
+        this.shot.Values = this.SheetObject.shot;
+        this.done.Values = this.SheetObject.done;
+        this.loop.Values = this.SheetObject.loop;
     }
 
     public get SheetObject(): TSheetObject {

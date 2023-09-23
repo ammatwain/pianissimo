@@ -61,7 +61,7 @@ export class ASModalScore extends ASModal {
         const labelPracticeKeys: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelPracticeKeys.classList.add("label");
         labelPracticeKeys.textContent = "Practice Keys:";
-        this.$Elements.activeKeys = new MajorKeys({boxType:"checkbox"});
+        this.$Elements.practiceKeys = new MajorKeys({boxType:"checkbox"});
 
         const labelActiveKey: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelActiveKey.classList.add("label");
@@ -91,7 +91,7 @@ export class ASModalScore extends ASModal {
         this.$Elements.main.appendChild(this.$Elements.mainKey);
 
         this.$Elements.main.appendChild(labelPracticeKeys);
-        this.$Elements.main.appendChild(this.$Elements.activeKeys);
+        this.$Elements.main.appendChild(this.$Elements.practiceKeys);
 
         this.$Elements.main.appendChild(labelActiveKey);
         this.$Elements.main.appendChild(this.$Elements.activeKey);
@@ -110,8 +110,8 @@ export class ASModalScore extends ASModal {
         this.Author.value = this.scoreNode.Author;
         console.log("MAINKEY",this.MainKey);
         this.MainKey.Value = this.scoreNode.MainKey;
-        console.log("this.scoreNode.DefaultSheet.PracticeKeys",this.scoreNode.DefaultSheet);
-        this.PracticeKey.Values = this.scoreNode.DefaultSheet.PracticeKeys;
+        this.PracticeKey.Checked = [this.MainKey.Value];// this.scoreNode.DefaultSheet.PracticeKeys;
+        this.PracticeKey.Disabled = [this.MainKey.Value];
         this.Measures.value = String(this.scoreNode.Measures);
         this.Parts.value = this.scoreNode.Parts;
     }

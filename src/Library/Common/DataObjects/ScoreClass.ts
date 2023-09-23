@@ -1,4 +1,4 @@
-import { TScoreObject } from "./TScoreObject";
+import { TPartInstrument, TScoreObject } from "./TScoreObject";
 import { LibraryClass } from "./LibraryClass";
 
 export class ScoreClass extends LibraryClass {
@@ -17,13 +17,7 @@ export class ScoreClass extends LibraryClass {
         tempot: undefined,
     };
 */
-    declare protected fields: TScoreObject;
-
-    public set Fields(fields: TScoreObject) {
-        super.Fields = fields;
-    }
-
-    public get ScoreFields(): TScoreObject {
+    public get ScoreObject(): TScoreObject {
         return <TScoreObject>this.fields;
     }
 
@@ -40,23 +34,23 @@ export class ScoreClass extends LibraryClass {
     }
 
     public get ScoreId(): number {
-        return this.ScoreFields.scoreId;
+        return this.ScoreObject.scoreId;
     }
 
     public set ScoreId(scoreId: number) {
-        if (this.ScoreFields.scoreId !== scoreId) {
-            this.ScoreFields.scoreId = scoreId;
+        if (this.ScoreObject.scoreId !== scoreId) {
+            this.ScoreObject.scoreId = scoreId;
             this.FieldsChanged = true;
         }
     }
 
     public get ParentRackId(): number {
-        return Number(this.ScoreFields.parentRackId);
+        return Number(this.ScoreObject.parentRackId);
     }
 
     public set ParentRackId(parentRackId: number) {
-        if (this.ScoreFields.parentRackId !== parentRackId) {
-            this.ScoreFields.parentRackId = parentRackId;
+        if (this.ScoreObject.parentRackId !== parentRackId) {
+            this.ScoreObject.parentRackId = parentRackId;
             this.FieldsChanged = true;
             if (this.updateField("parentRackId",parentRackId)) {
                 console.log(this.constructor.name, "update success");
@@ -67,12 +61,12 @@ export class ScoreClass extends LibraryClass {
     }
 
     public get Sequence(): number {
-        return this.ScoreFields.sequence;
+        return this.ScoreObject.sequence;
     }
 
     public set Sequence(sequence: number) {
-        if (this.ScoreFields.sequence !== sequence) {
-            this.ScoreFields.sequence = sequence;
+        if (this.ScoreObject.sequence !== sequence) {
+            this.ScoreObject.sequence = sequence;
             this.FieldsChanged = true;
             if (this.updateField("sequence",sequence)) {
                 console.log(this.constructor.name, "update success");
@@ -83,82 +77,82 @@ export class ScoreClass extends LibraryClass {
     }
 
     public get Status(): string {
-        return this.ScoreFields.status;
+        return this.ScoreObject.status;
     }
 
     public set Status(status: string) {
-        if (this.ScoreFields.status !== status) {
-            this.ScoreFields.status = status;
+        if (this.ScoreObject.status !== status) {
+            this.ScoreObject.status = status;
             this.FieldsChanged = true;
         }
     }
 
     public get Title(): string {
-        return this.ScoreFields.title;
+        return this.ScoreObject.title;
     }
 
     public set Title(title: string) {
-        if (this.ScoreFields.title !== title) {
-            this.ScoreFields.title = title;
+        if (this.ScoreObject.title !== title) {
+            this.ScoreObject.title = title;
             this.FieldsChanged = true;
         }
     }
 
     public get Subtitle(): string {
-        return this.ScoreFields.subtitle;
+        return this.ScoreObject.subtitle;
     }
 
     public set Subtitle(subtitle: string) {
-        if (this.ScoreFields.subtitle !== subtitle) {
-            this.ScoreFields.subtitle = subtitle;
+        if (this.ScoreObject.subtitle !== subtitle) {
+            this.ScoreObject.subtitle = subtitle;
             this.FieldsChanged = true;
         }
     }
 
     public get Author(): string {
-        return this.ScoreFields.author;
+        return this.ScoreObject.author;
     }
 
     public set Author(author: string) {
-        if (this.ScoreFields.author !== author) {
-            this.ScoreFields.author = author;
+        if (this.ScoreObject.author !== author) {
+            this.ScoreObject.author = author;
             this.FieldsChanged = true;
         }
     }
 
     public get MainKey(): number {
-        return this.ScoreFields.mainKey || 0;
+        return this.ScoreObject.mainKey || 0;
     }
 
     public set MainKey(mainKey: number) {
         if (
-            this.ScoreFields.mainKey !== mainKey &&
+            this.ScoreObject.mainKey !== mainKey &&
             mainKey >= -7 &&
             mainKey <= 7
         ) {
-            this.ScoreFields.mainKey = Math.floor(mainKey);
+            this.ScoreObject.mainKey = Math.floor(mainKey);
             this.FieldsChanged = true;
         }
     }
 
     public get Measures(): number {
-        return this.ScoreFields.measures;
+        return this.ScoreObject.measures;
     }
 
     public set Measures(measures: number) {
-        if (this.ScoreFields.measures !== measures) {
-            this.ScoreFields.measures = measures;
+        if (this.ScoreObject.measures !== measures) {
+            this.ScoreObject.measures = measures;
             this.FieldsChanged = true;
         }
     }
 
-    public get Parts(): string {
-        return this.ScoreFields.parts;
+    public get Parts(): TPartInstrument[] {
+        return this.ScoreObject.parts;
     }
 
-    public set Parts(parts: string) {
-        if (this.ScoreFields.parts !== parts) {
-            this.ScoreFields.parts = parts;
+    public set Parts(parts: TPartInstrument[]) {
+        if (this.ScoreObject.parts !== parts) {
+            this.ScoreObject.parts = parts;
             this.FieldsChanged = true;
         }
     }

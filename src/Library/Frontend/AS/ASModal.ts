@@ -75,7 +75,7 @@ ASCSS.ASModal = {
         },
         ">.main":{
             "background-color":"#1f1f1f",
-            "padding":"24px",
+            "padding":"12px",
             "display":"grid",
             ">.label":{
                 "color":"#868686",
@@ -91,8 +91,6 @@ ASCSS.ASModal = {
             "gap":"4px",
             "grid-template-columns":"1fr 33% 33%",
             "padding":"12px",
-            "padding-left":"24px",
-            "padding-right":"24px",
             ">button":{
                 "cursor":"pointer",
                 "padding":"12px",

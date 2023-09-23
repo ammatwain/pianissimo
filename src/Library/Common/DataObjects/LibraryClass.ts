@@ -3,11 +3,11 @@ import { TLibraryObject } from "./TLibraryObject";
 export class LibraryClass {
     protected notificationActive: boolean = false;
     constructor(fields: TLibraryObject){
-        this.Fields = fields;
+        this.fields = fields;
         this.notificationActive = true;
     }
 
-    declare protected fields: TLibraryObject;
+    protected fields: TLibraryObject;
 
     private fieldsChanged: boolean = false;
 

@@ -69,6 +69,22 @@ export class MajorKeys extends ASCore {
         this.$Property.boxType = boxType ;
     }
 
+    public get Checked(): number[] {
+        const values: number[] = [];
+        for (let i: number = -7; i<=7 ; i++){
+            if (this.Checks.get(i).checked) {
+                values.push(i);
+            }
+        }
+        return values;
+    }
+
+    public set Checked(values: number[]) {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            check.checked = values.includes(key);
+        });
+    }
+
     public get Checks(): Map<number,HTMLInputElement> {
         return this.$Property.checks;
     }
@@ -77,19 +93,20 @@ export class MajorKeys extends ASCore {
         return ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"];
     }
 
-    public get ReadOnly(): number[] {
+    public get Disabled(): number[] {
         const values: number[] = [];
         for (let i: number = -7; i<=7 ; i++){
-            if (this.Checks.get(i).readOnly) {
+            if (this.Checks.get(i).disabled) {
                 values.push(i);
             }
         }
         return values;
     }
 
-    public set ReadOnly(values: number[]) {
+    public set Disabled(values: number[]) {
         this.Checks.forEach((check: HTMLInputElement, key: number ) => {
-            check.readOnly = values.includes(key);
+            check.disabled = values.includes(key);
+            console.log(key, check.disabled);
         });
     }
 

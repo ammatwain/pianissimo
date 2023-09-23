@@ -1,6 +1,7 @@
 import fs from "fs";
 import zlib from "zlib";
 import { XmlDocument, XmlElement } from "xmldoc";
+import { TTempo } from "@Library/Common/DataObjects";
 
 export type PianissimoID =  {
     app?: string;
@@ -155,10 +156,34 @@ export class MusicXmlRW {
         return mainKey || 0;
     }
 
-    get Tempo(): any {
+    public convertBeatUnit(beatUnit: string): number{
+        const beatUnits: any= {
+            "1024th":1/1024,
+            "512th":1/512,
+            "256th":1/256,
+            "128th":1/128,
+            "64th":1/64,
+            "32nd":1/32,
+            "16th":1/16,
+            "eighth":1/8,
+            "quarter":1/4,
+            "half":1/2,
+            "whole":1,
+            "breve":2,
+            "long":4,
+            "maxima":8
+        };
+        if (beatUnit in beatUnits) {
+            return beatUnits[beatUnit];
+        } else {
+            return 1/4;
+        }
+    }
+
+    get Tempo(): TTempo {
         let beats: number = 4;
         let beatType: number = 4;
-        let beatUnit: string = "quarter";
+        let beatUnit: number = 1/4;
         let perMinute: number = 120;
 
         const time: XmlElement = this.ScorePartWise.descendantWithPath("part.measure.attributes.time");
@@ -170,7 +195,7 @@ export class MusicXmlRW {
         }
 
         if(metronome) {
-            beatUnit = metronome.childNamed("beat-unit").val || "quarter";
+            beatUnit = this.convertBeatUnit(metronome.childNamed("beat-unit").val || "quarter");
             perMinute = Number(metronome.childNamed("per-minute").val) || 120 ;
         }
 
