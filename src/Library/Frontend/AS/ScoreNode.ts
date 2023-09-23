@@ -2,7 +2,6 @@ import { ASCSS } from "./ASCSS";
 import { ScoreClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
-import { ASModal } from "./ASModal";
 import { ASModalScore } from "./ASModalScore";
 import { SheetNode } from "./SheetNode";
 
@@ -82,7 +81,11 @@ export class ScoreNode extends LibraryNode {
     }
 
     public get DefaultSheet(): SheetNode{
-        return <SheetNode>this.$Items[0];
+        if (this.Sheets.length) {
+            return this.Sheets[0];
+        } else {
+            return null;
+        }
     }
 
     public get Id(): number {
@@ -111,6 +114,10 @@ export class ScoreNode extends LibraryNode {
 
     public set ParentRackId(parentRackId: number) {
         this.ScoreFields.ParentRackId = parentRackId;
+    }
+
+    public get Sheets(): SheetNode[] {
+        return <SheetNode[]>this.$Items;
     }
 
     public get Sequence(): number {

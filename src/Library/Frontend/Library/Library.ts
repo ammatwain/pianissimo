@@ -53,7 +53,6 @@ export class TLibrary {
         this.scoreNodes = new ScoreNodesMap();
         this.sheetNodes = new SheetNodesMap();
         this.RootNode =  new LibraryNode({library: this, caption: this.libraryName});
-        console.log(this.RootNode);
     }
 
     public get LibraryName(): string {
@@ -485,20 +484,13 @@ export class TLibrary {
                     this.RootNode.$appendNode(rackNode);
                 } else {
                     const parent: RackNode = this.RackNodes.get(rackNode.ParentRackId);
-                    if (rackNode.ParentRackId===21693149332714){
-                        console.log("rackNode.ParentRack", rackNode.ParentRackId, parent);
-                    }
-
                     if (parent){
                         parent.$appendNode(rackNode, false);
                     }
                 }
             });
 
-            console.log("RackNodes Completed");
-
             this.ScoreNodes.forEach((scoreNode: ScoreNode)=>{
-                console.log(scoreNode.ParentRackId);
                 if (scoreNode.ParentRackId===0){
                     this.RootNode.$appendNode(scoreNode, false);
                 } else {

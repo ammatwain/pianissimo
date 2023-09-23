@@ -71,7 +71,7 @@ export class ASModalScore extends ASModal {
         const labelMeasures: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMeasures.classList.add("label");
         labelMeasures.textContent = "Measures:";
-        this.$Elements.measures = new DualRange(0,32);
+        this.$Elements.measures = new DualRange(1,32);
 
         const labelParts: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelParts.classList.add("label");
@@ -108,7 +108,10 @@ export class ASModalScore extends ASModal {
         this.Title.value = this.scoreNode.Title;
         this.Subtitle.value = this.scoreNode.Subtitle;
         this.Author.value = this.scoreNode.Author;
-        this.MainKey.value = String(this.scoreNode.MainKey);
+        console.log("MAINKEY",this.MainKey);
+        this.MainKey.Value = this.scoreNode.MainKey;
+        console.log("this.scoreNode.DefaultSheet.PracticeKeys",this.scoreNode.DefaultSheet);
+        this.PracticeKey.Values = this.scoreNode.DefaultSheet.PracticeKeys;
         this.Measures.value = String(this.scoreNode.Measures);
         this.Parts.value = this.scoreNode.Parts;
     }
@@ -133,12 +136,16 @@ export class ASModalScore extends ASModal {
         return <HTMLInputElement>this.$Elements.author;
     }
 
-    public get MainKey(): HTMLInputElement {
-        return <HTMLInputElement>this.$Elements.mainKey;
+    public get MainKey(): MajorKeys {
+        return <MajorKeys>this.$Elements.mainKey;
     }
 
     public get Measures(): HTMLInputElement {
         return <HTMLInputElement>this.$Elements.measures;
+    }
+
+    public get PracticeKey(): MajorKeys {
+        return <MajorKeys>this.$Elements.practiceKeys;
     }
 
     public get Parts(): HTMLInputElement {

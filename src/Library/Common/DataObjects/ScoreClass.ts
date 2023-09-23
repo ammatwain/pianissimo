@@ -127,7 +127,7 @@ export class ScoreClass extends LibraryClass {
     }
 
     public get MainKey(): number {
-        return this.ScoreFields.mainKey;
+        return this.ScoreFields.mainKey || 0;
     }
 
     public set MainKey(mainKey: number) {

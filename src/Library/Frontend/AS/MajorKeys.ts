@@ -32,35 +32,112 @@ ASCSS.MajorKeys = {
 };
 
 export class MajorKeys extends ASCore {
-    private boxType: "checkbox" | "radio";
-    private majoryKeyStrings: string[];
-    private checks: Map<number,HTMLLabelElement>;
-    constructor(args: any = {} ){
-        super(args);
-    }
     protected $preConnect(): void {
-        super.$preConnect();
-        this.checks = new Map();
-        this.majoryKeyStrings = ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"];
+        this.$Property.checks = new Map();
+        this.$Property.boxType = "checkbox";
+
         if (!("boxType" in this.$Argument && (this.$Argument.boxType==="checkbox" || this.$Argument.boxType === "radio") )) {
             this.$Argument.boxType="checkbox";
         }
-        this.boxType = this.$Argument.boxType;
+        //super.$preConnect();
+
+        this.BoxType = this.$Argument.boxType ;
+
         for (let i: number = 0; i< 15; i++){
             const label: HTMLLabelElement = <HTMLLabelElement>document.createElement("label");
             const div: HTMLDivElement = <HTMLDivElement>document.createElement("div");
-            console.log(this.majoryKeyStrings);
-            div.textContent = this.majoryKeyStrings[i];
+            div.textContent = this.MajoryKeyStrings[i];
             const check: HTMLInputElement = <HTMLInputElement>document.createElement("input");
-            console.log("this.boxType",this.boxType);
-            check.setAttribute("type", this.boxType);
+            console.log("this.boxType",this.BoxType);
+            check.setAttribute("type", this.BoxType);
             check.setAttribute("name", "major-keys");
-            check.value = this.majoryKeyStrings[i];
+            check.value = this.MajoryKeyStrings[i];
             label.appendChild(div);
             label.appendChild(check);
             this.appendChild(label);
-            this.checks.set(i-7,label);
+            this.Checks.set(i-7,check);
         }
+        console.log("PRECOINNECT", this.Checks);
+
+    }
+
+    public get BoxType(): "checkbox" | "radio" {
+        return this.$Property.boxType || "checkbox" ;
+    }
+
+    public set BoxType(boxType: "checkbox" | "radio") {
+        this.$Property.boxType = boxType ;
+    }
+
+    public get Checks(): Map<number,HTMLInputElement> {
+        return this.$Property.checks;
+    }
+
+    public get MajoryKeyStrings(): string[] {
+        return ["Cb","Gb","Db","Ab","Eb","Bb","F","C","G","D","A","E","B","F#","C#"];
+    }
+
+    public get ReadOnly(): number[] {
+        const values: number[] = [];
+        for (let i: number = -7; i<=7 ; i++){
+            if (this.Checks.get(i).readOnly) {
+                values.push(i);
+            }
+        }
+        return values;
+    }
+
+    public set ReadOnly(values: number[]) {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            check.readOnly = values.includes(key);
+        });
+    }
+
+    public get Value(): number {
+        for (let i: number = -7; i<=7 ; i++){
+            if (this.Checks.get(i).checked) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    public set Value(value: number) {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            check.checked = key===value;
+        });
+    }
+
+    public get Values(): number[] {
+        const values: number[] = [];
+        for (let i: number = -7; i<=7 ; i++){
+            if (this.Checks.get(i).checked) {
+                values.push(i);
+            }
+        }
+        return values;
+    }
+
+    public set Values(values: number[]) {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            check.checked = values.includes(key);
+        });
+    }
+
+    public get Visibles(): number[] {
+        const values: number[] = [];
+        for (let i: number = -7; i<=7 ; i++){
+            if (!this.Checks.get(i).hidden) {
+                values.push(i);
+            }
+        }
+        return values;
+    }
+
+    public set Visibles(values: number[]) {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            check.hidden = !values.includes(key);
+        });
     }
 }
 

@@ -121,7 +121,6 @@ export class ASCore extends AS {
             originalHtml: this.innerHTML,
         };
         this.innerHTML = "";
-
         this.$preConnect();
     }
 

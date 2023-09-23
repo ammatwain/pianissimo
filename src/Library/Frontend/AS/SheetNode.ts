@@ -16,7 +16,7 @@ export class SheetNode extends LibraryNode {
 
     constructor (sheetFields: SheetClass, parentScore: ScoreNode)  {
         super({adoptable: false, canAdopt: false});
-        this.SheetFields = sheetFields;
+        this.SheetClass = sheetFields;
         if (parentScore && parentScore instanceof ScoreNode) {
             parentScore.$appendNode(this);
         }
@@ -89,12 +89,12 @@ export class SheetNode extends LibraryNode {
         loop: undefined,
     };
 */
-    public get SheetFields(): SheetClass {
+    public get SheetClass(): SheetClass {
         return <SheetClass>this.fields;
     }
 
-    public set SheetFields(sheetFields: SheetClass) {
-        this.fields = sheetFields;
+    public set SheetClass(sheetClass: SheetClass) {
+        this.fields = sheetClass;
     }
 
     public get Id(): number {
@@ -118,51 +118,51 @@ export class SheetNode extends LibraryNode {
     }
 
     public get SheetId(): number {
-        return this.SheetFields.SheetId;
+        return this.SheetClass.SheetId;
     }
 
     public set SheetId(sheetId: number) {
-        this.SheetFields.SheetId = sheetId;
+        this.SheetClass.SheetId = sheetId;
     }
 
     public get ParentScoreId(): number {
-        return this.SheetFields.ParentScoreId;
+        return this.SheetClass.ParentScoreId;
     }
 
     public set ParentScoreId(parentScoreId: number) {
-        this.SheetFields.ParentScoreId = parentScoreId;
+        this.SheetClass.ParentScoreId = parentScoreId;
     }
 
     public get Sequence(): number {
-        return this.SheetFields.Sequence;
+        return this.SheetClass.Sequence;
     }
 
     public set Sequence(sequence: number) {
-        this.SheetFields.Sequence = sequence;
+        this.SheetClass.Sequence = sequence;
     }
 
     public get Status(): string {
-        return this.SheetFields.Status;
+        return this.SheetClass.Status;
     }
 
     public set Status(status: string) {
-        this.SheetFields.Status = status;
+        this.SheetClass.Status = status;
     }
 
     public get Title(): string {
-        return this.SheetFields.Title;
+        return this.SheetClass.Title;
     }
 
     public set Title(title: string) {
-        this.SheetFields.Title = title;
+        this.SheetClass.Title = title;
     }
 
     public get Subtitle(): string {
-        return this.SheetFields.Subtitle;
+        return this.SheetClass.Subtitle;
     }
 
     public set Subtitle(subtitle: string) {
-        this.SheetFields.Subtitle = subtitle;
+        this.SheetClass.Subtitle = subtitle;
     }
 
     public get Author(): string {
@@ -182,51 +182,31 @@ export class SheetNode extends LibraryNode {
     }
 
     public get ActiveKey(): number {
-        return this.SheetFields.ActiveKey;
+        return this.SheetClass.ActiveKey;
     }
 
     public set ActiveKey(activeKey: number) {
-        this.SheetFields.ActiveKey = activeKey;
+        this.SheetClass.ActiveKey = activeKey;
     }
 
     public get PracticeKeys(): number[] {
-        return this.SheetFields.PracticeKeys.split(",").map(Number);
+        return this.SheetClass.PracticeKeys;
     }
 
-    public set PracticeKeys(activeKeys: TVariableMajorKeyNumberArray) {
-        const activeKeyString: string = activeKeys.sort().join(",");
-        if (this.SheetFields.PracticeKeys !== activeKeyString) {
-            this.SheetFields.PracticeKeys = activeKeyString;
-            this.FieldsChanged = true;
-        }
+    public set PracticeKeys(practiceKeys: number[]) {
+        this.SheetClass.PracticeKeys = practiceKeys;
     }
 
-    public addActiveKey(activeKey: number): void {
-        if (activeKey>=-7 && activeKey<=7){
-            const activeKeys: TVariableMajorKeyNumberArray = this.PracticeKeys;
-            if (activeKeys.indexOf(activeKey)===-1){
-                activeKeys.push(activeKey);
-                this.PracticeKeys = activeKeys.sort();
-            }
-        }
+    public practiceKeysAdd(practiceKey: number): void {
+        this.SheetClass.practiceKeysAdd(practiceKey);
     }
 
-    public removeActiveKey(activeKey: number): void {
-        if (activeKey>=-7 && activeKey<=7){
-            const activeKeys: TVariableMajorKeyNumberArray = this.PracticeKeys;
-            if (activeKeys.indexOf(activeKey)>=0){
-                delete activeKeys[activeKeys.indexOf(activeKey)];
-                this.PracticeKeys = activeKeys.sort();
-            }
-        }
+    public practiceKeysDel(practiceKey: number): void {
+        this.SheetClass.practiceKeysDel(practiceKey);
     }
 
-    public hasActiveKey(activeKey: number): boolean {
-        if (activeKey>=-7 && activeKey<=7){
-            const activeKeys: TVariableMajorKeyNumberArray = this.PracticeKeys;
-            return activeKeys.indexOf(activeKey) >= 0;
-        }
-        return false;
+    public practiceKeysExists(practiceKey: number): boolean {
+        return this.SheetClass.practiceKeysExists(practiceKey);
     }
 
     /*

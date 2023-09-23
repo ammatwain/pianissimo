@@ -61,13 +61,27 @@ class TPracticeKeys extends Set<number> {
         return this;
     }
 
-    static fromJsonString(keys: string): TPracticeKeys {
-        const tak: TPracticeKeys = new TPracticeKeys(JSON.parse(keys));
-        tak.uSort();
-        tak.jsonString = JSON.stringify(tak);
-        return tak;
+    public setFromJsonString(keys: string): TPracticeKeys {
+        const array: number[] = <number[]>JSON.parse(keys);
+        array.forEach((k: number) => {
+            this.addKey(k);
+        });
+        return this;
     }
 
+    public get Values(): number[] {
+        const values: number[] = Array.from(this);
+        Array.from(this).forEach((n: number)=>{
+            values.push(n);
+        });
+        return values;
+    }
+
+    public set Values(values: number[]) {
+        values.forEach((value: number)=>{
+            this.addKey(value);
+        });
+    }
 }
 
 class TFifteenKeys extends Map<number, number> {
@@ -155,20 +169,26 @@ export class SheetClass extends LibraryClass {
     private done: TFifteenKeys;
     private loop: TFifteenKeys;
 
-    public set Fields(fields: TSheetObject) {
-        this.fields = fields;
-        this.practiceKeys = TPracticeKeys.fromJsonString(this.SheetFields.practiceKeys);
-        this.shot = TFifteenKeys.fromJsonString(this.SheetFields.shot);
-        this.done = TFifteenKeys.fromJsonString(this.SheetFields.done);
-        this.loop = TFifteenKeys.fromJsonString(this.SheetFields.loop);
+    constructor(fields: TSheetObject){
+        super(fields);
+        this.practiceKeys = new TPracticeKeys();
     }
 
-    public get SheetFields(): TSheetObject {
+
+    public set Fields(fields: TSheetObject) {
+        this.fields = fields;
+        this.practiceKeys.setFromJsonString(this.SheetObject.practiceKeys);
+        this.shot = TFifteenKeys.fromJsonString(this.SheetObject.shot);
+        this.done = TFifteenKeys.fromJsonString(this.SheetObject.done);
+        this.loop = TFifteenKeys.fromJsonString(this.SheetObject.loop);
+    }
+
+    public get SheetObject(): TSheetObject {
         return <TSheetObject>this.fields;
     }
 
-    private set SheetFields(sheetFields: TSheetObject) {
-        this.fields = sheetFields;
+    private set SheetObject(sheetObject: TSheetObject) {
+        this.fields = sheetObject;
     }
 
     public get Id(): number {
@@ -184,23 +204,23 @@ export class SheetClass extends LibraryClass {
     }
 
     public get SheetId(): number {
-        return this.SheetFields.sheetId;
+        return this.SheetObject.sheetId;
     }
 
     public set SheetId(sheetId: number) {
-        if (this.SheetFields.sheetId !== sheetId) {
-            this.SheetFields.sheetId = sheetId;
+        if (this.SheetObject.sheetId !== sheetId) {
+            this.SheetObject.sheetId = sheetId;
             this.FieldsChanged = true;
         }
     }
 
     public get ParentScoreId(): number {
-        return this.SheetFields.parentScoreId;
+        return this.SheetObject.parentScoreId;
     }
 
     public set ParentScoreId(parentScoreId: number) {
-        if (this.SheetFields.parentScoreId !== parentScoreId) {
-            this.SheetFields.parentScoreId = parentScoreId;
+        if (this.SheetObject.parentScoreId !== parentScoreId) {
+            this.SheetObject.parentScoreId = parentScoreId;
             this.FieldsChanged = true;
             if (this.updateField("parentScoreId",parentScoreId)) {
                 console.log(this.constructor.name, "update success");
@@ -211,12 +231,12 @@ export class SheetClass extends LibraryClass {
     }
 
     public get Sequence(): number {
-        return this.SheetFields.sequence;
+        return this.SheetObject.sequence;
     }
 
     public set Sequence(sequence: number) {
-        if (this.SheetFields.sequence !== sequence) {
-            this.SheetFields.sequence = sequence;
+        if (this.SheetObject.sequence !== sequence) {
+            this.SheetObject.sequence = sequence;
             this.FieldsChanged = true;
             if (this.updateField("sequence",sequence)) {
                 console.log(this.constructor.name, "update success");
@@ -227,76 +247,103 @@ export class SheetClass extends LibraryClass {
     }
 
     public get Status(): string {
-        return this.SheetFields.status;
+        return this.SheetObject.status;
     }
 
     public set Status(status: string) {
-        if (this.SheetFields.status !== status) {
-            this.SheetFields.status = status;
+        if (this.SheetObject.status !== status) {
+            this.SheetObject.status = status;
             this.FieldsChanged = true;
         }
     }
 
     public get Title(): string {
-        return this.SheetFields.title;
+        return this.SheetObject.title;
     }
 
     public set Title(title: string) {
-        if (this.SheetFields.title !== title) {
-            this.SheetFields.title = title;
+        if (this.SheetObject.title !== title) {
+            this.SheetObject.title = title;
             this.FieldsChanged = true;
         }
     }
 
     public get Subtitle(): string {
-        return this.SheetFields.subtitle;
+        return this.SheetObject.subtitle;
     }
 
     public set Subtitle(subtitle: string) {
-        if (this.SheetFields.subtitle !== subtitle) {
-            this.SheetFields.subtitle = subtitle;
+        if (this.SheetObject.subtitle !== subtitle) {
+            this.SheetObject.subtitle = subtitle;
             this.FieldsChanged = true;
         }
     }
 
     public get ActiveKey(): number {
-        return this.SheetFields.activeKey;
+        return this.SheetObject.activeKey;
     }
 
     public set ActiveKey(activeKey: number) {
         if (
-            this.SheetFields.activeKey !== activeKey &&
+            this.SheetObject.activeKey !== activeKey &&
             activeKey >= -7 &&
             activeKey <= 7
         ) {
-            this.SheetFields.activeKey = Math.floor(activeKey);
+            this.SheetObject.activeKey = Math.floor(activeKey);
             this.FieldsChanged = true;
         }
     }
 
-    public get PracticeKeys(): TPracticeKeys {
-        return this.practiceKeys;
+    public get PracticeKeys(): number[] {
+        console.log(this.practiceKeys);
+        return this.practiceKeys.Values;
+    }
+
+    public set PracticeKeys(practiceKeys: number[]) {
+        const oldPracticeKeysString: string = this.practiceKeys.toJsonString();
+        this.practiceKeys.Values = practiceKeys;
+        const newPracticeKeysString: string = this.practiceKeys.toJsonString();
+        if(oldPracticeKeysString !== newPracticeKeysString){
+            if (this.updateField("practiceKeys",newPracticeKeysString)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
+        }
     }
 
     public practiceKeysAdd(key: number): boolean {
-        const tmpActiveKeysString: string = this.PracticeKeys.addKey(key).toJsonString();
-        if (this.fields.practiceKeys !== tmpActiveKeysString ) {
-            this.fields.practiceKeys = tmpActiveKeysString;
-            this.FieldsChanged = true;
-            return this.FieldsChanged;
+        const oldPracticeKeysString: string = this.practiceKeys.toJsonString();
+        const newPracticeKeysString: string = this.practiceKeys.addKey(key).toJsonString();
+        const changed: boolean = oldPracticeKeysString !== newPracticeKeysString;
+        if(changed){
+            if (this.updateField("practiceKeys",newPracticeKeysString)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
-        return false;
+        return changed;
     }
 
     public practiceKeysDel(key: number): boolean {
-        const tmpActiveKeysString: string = this.PracticeKeys.delKey(key).toJsonString();
-        if (this.fields.practiceKeys !== tmpActiveKeysString ) {
-            this.fields.practiceKeys = tmpActiveKeysString;
-            this.FieldsChanged = true;
-            return this.FieldsChanged;
+        const oldPracticeKeysString: string = this.practiceKeys.toJsonString();
+        const newPracticeKeysString: string = this.practiceKeys.delKey(key).toJsonString();
+        const changed: boolean = oldPracticeKeysString !== newPracticeKeysString;
+        if(changed){
+            if (this.updateField("practiceKeys",newPracticeKeysString)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
-        return false;
+        return changed;
     }
+
+    public practiceKeysExists(key: number): boolean {
+        return this.practiceKeys.hasKey(key);
+    }
+
 
     public get Shot(): TFifteenKeys {
         return this.shot;
