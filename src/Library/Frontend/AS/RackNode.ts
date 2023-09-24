@@ -18,9 +18,9 @@ ASCSS.RackNode = {
 
 export class RackNode extends LibraryNode {
 
-    constructor (rackFields: RackClass, parentRack: RackNode | LibraryNode)  {
+    constructor (rackClass: RackClass, parentRack: RackNode | LibraryNode)  {
         super({adoptable: true, canAdopt: true});
-        this.RackFields = rackFields;
+        this.RackClass = rackClass;
         if (
             parentRack &&
             (
@@ -30,7 +30,7 @@ export class RackNode extends LibraryNode {
         ) {
             parentRack.$appendNode(this);
         }
-        this.$Caption = this.RackFields.Title;
+        this.$Caption = this.RackClass.Title;
         // else {
         //    throw new Error("BAD PARENT");
         //}
@@ -81,11 +81,11 @@ export class RackNode extends LibraryNode {
         return this;
     }
 
-    public get RackFields(): RackClass {
+    public get RackClass(): RackClass {
         return <RackClass>this.fields;
     }
 
-    public set RackFields(rackFields: RackClass) {
+    public set RackClass(rackFields: RackClass) {
         this.fields = rackFields;
     }
 
@@ -102,48 +102,48 @@ export class RackNode extends LibraryNode {
     }
 
     public get RackId(): number {
-        return this.RackFields.RackId;
+        return this.RackClass.RackId;
     }
 
     public set RackId(rackId: number) {
-        this.RackFields.RackId = rackId;
+        this.RackClass.RackId = rackId;
     }
 
     public get ParentRackId(): number {
-        if (this.RackFields && this.RackFields.ParentRackId){
-            return this.RackFields.ParentRackId;
+        if (this.RackClass && this.RackClass.ParentRackId){
+            return this.RackClass.ParentRackId;
         } else {
             return 0;
         }
     }
 
     public set ParentRackId(parentRackId: number) {
-        this.RackFields.ParentRackId = parentRackId;
+        this.RackClass.ParentRackId = parentRackId;
     }
 
     public get Sequence(): number {
-        return this.RackFields.Sequence;
+        return this.RackClass.Sequence;
     }
 
     public set Sequence(sequence: number) {
-        this.RackFields.Sequence = sequence;
+        this.RackClass.Sequence = sequence;
     }
 
     public get Status(): string {
-        return this.RackFields.Status;
+        return this.RackClass.Status;
     }
 
     public set Status(status: string) {
-        this.RackFields.Status = status;
+        this.RackClass.Status = status;
     }
 
     public get Title(): string {
-        return this.RackFields.Title;
+        return this.RackClass.Title;
     }
 
     public set Title(title: string) {
-        this.RackFields.Title = title;
-        this.$Caption = title;
+        this.RackClass.Title = title;
+        //this.$Caption = title;
     }
 
     //
@@ -156,6 +156,9 @@ export class RackNode extends LibraryNode {
         }
     }
 
+    public update(): void {
+        this.$Caption = this.RackClass.Title;
+    }
 }
 
 customElements.define("rack-node", RackNode);

@@ -5,22 +5,7 @@ import { LibraryClass } from "./LibraryClass";
 export class RackClass extends LibraryClass {
 
     declare protected fields: TRackObject;
-/*
-    private newRackObject(): TRackObject {
-        return {
-            rackId: Number(`2${Date.now()}`),
-            parentRackId: this.RackId,
-            sequence: -1,
-            status: this.Status,
-            title: "Default Title",
-        };
-    }
 
-    protected newRackClass(): RackClass{
-        const rackObject: TRackObject = this.newRackObject();
-        return new RackClass(rackObject);
-    }
-*/
     public set Fields(fields: TRackObject) {
         super.Fields = fields;
     }
@@ -122,14 +107,13 @@ export class RackClass extends LibraryClass {
     }
 
     protected updateField(field: string, value: number | string): boolean {
-        return this.$updateField({
+        return this.$updateDb({
             table:"racks",
             pkey:"rackId",
             id:this.RackId,
             field: field,
             value: value,
-        });
+        }) !== null;
     }
-
 }
 

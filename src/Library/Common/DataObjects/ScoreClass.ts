@@ -158,13 +158,13 @@ export class ScoreClass extends LibraryClass {
     }
 
     protected updateField(field: string, value: number | string): boolean {
-        return this.$updateField({
+        return this.$updateDb({
             table:"scores",
             pkey:"scoreId",
             id:this.ScoreId,
             field: field,
             value: value,
-        });
+        }) !== null;
     }
 
 }

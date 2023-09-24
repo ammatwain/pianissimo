@@ -219,10 +219,18 @@ export class ASCore extends AS {
     }
 
     protected $alwaysConnect(): void {
-        ;
+        this.$AsId = `${this.Id}`;
     }
 
     /* ********************************************************************* */
+
+    public get $AsId(): string {
+        return this.getAttribute("as-id");
+    }
+
+    public set $AsId(asId: string) {
+        this.setAttribute("as-id", asId);
+    }
 
     public get $Connected(): boolean{
         return this.$.kinds.connected||false;
@@ -268,4 +276,11 @@ export class ASCore extends AS {
         return this.$.elements;
     }
 
+    public update(): void {
+        console.log(`${this.constructor.name} ${this.Id} UPDATED!`);
+    }
+
+    public get Id(): number {
+        return null;
+    }
 }

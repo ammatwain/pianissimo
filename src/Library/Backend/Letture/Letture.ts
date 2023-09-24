@@ -65,6 +65,12 @@ export class Letture extends Store {
         };
     }
 
+    getRack(rackId: number): TRackObject {
+        const dbRack: TDBRackObject = <TDBRackObject>this.prepare(`SELECT * FROM "racks" where "rackId"=${rackId};`).get();
+        console.log(dbRack);
+        return this.getRackObject(dbRack);
+    }
+
     getRacks(): TRackObject[] {
         const rackObjects: TRackObject[] = [];
         const dbRacks: TDBRackObject[] = <TDBRackObject[]>this.prepare("SELECT * FROM \"racks\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all();
@@ -104,6 +110,11 @@ export class Letture extends Store {
             mainKey: Number(scoreObject.mainKey),
             mainTempo: JSON.stringify(scoreObject.mainTempo),
         };
+    }
+
+    getScore(scoreId: number): TScoreObject {
+        const dbScore: TDBScoreObject = <TDBScoreObject>this.prepare(`SELECT * FROM "scores" where "scoreId"=${scoreId};`).get();
+        return this.getScoreObject(dbScore);
     }
 
     getScores(): TScoreObject[] {
@@ -153,6 +164,51 @@ export class Letture extends Store {
             done: JSON.stringify(sheetObject.done),
             loop: JSON.stringify(sheetObject.loop),
         };
+    }
+
+    getSheet(sheetId: number): TSheetObject {
+        const dbSheet: TDBSheetObject = <TDBSheetObject>this.prepare(`SELECT * FROM "sheets" where "sheetId"=${sheetId};`).get();
+        return this.getSheetObject(dbSheet);
+    }
+
+    setSheet(sheetObject: TSheetObject): TSheetObject {
+        const sheet: TDBSheetObject = this.getDbSheetObject(sheetObject);
+        this.exec(`
+            REPLACE INTO "sheets" (
+                "sheetId",
+                "parentScoreId",
+                "sequence",
+                "status",
+                "title",
+                "subtitle",
+                "practiceKeys",
+                "activeKey",
+                "measureStart",
+                "measureEnd",
+                "selectedParts",
+                "transposeSettings",
+                "shot",
+                "done",
+                "loop"
+            ) VALUES (
+                '${sheet.sheetId}',
+                '${sheet.parentScoreId}',
+                '${sheet.sequence}',
+                '${sheet.status}',
+                '${sheet.title}',
+                '${sheet.subtitle}',
+                '${sheet.practiceKeys}',
+                '${sheet.activeKey}',
+                '${sheet.measureStart}',
+                '${sheet.measureEnd}',
+                '${sheet.selectedParts}',
+                '${sheet.transposeSettings}',
+                '${sheet.shot}',
+                '${sheet.done}',
+                '${sheet.loop}'
+            );`
+        );
+        return this.getSheet(sheet.sheetId);
     }
 
     getSheets(): TSheetObject[] {

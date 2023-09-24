@@ -29,7 +29,7 @@ export type TSheetObject = {
     sheetId: number;
 	parentScoreId: number;
 	sequence: number;
-	status: string;
+	status: string[];
 	title: string;
 	subtitle: string;
 	practiceKeys: number[];

@@ -1,3 +1,4 @@
+import { TResponseUpdateField  } from "@DataObjects/TResponseUpdateField";
 import { LibraryClass } from "@DataObjects/LibraryClass";
 import { RackClass } from "@DataObjects/RackClass";
 import { ScoreClass } from "@DataObjects/ScoreClass";
@@ -11,21 +12,21 @@ import { RackNode } from "@Frontend/AS/RackNode";
 import { ScoreNode } from "@Frontend/AS/ScoreNode";
 import { SheetNode } from "@Frontend/AS/SheetNode";
 import { ASNode } from "../AS";
+import { TResponse } from "@Library/Common/DataObjects/TResponse";
+export class LibraryObjectMap extends Map<number, TLibraryObject> {};
+export class RackObjectMap extends Map<number, TRackObject> {};
+export class ScoreObjectMap extends Map<number, TScoreObject> {};
+export class SheetObjectMap extends Map<number, TSheetObject> {};
+export class LibraryClassMap extends Map<number, LibraryClass> {};
+export class RackClassMap extends Map<number, RackClass> {};
+export class ScoreClassMap extends Map<number, ScoreClass> {};
+export class SheetClassMap extends Map<number, SheetClass> {};
+export class LibraryNodesMap extends Map<number, LibraryNode> {};
+export class RackNodesMap extends Map<number, RackNode> {};
+export class ScoreNodesMap extends Map<number, ScoreNode> {};
+export class SheetNodesMap extends Map<number, SheetNode> {};
 
-class LibraryObjectMap extends Map<number, TLibraryObject> {};
-class RackObjectMap extends Map<number, TRackObject> {};
-class ScoreObjectMap extends Map<number, TScoreObject> {};
-class SheetObjectMap extends Map<number, TSheetObject> {};
-class LibraryClassMap extends Map<number, LibraryClass> {};
-class RackClassMap extends Map<number, RackClass> {};
-class ScoreClassMap extends Map<number, ScoreClass> {};
-class SheetClassMap extends Map<number, SheetClass> {};
-class LibraryNodesMap extends Map<number, LibraryNode> {};
-class RackNodesMap extends Map<number, RackNode> {};
-class ScoreNodesMap extends Map<number, ScoreNode> {};
-class SheetNodesMap extends Map<number, SheetNode> {};
-
-export class TLibrary {
+export class TLibrary{
     private libraryObjects: LibraryObjectMap;
     private rackObjects: RackObjectMap;
     private scoreObjects: ScoreObjectMap;
@@ -132,7 +133,7 @@ export class TLibrary {
         if (!this.LibraryObjects.has(id)){
             this.setRackObject(id,rackObject);
             if (!this.LibraryClasses.has(id)){
-                const rackClass: RackClass = new RackClass(rackObject);
+                const rackClass: RackClass = new RackClass(rackObject, this);
                 this.setRackClass(id,rackClass);
                 if (!this.LibraryNodes.has(id)){
                     const rackNode: RackNode = new RackNode(rackClass, null);
@@ -147,7 +148,7 @@ export class TLibrary {
         if (!this.LibraryObjects.has(id)){
             this.setScoreObject(id,scoreObject);
             if (!this.LibraryClasses.has(id)){
-                const scoreClass: ScoreClass = new ScoreClass(scoreObject);
+                const scoreClass: ScoreClass = new ScoreClass(scoreObject, this);
                 this.setScoreClass(id,scoreClass);
                 if (!this.LibraryNodes.has(id)){
                     const scoreNode: ScoreNode = new ScoreNode(scoreClass, null);
@@ -162,7 +163,7 @@ export class TLibrary {
         if (!this.LibraryObjects.has(id)){
             this.setSheetObject(id,sheetObject);
             if (!this.LibraryClasses.has(id)){
-                const sheetClass: SheetClass = new SheetClass(sheetObject);
+                const sheetClass: SheetClass = new SheetClass(sheetObject, this);
                 this.setSheetClass(id,sheetClass);
                 if (!this.LibraryNodes.has(id)){
                     const sheetNode: SheetNode = new SheetNode(sheetClass, null);
@@ -220,7 +221,7 @@ export class TLibrary {
         if (!this.LibraryObjects.has(id)){
             this.setRackObject(id,rackObject);
             if (!this.LibraryClasses.has(id)){
-                const rackClass: RackClass = new RackClass(rackObject);
+                const rackClass: RackClass = new RackClass(rackObject, this);
                 this.setRackClass(id,rackClass);
                 if (!this.LibraryNodes.has(id)){
                     let rackNode: RackNode;
@@ -243,7 +244,7 @@ export class TLibrary {
         if (!this.LibraryObjects.has(id)){
             this.setScoreObject(id,scoreObject);
             if (!this.LibraryClasses.has(id)){
-                const scoreClass: ScoreClass = new ScoreClass(scoreObject);
+                const scoreClass: ScoreClass = new ScoreClass(scoreObject, this);
                 this.setScoreClass(id,scoreClass);
                 if (!this.LibraryNodes.has(id)){
                     let scoreNode: ScoreNode;
@@ -266,7 +267,7 @@ export class TLibrary {
         if (!this.LibraryObjects.has(id)){
             this.setSheetObject(id,sheetObject);
             if (!this.LibraryClasses.has(id)){
-                const sheetClass: SheetClass = new SheetClass(sheetObject);
+                const sheetClass: SheetClass = new SheetClass(sheetObject, this);
                 this.setSheetClass(id,sheetClass);
                 if (!this.LibraryNodes.has(id)){
                     let sheetNode: SheetNode;
@@ -355,7 +356,7 @@ export class TLibrary {
         return this;
     }
 
-    public deleteLibraryObject(id: number): void {
+    public deleteLibraryObject(id: number): TLibrary {
         const libraryNode: LibraryNode = this.LibraryNodes.get(id);
         if (libraryNode && libraryNode instanceof LibraryNode) {
             window.electron.ipcRenderer.invoke("request-consens-for-library-object-deletion", id ).then((canDelete: boolean)=>{
@@ -388,9 +389,10 @@ export class TLibrary {
                 }
             });
         }
+        return this;
     }
 
-    public newRackObject(parentId: number = 0, sequence: number = 0): void {
+    public newRackObject(parentId: number = 0, sequence: number = 0): TLibrary {
         const rackObject: TRackObject = {
             rackId: Number(`2${Date.now()}`),
             parentRackId: parentId,
@@ -398,7 +400,6 @@ export class TLibrary {
             status: null,
             title: `Default Title #${sequence}`,
         };
-        console.log(rackObject);
 
         window.electron.ipcRenderer.invoke("request-insert-rack", rackObject ).then((result: TRackObject)=>{
             if (
@@ -409,9 +410,10 @@ export class TLibrary {
                 this.insertRack(result);
             }
         });
+        return this;
     }
 
-    public newScoreObject(parentId: number = 0, sequence: number = 0): void {
+    public newScoreObject(parentId: number = 0, sequence: number = 0): TLibrary {
         const scoreObject: TScoreObject = {
             scoreId: Number(`3${Date.now()}`),
             parentRackId: parentId,
@@ -438,37 +440,53 @@ export class TLibrary {
                 console.log(result);
             }
         });
+        return this;
     }
 
-    public newSheetObject(parentId: number = 0, sequence: number = 0): void {
-        const sheetObject: TSheetObject = {
-            sheetId: Number(`4${Date.now()}`),
-            parentScoreId: parentId,
-            sequence: sequence,
-            status: "",
-            title: `Default Title #${sequence}`,
-            subtitle: "",
-            activeKey: null,
-            practiceKeys: null,
-            measureStart: null,
-            measureEnd: null,
-            selectedParts: null,
-            selectedStaves: null,
-            transposeBy: null,
-            shot: null,
-            done: null,
-            loop: null,
-        };
+    public newSheetObject(parentId: number = 0, sequence: number = 0): TLibrary {
+        const scoreObject: TScoreObject = this.scoreObjects.get(parentId);
+        if (scoreObject) {
+            const sheetObject: TSheetObject = {
+                sheetId: Number(`4${Date.now()}`),
+                parentScoreId: parentId,
+                sequence: sequence,
+                status: ["visible"],
+                title: `Sheet Title #${sequence}`,
+                subtitle: `Sheet Subtitle #${sequence}`,
+                practiceKeys: [scoreObject.mainKey],
+                activeKey: scoreObject.mainKey,
+                measureStart: 1,
+                measureEnd: scoreObject.measures,
+                selectedParts: scoreObject.parts,
+                transposeSettings: {
+                    type:"transposeByKey",
+                    octave:0,
+                    transposeKeySignatures:true,
+                    removeKeySignatures:false,
+                },
+                shot: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                done: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                loop: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            };
 
-        window.electron.ipcRenderer.invoke("request-add-sheet", sheetObject ).then((result: any)=>{
-            if (
-                result &&
-                result.sheet
-            ) {
-                this.insertSheet(result.sheet.sheetId, result.sheet );
-                console.log(result);
-            }
-        });
+            window.electron.ipcRenderer.invoke("request-add-sheet", sheetObject ).then((response: TResponse)=>{
+                if (response) {
+                    if ("error" in response) {
+                        if (!response.error) {
+                            if (
+                                response.type === "TSheetObject" &&
+                                response.data &&
+                                response.data.length === 1
+                            ) {
+                                this.insertSheet(response.data[0].sheetId, response.data[0]);
+                                console.log(response.data[0]);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        return this;
     }
 
     buildTree(): TLibrary {
@@ -517,6 +535,27 @@ export class TLibrary {
         }
         return this;
     }
+
+    public updateDb(query: {table: string, pkey: string, id: number, field: string, value: number | string }): TLibrary {
+        console.log(query);
+        window.electron.ipcRenderer.invoke(
+            "request-update-field",
+            query
+        ).then((result: TResponseUpdateField)=>{
+            if (result) {
+                const obj: any = this.LibraryObjects.get(result.asId);
+                if (obj) {
+                    obj[result.field] = (<any>result.record)[result.field];
+                    document.querySelectorAll(`[as-id="${result.asId}"]`).forEach((node: ASNode) => {
+                        node.update();
+                    });
+                }
+            }
+            return result;
+        });
+        return this;
+    }
+
 }
 
 export const Library: TLibrary = new TLibrary();

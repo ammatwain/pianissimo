@@ -30,7 +30,7 @@ export type TScoreObject = {
     scoreId: number;
 	parentRackId: number;
 	sequence: number;
-	status: string;
+	status: string[];
 	title: string;
 	subtitle: string;
 	author: string;

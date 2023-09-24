@@ -14,6 +14,8 @@ import { TSheetObject } from "@DataObjects/TSheetObject";
 import { MusicXmlRW, PianissimoID } from "@Library/Backend/MusicXmlRW/MusicXmlRW";
 import { TZippedObject } from "@Library/Common/DataObjects/TZippedObject";
 import { Config } from "../Config";
+import { TResponseUpdateField } from "@Library/Common/DataObjects/TResponseUpdateField";
+import { TResponse } from "@Library/Common/DataObjects/TResponse";
 
 export function BackendListeners(browserWindow: BrowserWindow, database: Letture): void {
 
@@ -156,21 +158,51 @@ WHERE
     });
 
     ipcMain.handle("request-update-field", async (
-        event: Electron.IpcMainEvent, query: {table: string, pkey: string, id: number, field: string, value: number | string }
+        event: Electron.IpcMainEvent, query: {table: string, pkey: string, id: number, field: string, value: any }
     ) => {
+        console.log(typeof query.value, query);
+        if (
+            query.value === null ||
+            query.value === undefined
+        ) {
+            query.value = "";
+        } else if (
+            Array.isArray(query.value) ||
+            typeof query.value === "object"
+        ) {
+            query.value = JSON.stringify(query.value);
+        } else {
+            query.value = String(query.value);
+        }
+
         database.exec(`UPDATE "${query.table}" SET
             "${query.field}"='${String(query.value)}'
             WHERE
             "${query.pkey}"=${query.id};
         `);
-
-        const result: any = database.prepare(`
-        SELECT "${query.field}" FROM
-        "${query.table}"
-        WHERE
-        "${query.pkey}"=${query.id};
-        `).pluck().get();
-        return String(query.value) === String(result);
+        console.log("RISULTATO?");
+        const result: TResponseUpdateField = {
+            asId: query.id,
+            field: query.field,
+            type: null,
+            record: null,
+        };
+        if(query.table==="sheets") {
+            result.type = "TSheetObject";
+            result.record = database.getSheet(query.id);
+        } else if (query.table==="scores") {
+            result.type = "TScoreObject";
+            result.record = database.getScore(query.id);
+        } else if (query.table==="racks") {
+            result.type = "TRackObject";
+            result.record = database.getRack(query.id);
+        }
+        console.log(query.table);
+        if (result.record!==null) {
+            return result;
+        } else {
+            return null;
+        }
     });
 
     ipcMain.handle("request-insert-rack", async (
@@ -206,53 +238,22 @@ WHERE
     ipcMain.handle("request-add-sheet", async (
         event: Electron.IpcMainEvent,
         sheet: TSheetObject
-    ) => {
-        const resultScore: TScoreObject = <TScoreObject>database.prepare(`SELECT * FROM
-        "scores"
-        WHERE
-        "scoreId"=${sheet.parentScoreId};
-        `).get();
-        if (resultScore) {
-            database.exec(`
-                REPLACE INTO "sheets" (
-                    "sheetId",
-                    "parentScoreId",
-                    "sequence",
-                    "status",
-                    "title",
-                    "subtitle",
-                    "activeKey",
-                    "activeKeys",
-                    "measureStart",
-                    "measureEnd"
-                ) VALUES (
-                    '${sheet.sheetId}',
-                    '${sheet.parentScoreId}',
-                    '${sheet.sequence}',
-                    null,
-                    '${resultScore.title}',
-                    '${resultScore.subtitle}',
-                    '${resultScore.mainKey}',
-                    '[${resultScore.mainKey}]',
-                    '${0}',
-                    '${resultScore.measures-1}'
-                );`
-            );
-            const resultSheet: number = <number>database.prepare(`
-            SELECT * FROM
-            "sheets"
-            WHERE
-            "sheetId"=${sheet.sheetId};
-            `).get();
-
-            if (resultSheet) {
-                console.log(resultSheet);
-                return {
-                    sheet: resultSheet,
-                };
-            } else {
-                return {error:2};
-            }
+    ): Promise<TResponse> => {
+        const responseSheet: TSheetObject = database.setSheet(sheet);
+        if (responseSheet) {
+            return {
+                error: 0,
+                message: "Sheet created!",
+                type: "TSheetObject",
+                data: [responseSheet],
+            };
+        } else {
+            return {
+                error: 1,
+                message: "Sheet NOT created!",
+                type: null,
+                data: null,
+            };
         }
 
     });
@@ -284,9 +285,9 @@ WHERE
                 score.title = mmxl.Title;
                 score.subtitle = mmxl.Subtitle;
                 score.mainKey = mmxl.MainKey;
-                score.parts = JSON.stringify(mmxl.Instruments);
+                score.parts = mmxl.Instruments;
                 score.measures = mmxl.MeasureCount;
-                score.mainTempo = JSON.stringify(mmxl.Tempo);
+                score.mainTempo = mmxl.Tempo;
 
                 database.exec(`
                     REPLACE INTO "zippeds" (

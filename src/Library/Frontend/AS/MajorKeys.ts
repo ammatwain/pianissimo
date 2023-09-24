@@ -56,9 +56,10 @@ export class MajorKeys extends ASCore {
             label.appendChild(check);
             this.appendChild(label);
             this.Checks.set(i-7,check);
+            check.onclick = (): void => {
+                this.doClick();
+            };
         }
-        console.log("PRECOINNECT", this.Checks);
-
     }
 
     public get BoxType(): "checkbox" | "radio" {
@@ -110,13 +111,30 @@ export class MajorKeys extends ASCore {
         });
     }
 
+    public get Enabled(): number[] {
+        const values: number[] = [];
+        for (let i: number = -7; i<=7 ; i++){
+            if (!this.Checks.get(i).disabled) {
+                values.push(i);
+            }
+        }
+        return values;
+    }
+
+    public set Enabled(values: number[]) {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            check.disabled = !values.includes(key);
+            console.log(key, check.disabled);
+        });
+    }
+
     public get Value(): number {
         for (let i: number = -7; i<=7 ; i++){
             if (this.Checks.get(i).checked) {
                 return i;
             }
         }
-        return 0;
+        return null;
     }
 
     public set Value(value: number) {
@@ -156,6 +174,12 @@ export class MajorKeys extends ASCore {
             check.hidden = !values.includes(key);
         });
     }
+
+
+    public doClick(): void{
+        ;
+    }
+
 }
 
 customElements.define("major-keys", MajorKeys);

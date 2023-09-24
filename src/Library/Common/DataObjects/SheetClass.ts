@@ -1,5 +1,6 @@
 import { TSheetObject } from "./TSheetObject";
 import { LibraryClass } from "./LibraryClass";
+import { TLibrary } from "@Library/Frontend";
 
 class TPracticeKeys extends Set<number> {
 
@@ -185,8 +186,8 @@ export class SheetClass extends LibraryClass {
     private done: TFifteenKeys;
     private loop: TFifteenKeys;
 
-    constructor(fields: TSheetObject){
-        super(fields);
+    constructor(fields: TSheetObject, library: TLibrary){
+        super(fields, library);
         this.practiceKeys = new TPracticeKeys();
         this.shot = new TFifteenKeys();
         this.done = new TFifteenKeys();
@@ -401,13 +402,13 @@ export class SheetClass extends LibraryClass {
         return false;
     }
     protected updateField(field: string, value: number | string): boolean {
-        return this.$updateField({
+        return this.$updateDb({
             table:"sheets",
             pkey:"sheetId",
             id:this.SheetId,
             field: field,
             value: value,
-        });
+        }) !== null;
     }
 
 }

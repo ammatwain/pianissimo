@@ -1,7 +1,7 @@
 import fs from "fs";
 import zlib from "zlib";
 import { XmlDocument, XmlElement } from "xmldoc";
-import { TTempo } from "@Library/Common/DataObjects";
+import { TPartInstrument, TTempo } from "@Library/Common/DataObjects";
 
 export type PianissimoID =  {
     app?: string;
@@ -215,7 +215,7 @@ export class MusicXmlRW {
         return this.ScorePartWise.childNamed("part-list").childrenNamed("score-part");
     }
 
-    get Instruments(): {name: string, instrument: string}[] {
+    get Instruments(): TPartInstrument[] {
         const instruments: {name: string, instrument: string}[] = [];
         this.PartList.forEach((part: XmlElement)=>{
             let name: string;

@@ -1,7 +1,6 @@
 import { ASCSS } from "./ASCSS";
 import { ASNode } from "./ASNode";
 import {LibraryClass, TRackObject, RackClass} from "@Common/DataObjects";
-import { ASModal } from "./ASModal";
 import { TLibrary } from "../Library/Library";
 import { ASModalLibrary } from "./ASModalLibrary";
 
@@ -73,10 +72,6 @@ export class LibraryNode extends ASNode {
         this.$Elements.addRack.onclick = (): void => {
             this.Root.Library.newRackObject(this.Id, this.$Items.length);
             this.$Closed=false;
-            console.log(this.constructor.name, "***clicked", "add");
-        };
-        this.$Elements.delete.onclick = (): void => {
-            ASModal.show("Library Delete");
             console.log(this.constructor.name, "***clicked", "add");
         };
         this.$Elements.settings.onclick = (): void => {

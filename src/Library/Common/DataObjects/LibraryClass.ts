@@ -1,8 +1,11 @@
 import { TLibraryObject } from "./TLibraryObject";
+import { TLibrary } from "@Frontend/Library/Library";
 
 export class LibraryClass {
+    protected library: TLibrary;
     protected notificationActive: boolean = false;
-    constructor(fields: TLibraryObject){
+    constructor(fields: TLibraryObject, library: TLibrary){
+        this.library = library;
         this.fields = fields;
         this.notificationActive = true;
     }
@@ -31,13 +34,6 @@ export class LibraryClass {
     }
 
     public get ParentId(): number {
-        /*
-        if ("parentRackId" in this.fields) {
-            return this.fields.parentRackId;
-        } else if ("scoreRackId" in this.fields) {
-            return this.fields.scoreRackId;
-        }
-        */
         return 0;
     }
 
@@ -64,13 +60,8 @@ export class LibraryClass {
         }
     }
 
-    protected $updateField(query: {table: string, pkey: string, id: number, field: string, value: number | string }): boolean {
-        return <boolean>window.electron.ipcRenderer.invoke(
-            "request-update-field",
-            query
-        ).then((result: boolean)=>{
-            return result;
-        });
+    protected $updateDb(query: {table: string, pkey: string, id: number, field: string, value: number | string }): boolean {
+        this.library.updateDb(query);
     }
 
     protected updateField(field: string, value: number | string): boolean {

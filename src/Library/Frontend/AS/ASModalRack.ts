@@ -57,6 +57,10 @@ export class ASModalRack extends ASModal {
         return <ASModalRack>super.show();
     }
 
+    public get Id(): number {
+        return this.rackNode.Id;
+    }
+
     public get Title(): HTMLInputElement {
         return <HTMLInputElement>this.$Elements.title;
     }

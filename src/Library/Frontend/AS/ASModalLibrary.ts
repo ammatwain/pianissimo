@@ -55,6 +55,10 @@ export class ASModalLibrary extends ASModal {
     }
 
 
+    public get Id(): number {
+        return this.libraryNode.Id;
+    }
+
     public get Title(): HTMLInputElement {
         return <HTMLInputElement>this.$Elements.title;
     }

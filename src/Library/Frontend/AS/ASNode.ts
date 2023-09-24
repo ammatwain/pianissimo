@@ -347,6 +347,7 @@ export class ASNode extends ASCore {
     }
 
     protected $alwaysConnect(): void {
+        super.$alwaysConnect();
         if (this.$Parent) {
             //this.$Parent.$Elements.arrow.style.fill = "#000";
         }
