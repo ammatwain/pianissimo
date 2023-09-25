@@ -1,13 +1,13 @@
 import { ASCSS } from "./ASCSS";
 import {
     TVariableMajorKeyNumberArray,
-    SheetClass
+    SheetClass,
+    TPartStave
 } from "@Common/DataObjects";
 
 import { LibraryNode } from "./LibraryNode";
 import { ScoreNode } from "./ScoreNode";
 import { ASModal } from "./ASModal";
-import { ASNode } from "./ASNode";
 
 ASCSS.SheetNode = {
 };
@@ -141,11 +141,11 @@ export class SheetNode extends LibraryNode {
         this.SheetClass.Sequence = sequence;
     }
 
-    public get Status(): string {
+    public get Status(): string[] {
         return this.SheetClass.Status;
     }
 
-    public set Status(status: string) {
+    public set Status(status: string[]) {
         this.SheetClass.Status = status;
     }
 
@@ -177,7 +177,7 @@ export class SheetNode extends LibraryNode {
         return this.ParentScore.Measures;
     }
 
-    public get Parts(): string {
+    public get Parts(): TPartStave[] {
         return this.ParentScore.Parts;
     }
 

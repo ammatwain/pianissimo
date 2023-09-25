@@ -2,23 +2,45 @@ import { TSheetObject } from "./TSheetObject";
 import { LibraryClass } from "./LibraryClass";
 import { TLibrary } from "@Library/Frontend";
 
+class TArrayUnique extends Array {
+    add(value: any): TArrayUnique {
+        if (this.indexOf(value)===-1){
+            this.push(value);
+        }
+        return this;
+    }
+    del(value: any): TArrayUnique {
+        const i: number = this.indexOf(value);
+        if (i>=0){
+            delete this[i];
+        }
+        return this;
+    }
+}
+
 class TPracticeKeys extends Set<number> {
 
     protected jsonString: string =  "[]";
 
     addKey(key: number): TPracticeKeys {
-        if (this.isValidKey(key)) {
+        key = Number(key);
+        if (
+            this.isValidKey(key) &&
+            !this.hasKey(key)
+        ) {
             super.add(key);
         }
         return this;
     }
 
     delKey(key: number): TPracticeKeys {
+        key = Number(key);
         super.delete(key);
         return this;
     }
 
     hasKey(key: number): boolean {
+        key = Number(key);
         if (this.isValidKey(key)) {
             return super.has(key);
         }
@@ -71,16 +93,16 @@ class TPracticeKeys extends Set<number> {
     }
 
     public get Values(): number[] {
-        const values: number[] = Array.from(this);
+        const values: number[] = [];
         Array.from(this).forEach((n: number)=>{
-            values.push(n);
+            values.push(Number(n));
         });
         return values;
     }
 
     public set Values(values: number[]) {
         values.forEach((value: number)=>{
-            this.addKey(value);
+            this.addKey(Number(value));
         });
     }
 }
@@ -193,6 +215,7 @@ export class SheetClass extends LibraryClass {
         this.done = new TFifteenKeys();
         this.loop = new TFifteenKeys();
         this.practiceKeys.Values = this.SheetObject.practiceKeys;
+        console.log(this.practiceKeys.Values);
         this.shot.Values = this.SheetObject.shot;
         this.done.Values = this.SheetObject.done;
         this.loop.Values = this.SheetObject.loop;
@@ -261,11 +284,11 @@ export class SheetClass extends LibraryClass {
         }
     }
 
-    public get Status(): string {
+    public get Status(): string[] {
         return this.SheetObject.status;
     }
 
-    public set Status(status: string) {
+    public set Status(status: string[]) {
         if (this.SheetObject.status !== status) {
             this.SheetObject.status = status;
             this.FieldsChanged = true;
@@ -319,7 +342,7 @@ export class SheetClass extends LibraryClass {
         this.practiceKeys.Values = practiceKeys;
         const newPracticeKeysString: string = this.practiceKeys.toJsonString();
         if(oldPracticeKeysString !== newPracticeKeysString){
-            if (this.updateField("practiceKeys",newPracticeKeysString)) {
+            if (this.updateField("practiceKeys",this.practiceKeys.Values)) {
                 console.log(this.constructor.name, "update success");
             } else {
                 console.log(this.constructor.name, "update fail");
@@ -401,7 +424,7 @@ export class SheetClass extends LibraryClass {
         }
         return false;
     }
-    protected updateField(field: string, value: number | string): boolean {
+    protected updateField(field: string, value: any): boolean {
         return this.$updateDb({
             table:"sheets",
             pkey:"sheetId",

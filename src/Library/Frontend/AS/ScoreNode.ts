@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { ScoreClass } from "@Common/DataObjects";
+import { ScoreClass, TPartStave } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
 import { ASModalScore } from "./ASModalScore";
@@ -128,11 +128,11 @@ export class ScoreNode extends LibraryNode {
         this.ScoreClass.Sequence = sequence;
     }
 
-    public get Status(): string {
+    public get Status(): string[] {
         return this.ScoreClass.Status;
     }
 
-    public set Status(status: string) {
+    public set Status(status: string[]) {
         this.ScoreClass.Status = status;
     }
 
@@ -176,11 +176,11 @@ export class ScoreNode extends LibraryNode {
         this.ScoreClass.Measures = measures;
     }
 
-    public get Parts(): string {
+    public get Parts(): TPartStave[] {
         return this.ScoreClass.Parts;
     }
 
-    public set Parts(parts: string) {
+    public set Parts(parts: TPartStave[]) {
         this.ScoreClass.Parts = parts;
     }
 
@@ -194,6 +194,10 @@ export class ScoreNode extends LibraryNode {
         }
     }
 
+    public update(): void{
+        this.$Caption = this.ScoreClass.Title;
+        console.log(this.constructor.name, "updated");
+    }
 }
 
 customElements.define("score-node", ScoreNode);

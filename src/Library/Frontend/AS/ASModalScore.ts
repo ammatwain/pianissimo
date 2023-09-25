@@ -5,6 +5,7 @@ import { ASModal } from "./ASModal";
 import { ScoreNode } from "./ScoreNode";
 import { MajorKeys } from "./MajorKeys";
 import { DualRange } from "./DualRange";
+import { PartStaveSelector } from "./PartStaveSelector";
 
 ASCSS.ASModalRack = {
     ">.window":{
@@ -78,7 +79,7 @@ export class ASModalScore extends ASModal {
         const labelParts: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelParts.classList.add("label");
         labelParts.textContent = "Parts:";
-        this.$Elements.parts = <HTMLInputElement>document.createElement("input");
+        this.$Elements.parts = new PartStaveSelector();
 
         this.$Elements.main.appendChild(labelTitle);
         this.$Elements.main.appendChild(this.$Elements.title);
@@ -110,23 +111,23 @@ export class ASModalScore extends ASModal {
         this.Title.value = this.ScoreNode.Title;
         this.Subtitle.value = this.ScoreNode.Subtitle;
         this.Author.value = this.ScoreNode.Author;
-        console.log("MAINKEY",this.MainKey);
-        //this.MainKey.Value = this.ScoreNode.MainKey;
+        this.PracticeKeys.Values = this.ScoreNode.DefaultSheet.PracticeKeys;
+        //this.PracticeKeys.Disabled = [this.ScoreNode.MainKey];
         this.syncCheckBoxes();
         console.log("MEASURES", this.ScoreNode.Measures);
         this.Measures.value = String(this.ScoreNode.Measures);
-        this.Parts.value = this.ScoreNode.Parts;
-        this.PracticeKey.doClick = (): void => {
+        this.Parts.Parts = this.ScoreNode.Parts;
+        this.PracticeKeys.doClick = (): void => {
             this.syncCheckBoxes();
         };
     }
 
     private syncCheckBoxes(): void{
-        if (!this.PracticeKey.Checked.length) {
-            this.PracticeKey.Checked = [this.ScoreNode.MainKey];// this.ScoreNode.DefaultSheet.PracticeKeys;
-            this.PracticeKey.Disabled = [this.ScoreNode.MainKey];
-        }
-        this.ActiveKeys.Enabled = this.PracticeKey.Values;
+        //if (!this.PracticeKeys.Disabled.length) {
+            this.PracticeKeys.Disabled = [this.ScoreNode.MainKey];
+            this.PracticeKeys.Check = [this.ScoreNode.MainKey];// this.ScoreNode.DefaultSheet.PracticeKeys;
+        //}
+        this.ActiveKeys.Enabled = this.PracticeKeys.Values;
 
         if(this.ActiveKeys.Value === null) {
             this.ActiveKeys.Value = this.ScoreNode.MainKey;
@@ -165,7 +166,7 @@ export class ASModalScore extends ASModal {
         return <HTMLInputElement>this.$Elements.measures;
     }
 
-    public get PracticeKey(): MajorKeys {
+    public get PracticeKeys(): MajorKeys {
         return <MajorKeys>this.$Elements.practiceKeys;
     }
 
@@ -177,12 +178,16 @@ export class ASModalScore extends ASModal {
         return <MajorKeys>this.$Elements.activeKey;
     }
 
-    public get Parts(): HTMLInputElement {
-        return <HTMLInputElement>this.$Elements.parts;
+    public get Parts(): PartStaveSelector {
+        return <PartStaveSelector>this.$Elements.parts;
     }
 
     public okAction(): void{
         this.ScoreNode.Title = this.Title.value;
+        this.ScoreNode.Subtitle = this.Subtitle.value;
+        this.ScoreNode.Author = this.Author.value;
+        this.ScoreNode.DefaultSheet.PracticeKeys = this.PracticeKeys.Values;
+        console.log(this.ScoreNode.DefaultSheet.PracticeKeys);
     }
 }
 

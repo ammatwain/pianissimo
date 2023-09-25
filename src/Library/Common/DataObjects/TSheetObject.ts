@@ -1,4 +1,4 @@
-import { TPartInstrument } from "./TScoreObject";
+import { TPartStave } from "./TScoreObject";
 
 export type TDBSheetObject = {
     sheetId: number;
@@ -36,7 +36,7 @@ export type TSheetObject = {
 	activeKey: number;
 	measureStart: number;
 	measureEnd: number;
-	selectedParts: TPartInstrument[];
+	selectedParts: TPartStave[];
 	transposeSettings: TTransposeSettings;
 	shot: number[];
 	done: number[];

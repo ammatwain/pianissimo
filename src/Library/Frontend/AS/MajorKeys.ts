@@ -80,9 +80,11 @@ export class MajorKeys extends ASCore {
         return values;
     }
 
-    public set Checked(values: number[]) {
+    public set Check(values: number[]) {
         this.Checks.forEach((check: HTMLInputElement, key: number ) => {
-            check.checked = values.includes(key);
+            if (values.includes(key)) {
+                check.checked = true;
+            }
         });
     }
 
@@ -106,8 +108,9 @@ export class MajorKeys extends ASCore {
 
     public set Disabled(values: number[]) {
         this.Checks.forEach((check: HTMLInputElement, key: number ) => {
-            check.disabled = values.includes(key);
-            console.log(key, check.disabled);
+            if (values.includes(key)) {
+                check.disabled = true;
+            }
         });
     }
 
@@ -123,7 +126,9 @@ export class MajorKeys extends ASCore {
 
     public set Enabled(values: number[]) {
         this.Checks.forEach((check: HTMLInputElement, key: number ) => {
-            check.disabled = !values.includes(key);
+            if (values.includes(key)) {
+                check.disabled = false;
+            }
             console.log(key, check.disabled);
         });
     }

@@ -12,7 +12,7 @@ export type TDBScoreObject = {
 	mainTempo: string;
 };
 
-export type TPartInstrument = {
+export type TPartStave = {
 	part: string;
 	instrument: string;
 	staves: boolean[];
@@ -35,7 +35,7 @@ export type TScoreObject = {
 	subtitle: string;
 	author: string;
 	measures: number;
-	parts: TPartInstrument[];
+	parts: TPartStave[];
 	mainKey: number;
 	mainTempo: TTempo;
 };

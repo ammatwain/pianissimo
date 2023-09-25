@@ -1,4 +1,4 @@
-import { TPartInstrument, TScoreObject } from "./TScoreObject";
+import { TPartStave, TScoreObject } from "./TScoreObject";
 import { LibraryClass } from "./LibraryClass";
 
 export class ScoreClass extends LibraryClass {
@@ -76,12 +76,12 @@ export class ScoreClass extends LibraryClass {
         }
     }
 
-    public get Status(): string {
+    public get Status(): string[] {
         return this.ScoreObject.status;
     }
 
-    public set Status(status: string) {
-        if (this.ScoreObject.status !== status) {
+    public set Status(status: string[]) {
+        if (JSON.stringify(this.ScoreObject.status) !== JSON.stringify(status)) {
             this.ScoreObject.status = status;
             this.FieldsChanged = true;
         }
@@ -95,6 +95,11 @@ export class ScoreClass extends LibraryClass {
         if (this.ScoreObject.title !== title) {
             this.ScoreObject.title = title;
             this.FieldsChanged = true;
+            if (this.updateField("title",title)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -106,6 +111,11 @@ export class ScoreClass extends LibraryClass {
         if (this.ScoreObject.subtitle !== subtitle) {
             this.ScoreObject.subtitle = subtitle;
             this.FieldsChanged = true;
+            if (this.updateField("subtitle",subtitle)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -117,6 +127,11 @@ export class ScoreClass extends LibraryClass {
         if (this.ScoreObject.author !== author) {
             this.ScoreObject.author = author;
             this.FieldsChanged = true;
+            if (this.updateField("author",author)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
@@ -146,18 +161,23 @@ export class ScoreClass extends LibraryClass {
         }
     }
 
-    public get Parts(): TPartInstrument[] {
+    public get Parts(): TPartStave[] {
         return this.ScoreObject.parts;
     }
 
-    public set Parts(parts: TPartInstrument[]) {
-        if (this.ScoreObject.parts !== parts) {
+    public set Parts(parts: TPartStave[]) {
+        if (JSON.stringify(this.ScoreObject.parts) !== JSON.stringify(parts)) {
             this.ScoreObject.parts = parts;
             this.FieldsChanged = true;
+            if (this.updateField("parts",parts)) {
+                console.log(this.constructor.name, "update success");
+            } else {
+                console.log(this.constructor.name, "update fail");
+            }
         }
     }
 
-    protected updateField(field: string, value: number | string): boolean {
+    protected updateField(field: string, value: any): boolean {
         return this.$updateDb({
             table:"scores",
             pkey:"scoreId",
