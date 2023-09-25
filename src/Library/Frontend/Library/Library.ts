@@ -418,8 +418,8 @@ export class TLibrary{
             scoreId: Number(`3${Date.now()}`),
             parentRackId: parentId,
             sequence: sequence,
-            status: "",
-            title: `Default Title #${sequence}`,
+            status: ["visible"],
+            title: `Score #${sequence}`,
             subtitle: "",
             author: "",
             measures: null,
@@ -427,7 +427,22 @@ export class TLibrary{
             mainKey: null,
             mainTempo: null,
         };
-
+        window.electron.ipcRenderer.invoke("request-add-score", scoreObject ).then((response: TResponse)=>{
+            if (response) {
+                if ("error" in response) {
+                    if (!response.error) {
+                        if (
+                            response.type === "TLibraryObject" &&
+                            response.data
+                        ) {
+                            this.insertScore(response.data.score.scoreId, response.data.score );
+                            this.insertSheet(response.data.sheet.sheetId, response.data.sheet );
+                        }
+                    }
+                }
+            }
+        });
+/*
         window.electron.ipcRenderer.invoke("request-add-score", scoreObject ).then((result: any)=>{
             if (
                 result &&
@@ -440,6 +455,7 @@ export class TLibrary{
                 console.log(result);
             }
         });
+*/
         return this;
     }
 
@@ -475,11 +491,9 @@ export class TLibrary{
                         if (!response.error) {
                             if (
                                 response.type === "TSheetObject" &&
-                                response.data &&
-                                response.data.length === 1
+                                response.data
                             ) {
-                                this.insertSheet(response.data[0].sheetId, response.data[0]);
-                                console.log(response.data[0]);
+                                this.insertSheet(response.data.sheetId, response.data);
                             }
                         }
                     }
@@ -531,7 +545,6 @@ export class TLibrary{
                     }
                 }
             });
-
         }
         return this;
     }

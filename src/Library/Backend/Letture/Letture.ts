@@ -117,6 +117,38 @@ export class Letture extends Store {
         return this.getScoreObject(dbScore);
     }
 
+    setScore(scoreObject: TScoreObject): TScoreObject {
+        const score: TDBScoreObject = this.getDbScoreObject(scoreObject);
+        this.exec(`
+            REPLACE INTO "scores" (
+                "scoreId",
+                "parentRackId",
+                "sequence",
+                "status",
+                "title",
+                "subtitle",
+                "author",
+                "measures",
+                "parts",
+                "mainKey",
+                "mainTempo"
+            ) VALUES (
+                '${score.scoreId}',
+                '${score.parentRackId}',
+                '${score.sequence}',
+                '${score.status}',
+                '${score.title}',
+                '${score.subtitle}',
+                '${score.author}',
+                '${score.measures}',
+                '${score.parts}',
+                '${score.mainKey}',
+                '${score.mainTempo}'
+            );
+        `);
+        return this.getScore(score.scoreId);
+    }
+
     getScores(): TScoreObject[] {
         const scoreObjects: TScoreObject[] = [];
         const dbScores: TDBScoreObject[] = <TDBScoreObject[]>this.prepare("SELECT * FROM \"scores\" ORDER BY \"parentRackId\" ASC,\"sequence\" ASC;").all();

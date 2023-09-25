@@ -15,7 +15,7 @@ export type TDBScoreObject = {
 export type TPartInstrument = {
 	part: string;
 	instrument: string;
-	staves: number[];
+	staves: boolean[];
 };
 
 export type TTempo = {

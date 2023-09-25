@@ -207,40 +207,67 @@ export class MusicXmlRW {
         };
     }
 
-    get PartCount(): number {
-        return this.PartList.length;
+    get ScorePartCount(): number {
+        return this.ScorePartList.length;
     }
 
-    get PartList(): XmlElement[] {
+    get ScorePartList(): XmlElement[] {
         return this.ScorePartWise.childNamed("part-list").childrenNamed("score-part");
     }
 
+    get PartList(): XmlElement[] {
+        return this.ScorePartWise.childrenNamed("part");
+    }
+
     get Instruments(): TPartInstrument[] {
-        const instruments: {name: string, instrument: string}[] = [];
-        this.PartList.forEach((part: XmlElement)=>{
-            let name: string;
+        const instruments: TPartInstrument[] = [];
+        this.ScorePartList.forEach((scorePart: XmlElement)=>{
+            const id: string = scorePart.attr.id;
+            let partName: string;
             let instrument: string;
+            let numerOfStaves: number = 1;
+            const staves: boolean[] = [];
             try {
-                name = part.childNamed("part-name").val || "Piano";
+                partName = scorePart.childNamed("part-name").val || "Piano";
             } catch {
-                name = "";
+                partName = "";
             }
             try {
-                instrument = part.descendantWithPath("score-instrument.instrument-name").val || "";
+                instrument = scorePart.descendantWithPath("score-instrument.instrument-name").val || "";
             } catch {
                 instrument = "";
             }
-            if (name==="" || name.toLowerCase().includes("piano")) {
-                name = "Piano";
-                part.childNamed("part-name").fillText(name);
+            if (partName==="" || partName.toLowerCase().includes("piano")) {
+                partName = "Piano";
+                scorePart.childNamed("part-name").fillText(partName);
             }
-            if (name==="Piano") {
-                instrument = name;
-                part.descendantWithPath("score-instrument.instrument-name").fillText(instrument);
+            if (partName==="Piano") {
+                instrument = partName;
+                scorePart.descendantWithPath("score-instrument.instrument-name").fillText(instrument);
+            }
+
+            try {
+                const part: XmlElement =  this.PartList.find((aPart: XmlElement) => {
+                    return aPart.attr.id === id;
+                });
+
+                if (part) {
+                    const xmlStaves: XmlElement = part.descendantWithPath("measure.attributes.staves");
+                    if (xmlStaves) {
+                        numerOfStaves = Number(xmlStaves.val) || 1;
+                    }
+                }
+            } catch {
+                numerOfStaves = 1;
+            }
+
+            for (let i: number = 0; i < numerOfStaves ; i++) {
+                staves.push(true);
             }
             instruments.push({
-                name: name,
+                part: partName,
                 instrument: instrument,
+                staves: staves,
             });
         });
         return instruments;

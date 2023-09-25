@@ -10,9 +10,9 @@ ASCSS.ScoreNode = {
 
 export class ScoreNode extends LibraryNode {
 
-    constructor (scoreFields: ScoreClass, parentRack: RackNode | LibraryNode)  {
+    constructor (scoreClass: ScoreClass, parentRack: RackNode | LibraryNode)  {
         super({adoptable: true, canAdopt: false});
-        this.ScoreFields = scoreFields;
+        this.ScoreClass = scoreClass;
         if (
             parentRack &&
             (
@@ -22,7 +22,7 @@ export class ScoreNode extends LibraryNode {
         ) {
             parentRack.$appendNode(this);
         }
-        this.$Caption = this.ScoreFields.Title;
+        this.$Caption = this.ScoreClass.Title;
     }
 
     protected $preConnect(): void {
@@ -72,11 +72,11 @@ export class ScoreNode extends LibraryNode {
         return this;
     }
 
-    public get ScoreFields(): ScoreClass {
+    public get ScoreClass(): ScoreClass {
         return <ScoreClass>this.fields;
     }
 
-    public set ScoreFields(scoreFields: ScoreClass) {
+    public set ScoreClass(scoreFields: ScoreClass) {
         this.fields = scoreFields;
     }
 
@@ -101,19 +101,19 @@ export class ScoreNode extends LibraryNode {
     }
 
     public get ScoreId(): number {
-        return this.ScoreFields.ScoreId;
+        return this.ScoreClass.ScoreId;
     }
 
     public set ScoreId(scoreId: number) {
-        this.ScoreFields.ScoreId = scoreId;
+        this.ScoreClass.ScoreId = scoreId;
     }
 
     public get ParentRackId(): number {
-        return this.ScoreFields.ParentRackId;
+        return this.ScoreClass.ParentRackId;
     }
 
     public set ParentRackId(parentRackId: number) {
-        this.ScoreFields.ParentRackId = parentRackId;
+        this.ScoreClass.ParentRackId = parentRackId;
     }
 
     public get Sheets(): SheetNode[] {
@@ -121,67 +121,67 @@ export class ScoreNode extends LibraryNode {
     }
 
     public get Sequence(): number {
-        return this.ScoreFields.Sequence;
+        return this.ScoreClass.Sequence;
     }
 
     public set Sequence(sequence: number) {
-        this.ScoreFields.Sequence = sequence;
+        this.ScoreClass.Sequence = sequence;
     }
 
     public get Status(): string {
-        return this.ScoreFields.Status;
+        return this.ScoreClass.Status;
     }
 
     public set Status(status: string) {
-        this.ScoreFields.Status = status;
+        this.ScoreClass.Status = status;
     }
 
     public get Title(): string {
-        return this.ScoreFields.Title;
+        return this.ScoreClass.Title;
     }
 
     public set Title(title: string) {
-        this.ScoreFields.Title = title;
+        this.ScoreClass.Title = title;
     }
 
     public get Subtitle(): string {
-        return this.ScoreFields.Subtitle;
+        return this.ScoreClass.Subtitle;
     }
 
     public set Subtitle(subtitle: string) {
-        this.ScoreFields.Subtitle = subtitle;
+        this.ScoreClass.Subtitle = subtitle;
     }
 
     public get Author(): string {
-        return this.ScoreFields.Author;
+        return this.ScoreClass.Author;
     }
 
     public set Author(author: string) {
-        this.ScoreFields.Author = author;
+        this.ScoreClass.Author = author;
     }
 
     public get MainKey(): number {
-        return this.ScoreFields.MainKey;
+        return this.ScoreClass.MainKey;
     }
 
     public set MainKey(mainKey: number) {
-        this.ScoreFields.MainKey = mainKey;
+        this.ScoreClass.MainKey = mainKey;
     }
 
     public get Measures(): number {
-        return this.ScoreFields.Measures;
+        return this.ScoreClass.Measures;
     }
 
     public set Measures(measures: number) {
-        this.ScoreFields.Measures = measures;
+        this.ScoreClass.Measures = measures;
     }
 
     public get Parts(): string {
-        return this.ScoreFields.Parts;
+        return this.ScoreClass.Parts;
     }
 
     public set Parts(parts: string) {
-        this.ScoreFields.Parts = parts;
+        this.ScoreClass.Parts = parts;
     }
 
     //

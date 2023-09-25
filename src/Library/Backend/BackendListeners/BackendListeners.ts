@@ -50,7 +50,6 @@ export function BackendListeners(browserWindow: BrowserWindow, database: Letture
         WHERE
            "${STR.id}" = ${id};`
         ).pluck().get());
-
         return branchObjectCustom;
     });
 
@@ -245,7 +244,7 @@ WHERE
                 error: 0,
                 message: "Sheet created!",
                 type: "TSheetObject",
-                data: [responseSheet],
+                data: responseSheet,
             };
         } else {
             return {
@@ -255,144 +254,42 @@ WHERE
                 data: null,
             };
         }
-
     });
+
+
 
     ipcMain.handle("request-add-score", async (
         event: Electron.IpcMainEvent,
         score: TScoreObject
-    ) => {
-        const data: any = {};
-        browserWindow.setAlwaysOnTop(false);
-        const fileNames: string[] = dialog.showOpenDialogSync(
+    ): Promise<TResponse> => {
+        return dialog.showOpenDialog(
+            BrowserWindow.getFocusedWindow(),
             {
+                properties: ["openFile"],
                 filters: [
                     { name: "musicxml", extensions: ["musicxml"] },
                 ],
-                properties: ["openFile"]
             }
-        );
-        if (Array.isArray(fileNames) && fileNames.length>0) {
-            const filename: string = fileNames[0];
-            if (FS.existsSync(filename)){
-                const mmxl: MusicXmlRW = new MusicXmlRW();
-                mmxl.loadXml(filename);
-                const ppId: PianissimoID = mmxl.Pianissimo;
-                if (ppId!==null && ppId.id>0) {
-                    score.scoreId = ppId.id;
+        ).then((opened): TResponse => {
+            const response: TResponse = {
+                error : 1,
+                message : "Score NOT created",
+                type : null,
+                data : null,
+            };
+            if (!opened.canceled) {
+                const data: any = createNewScoreFromFile(database, score, opened.filePaths[0]);
+                if (data) {
+                    response.error = 0;
+                    response.message = "Score created!";
+                    response.type = "TLibraryObject";
+                    response.data = data;
                 }
-                mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: score.scoreId};
-                score.title = mmxl.Title;
-                score.subtitle = mmxl.Subtitle;
-                score.mainKey = mmxl.MainKey;
-                score.parts = mmxl.Instruments;
-                score.measures = mmxl.MeasureCount;
-                score.mainTempo = mmxl.Tempo;
-
-                database.exec(`
-                    REPLACE INTO "zippeds" (
-                        "parentScoreId",
-                        "zipped"
-                    ) VALUES (
-                        '${score.scoreId}',
-                        x'${mmxl.Zipped.toString("hex")}'
-                    );
-                `);
-
-                const resultZipped: TZippedObject = <TZippedObject>database.prepare(`
-                SELECT * FROM
-                "zippeds"
-                WHERE
-                "parentScoreId"=${score.scoreId};
-                `).get();
-                if (resultZipped){
-                    database.exec(`
-                        REPLACE INTO "scores" (
-                            "scoreId",
-                            "parentRackId",
-                            "sequence",
-                            "status",
-                            "title",
-                            "subtitle",
-                            "author",
-                            "measures",
-                            "parts",
-                            "mainKey",
-                            "mainTempo"
-                        ) VALUES (
-                            '${score.scoreId}',
-                            '${score.parentRackId}',
-                            '${score.sequence}',
-                            '${score.status}',
-                            '${score.title}',
-                            '${score.subtitle}',
-                            '${score.author}',
-                            '${score.measures}',
-                            '${score.parts}',
-                            '${score.mainKey}',
-                            '${score.mainTempo}'
-                        );
-                    `);
-
-                    const sheetId: number = Number(`4${Date.now()}`);
-                    const resultScore: TRackObject = <TRackObject>database.prepare(`
-                    SELECT * FROM
-                    "scores"
-                    WHERE
-                    "scoreId"=${score.scoreId};
-                    `).get();
-                    if (resultScore) {
-                        database.exec(`
-                            REPLACE INTO "sheets" (
-                                "sheetId",
-                                "parentScoreId",
-                                "sequence",
-                                "status",
-                                "title",
-                                "subtitle",
-                                "activeKey",
-                                "activeKeys",
-                                "measureStart",
-                                "measureEnd"
-                            ) VALUES (
-                                '${sheetId}',
-                                '${score.scoreId}',
-                                '0',
-                                null,
-                                '${score.title}',
-                                '${score.subtitle}',
-                                '${score.mainKey}',
-                                '[${score.mainKey}]',
-                                '${0}',
-                                '${score.measures-1}'
-                            );`
-                        );
-                        const resultSheet: number = <number>database.prepare(`
-                        SELECT * FROM
-                        "sheets"
-                        WHERE
-                        "sheetId"=${sheetId};
-                        `).get();
-
-                        if (resultSheet) {
-                            console.log(resultSheet);
-                            return {
-                                score: resultScore,
-                                sheet: resultSheet,
-                                zipped: resultZipped
-                            };
-                        } else {
-                            return {error:2};
-                        }
-
-                    }
-                }
-                console.log(mmxl.Zipped,score);
+            } else {
+              console.log("no file selected");
             }
-        } else {
-            console.log("no file selected");
-        }
-        return data;
+            return response;
+        });
     });
 
     ipcMain.handle("request-consens-for-library-object-deletion", async (
@@ -456,4 +353,78 @@ WHERE
         //return (("sequence" in result) && (result.sequence === obj.sequence));
     });
 
+}
+
+function createNewScoreFromFile(
+    database: Letture,
+    score: TScoreObject,
+    filename: string
+): { score: TScoreObject, sheet: TSheetObject, zipped: TZippedObject } {
+    if (FS.existsSync(filename)){
+        const mmxl: MusicXmlRW = new MusicXmlRW();
+        mmxl.loadXml(filename);
+        const ppId: PianissimoID = mmxl.Pianissimo;
+        if (ppId!==null && ppId.id>0) {
+            score.scoreId = ppId.id;
+        }
+        mmxl.Pianissimo = {app:"pianissimo", user:"pianissimo", id: score.scoreId};
+        score.title = mmxl.Title;
+        score.subtitle = mmxl.Subtitle;
+        score.mainKey = mmxl.MainKey;
+        score.parts = mmxl.Instruments;
+        score.measures = mmxl.MeasureCount;
+        score.mainTempo = mmxl.Tempo;
+
+        database.exec(`
+            REPLACE INTO "zippeds" (
+                "parentScoreId",
+                "zipped"
+            ) VALUES (
+                '${score.scoreId}',
+                x'${mmxl.Zipped.toString("hex")}'
+            );
+        `);
+
+        const resultZipped: TZippedObject = <TZippedObject>database.prepare(`
+        SELECT * FROM
+        "zippeds"
+        WHERE
+        "parentScoreId"=${score.scoreId};
+        `).get();
+
+        if (resultZipped){
+
+            const resultScore: TScoreObject =  database.setScore(score);
+            if (resultScore) {
+                const sheetId: number = Number(String(resultScore.scoreId).replace("3","4"));
+                const sheetObject: TSheetObject = {
+                    sheetId: sheetId,
+                    parentScoreId: resultScore.scoreId,
+                    sequence: 0,
+                    status: [],
+                    title: "Play it all",
+                    subtitle: "",
+                    practiceKeys: [score.mainKey],
+                    activeKey: score.mainKey,
+                    measureStart: 1,
+                    measureEnd: score.measures,
+                    selectedParts: score.parts,
+                    transposeSettings: {type:"transposeByKey",octave:0,transposeKeySignatures:true,removeKeySignatures:false},
+                    shot: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    done: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    loop: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                };
+
+                const resultSheet: TSheetObject = database.setSheet(sheetObject);
+                if (resultSheet) {
+                    return {
+                        score: resultScore,
+                        sheet: resultSheet,
+                        zipped: resultZipped
+                    };
+                }
+            }
+        }
+    }
+    return null;
 }

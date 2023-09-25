@@ -33,10 +33,12 @@ export class ASModalScore extends ASModal {
 
     constructor (args: {caption: string, scoreNode: ScoreNode}){
         super(args);
-        this.scoreNode = args.scoreNode;
     }
 
     protected $preConnect(): void {
+        if (!this.$Argument.scoreNode) {
+            throw new Error("TScoreNode must be passed in argument string");
+        }
         super.$preConnect();
         const labelTitle: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelTitle.classList.add("label");
@@ -71,7 +73,7 @@ export class ASModalScore extends ASModal {
         const labelMeasures: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMeasures.classList.add("label");
         labelMeasures.textContent = "Measures:";
-        this.$Elements.measures = new DualRange(1,32);
+        this.$Elements.measures = new DualRange(1,this.ScoreNode.Measures);
 
         const labelParts: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelParts.classList.add("label");
@@ -105,14 +107,15 @@ export class ASModalScore extends ASModal {
 
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
-        this.Title.value = this.scoreNode.Title;
-        this.Subtitle.value = this.scoreNode.Subtitle;
-        this.Author.value = this.scoreNode.Author;
+        this.Title.value = this.ScoreNode.Title;
+        this.Subtitle.value = this.ScoreNode.Subtitle;
+        this.Author.value = this.ScoreNode.Author;
         console.log("MAINKEY",this.MainKey);
-        //this.MainKey.Value = this.scoreNode.MainKey;
+        //this.MainKey.Value = this.ScoreNode.MainKey;
         this.syncCheckBoxes();
-        this.Measures.value = String(this.scoreNode.Measures);
-        this.Parts.value = this.scoreNode.Parts;
+        console.log("MEASURES", this.ScoreNode.Measures);
+        this.Measures.value = String(this.ScoreNode.Measures);
+        this.Parts.value = this.ScoreNode.Parts;
         this.PracticeKey.doClick = (): void => {
             this.syncCheckBoxes();
         };
@@ -120,13 +123,13 @@ export class ASModalScore extends ASModal {
 
     private syncCheckBoxes(): void{
         if (!this.PracticeKey.Checked.length) {
-            this.PracticeKey.Checked = [this.scoreNode.MainKey];// this.scoreNode.DefaultSheet.PracticeKeys;
-            this.PracticeKey.Disabled = [this.scoreNode.MainKey];
+            this.PracticeKey.Checked = [this.ScoreNode.MainKey];// this.ScoreNode.DefaultSheet.PracticeKeys;
+            this.PracticeKey.Disabled = [this.ScoreNode.MainKey];
         }
         this.ActiveKeys.Enabled = this.PracticeKey.Values;
 
         if(this.ActiveKeys.Value === null) {
-            this.ActiveKeys.Value = this.scoreNode.MainKey;
+            this.ActiveKeys.Value = this.ScoreNode.MainKey;
         }
     }
 
@@ -139,7 +142,7 @@ export class ASModalScore extends ASModal {
     }
 
     public get Id(): number {
-        return this.scoreNode.Id;
+        return this.ScoreNode.Id;
     }
 
     public get Title(): HTMLInputElement {
@@ -166,6 +169,10 @@ export class ASModalScore extends ASModal {
         return <MajorKeys>this.$Elements.practiceKeys;
     }
 
+    public get ScoreNode(): ScoreNode {
+        return <ScoreNode>this.$Argument.scoreNode;
+    }
+
     public get ActiveKeys(): MajorKeys {
         return <MajorKeys>this.$Elements.activeKey;
     }
@@ -175,7 +182,7 @@ export class ASModalScore extends ASModal {
     }
 
     public okAction(): void{
-        this.scoreNode.Title = this.Title.value;
+        this.ScoreNode.Title = this.Title.value;
     }
 }
 
