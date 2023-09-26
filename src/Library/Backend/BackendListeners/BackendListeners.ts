@@ -169,9 +169,9 @@ WHERE
             Array.isArray(query.value) ||
             typeof query.value === "object"
         ) {
-            query.value = JSON.stringify(query.value);
+            query.value = JSON.stringify(query.value).replaceAll("'","''");
         } else {
-            query.value = String(query.value);
+            query.value = String(query.value).replaceAll("'","''");
         }
 
         database.exec(`UPDATE "${query.table}" SET
@@ -179,7 +179,6 @@ WHERE
             WHERE
             "${query.pkey}"=${query.id};
         `);
-        console.log("RISULTATO?");
         const result: TResponseUpdateField = {
             asId: query.id,
             field: query.field,
@@ -404,11 +403,11 @@ function createNewScoreFromFile(
                     status: [],
                     title: "Play it all",
                     subtitle: "",
-                    practiceKeys: [score.mainKey],
-                    activeKey: score.mainKey,
-                    measureStart: 1,
-                    measureEnd: score.measures,
-                    selectedParts: score.parts,
+                    practiceKeys: [resultScore.mainKey],
+                    activeKey: resultScore.mainKey,
+                    measureStart: 0,
+                    measureEnd: resultScore.measures-1,
+                    hiddenParts: resultScore.parts,
                     transposeSettings: {type:"transposeByKey",octave:0,transposeKeySignatures:true,removeKeySignatures:false},
                     shot: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                     done: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],

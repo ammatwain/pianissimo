@@ -64,7 +64,7 @@ CREATE TABLE "sheets" (
 	"activeKeys"	TEXT DEFAULT null,
 	"measureStart"	INTEGER DEFAULT null,
 	"measureEnd"	INTEGER DEFAULT null,
-	"selectedParts"	TEXT DEFAULT null,
+	"hiddenParts"	TEXT DEFAULT null,
 	"selectedStaves"	TEXT DEFAULT null,
 	"transposeBy"	TEXT DEFAULT null,
 	"shot"	TEXT NOT NULL DEFAULT '0,0,0,0,0,0,0,0,0,0,0,0,0,0,0',

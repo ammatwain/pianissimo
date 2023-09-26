@@ -400,7 +400,6 @@ export class TLibrary{
             status: null,
             title: `Default Title #${sequence}`,
         };
-
         window.electron.ipcRenderer.invoke("request-insert-rack", rackObject ).then((result: TRackObject)=>{
             if (
                 result &&
@@ -442,20 +441,6 @@ export class TLibrary{
                 }
             }
         });
-/*
-        window.electron.ipcRenderer.invoke("request-add-score", scoreObject ).then((result: any)=>{
-            if (
-                result &&
-                result.score &&
-                result.sheet &&
-                result.zipped
-            ) {
-                this.insertScore(result.score.scoreId, result.score );
-                this.insertSheet(result.sheet.sheetId, result.sheet );
-                console.log(result);
-            }
-        });
-*/
         return this;
     }
 
@@ -473,7 +458,7 @@ export class TLibrary{
                 activeKey: scoreObject.mainKey,
                 measureStart: 1,
                 measureEnd: scoreObject.measures,
-                selectedParts: scoreObject.parts,
+                hiddenParts: scoreObject.parts,
                 transposeSettings: {
                     type:"transposeByKey",
                     octave:0,

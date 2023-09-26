@@ -1,4 +1,4 @@
-import { TPartStave } from "@Library/Common/DataObjects";
+import { THiddenPart, TPartStave } from "@Library/Common/DataObjects";
 import { ASCSS } from "./ASCSS";
 import { AS, ASCore } from "./ASCore";
 
@@ -39,6 +39,23 @@ export class PartStaveSelector extends ASCore {
         return this.$Argument.partsAndStaves;
     }
 
+    public get HiddenParts(): THiddenPart {
+        const hiddenParts: THiddenPart = {};
+        this.$Elements.select.querySelectorAll("option").forEach((option: HTMLOptionElement) => {
+            if(!option.selected) {
+                const path: string[] = option.value.split(",");
+                if (path.length===2) {
+                    const part: number = Number(path[0]);
+                    if (!(part in hiddenParts)) {
+                    hiddenParts[part]=[];
+                    }
+                    hiddenParts[part].push(Number(path[1]));
+                }
+            }
+        });
+        return hiddenParts;
+    }
+
     public set Parts(partStave: TPartStave[]) {
         this.$Argument.partsAndStaves = partStave;
         this.$Elements.select.innerHTML = "";
@@ -54,6 +71,17 @@ export class PartStaveSelector extends ASCore {
                 option.value = `${p},${o}`;
                 option.selected = part.staves[o];
                 option.innerHTML = `Staff ${o+1}`;
+                option.onmousedown = (event): void => {
+                    this.$Elements.select.focus();
+                    this.$stopEvent(event);
+                };
+                option.onmouseup = (event): void => {
+                    this.$stopEvent(event);
+                    option.selected = !option.selected;
+                };
+                option.onclick = (event): void => {
+                    this.$stopEvent(event);
+                };
                 optGroup.appendChild(option);
             }
             this.$Elements.select.appendChild(optGroup);

@@ -2,9 +2,10 @@ import { RackNode } from "@Frontend/AS/RackNode";
 import { ASCSS } from "./ASCSS";
 import { AS, ASCore } from "./ASCore";
 import { ASModal } from "./ASModal";
+import { SheetNode } from "./SheetNode";
 import { ScoreNode } from "./ScoreNode";
 import { MajorKeys } from "./MajorKeys";
-import { DualRange } from "./DualRange";
+import { MeasureRange } from "./MeasureRange";
 import { PartStaveSelector } from "./PartStaveSelector";
 
 ASCSS.ASModalRack = {
@@ -30,15 +31,20 @@ ASCSS.ASModalRack = {
 };
 
 export class ASModalScore extends ASModal {
-    private scoreNode: ScoreNode;
 
-    constructor (args: {caption: string, scoreNode: ScoreNode}){
+    constructor (args: {caption: string, scoreNode: ScoreNode, sheetNode: SheetNode }){
         super(args);
     }
 
     protected $preConnect(): void {
-        if (!this.$Argument.scoreNode) {
-            throw new Error("TScoreNode must be passed in argument string");
+        if (!(
+            this.$Argument.scoreNode &&
+            this.$Argument.sheetNode && (
+                this.$Argument.scoreNode instanceof ScoreNode ||
+                this.$Argument.sheetNode instanceof SheetNode
+            )
+        )) {
+            throw new Error("TScoreNode or TSheetNode  must be passed in argument string");
         }
         super.$preConnect();
         const labelTitle: HTMLDivElement = <HTMLDivElement>document.createElement("div");
@@ -55,12 +61,7 @@ export class ASModalScore extends ASModal {
         labelAuthor.classList.add("label");
         labelAuthor.textContent = "Author:";
         this.$Elements.author = <HTMLInputElement>document.createElement("input");
-/*
-        const labelMainKey: HTMLDivElement = <HTMLDivElement>document.createElement("div");
-        labelMainKey.classList.add("label");
-        labelMainKey.textContent = "Main Key:";
-        this.$Elements.mainKey = new MajorKeys({boxType:"radio"});
-*/
+
         const labelPracticeKeys: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelPracticeKeys.classList.add("label");
         labelPracticeKeys.innerHTML = "Practice Keys: <em>(MainKey is unselectable)</em>";
@@ -74,7 +75,7 @@ export class ASModalScore extends ASModal {
         const labelMeasures: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelMeasures.classList.add("label");
         labelMeasures.textContent = "Measures:";
-        this.$Elements.measures = new DualRange(1,this.ScoreNode.Measures);
+        this.$Elements.measures = new MeasureRange(this.ScoreNode.Measures);
 
         const labelParts: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelParts.classList.add("label");
@@ -89,10 +90,7 @@ export class ASModalScore extends ASModal {
 
         this.$Elements.main.appendChild(labelAuthor);
         this.$Elements.main.appendChild(this.$Elements.author);
-/*
-        this.$Elements.main.appendChild(labelMainKey);
-        this.$Elements.main.appendChild(this.$Elements.mainKey);
-*/
+
         this.$Elements.main.appendChild(labelPracticeKeys);
         this.$Elements.main.appendChild(this.$Elements.practiceKeys);
 
@@ -108,14 +106,18 @@ export class ASModalScore extends ASModal {
 
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
-        this.Title.value = this.ScoreNode.Title;
-        this.Subtitle.value = this.ScoreNode.Subtitle;
+        if (this.SheetNode.Sequence === 0) {
+            this.Title.value = this.ScoreNode.Title;
+            this.Subtitle.value = this.ScoreNode.Subtitle;
+        } else {
+            this.Title.value = this.SheetNode.Title;
+            this.Subtitle.value = this.SheetNode.Subtitle;
+        }
         this.Author.value = this.ScoreNode.Author;
-        this.PracticeKeys.Values = this.ScoreNode.DefaultSheet.PracticeKeys;
-        //this.PracticeKeys.Disabled = [this.ScoreNode.MainKey];
+        this.PracticeKeys.setChecked(this.SheetNode.PracticeKeys,true);
         this.syncCheckBoxes();
-        console.log("MEASURES", this.ScoreNode.Measures);
-        this.Measures.value = String(this.ScoreNode.Measures);
+        this.Measures.MeasureStart = this.SheetNode.MeasureStart;
+        this.Measures.MeasureEnd = this.SheetNode.MeasureEnd;
         this.Parts.Parts = this.ScoreNode.Parts;
         this.PracticeKeys.doClick = (): void => {
             this.syncCheckBoxes();
@@ -123,19 +125,35 @@ export class ASModalScore extends ASModal {
     }
 
     private syncCheckBoxes(): void{
-        //if (!this.PracticeKeys.Disabled.length) {
-            this.PracticeKeys.Disabled = [this.ScoreNode.MainKey];
-            this.PracticeKeys.Check = [this.ScoreNode.MainKey];// this.ScoreNode.DefaultSheet.PracticeKeys;
-        //}
-        this.ActiveKeys.Enabled = this.PracticeKeys.Values;
+        this.PracticeKeys.setDisabled([this.ScoreNode.MainKey],true);
+        this.PracticeKeys.setChecked([this.ScoreNode.MainKey],false);
 
-        if(this.ActiveKeys.Value === null) {
-            this.ActiveKeys.Value = this.ScoreNode.MainKey;
+        this.ActiveKey.setEnabled(this.PracticeKeys.Values);
+
+        if (
+            this.ScoreNode.DefaultSheet.ActiveKey !== null &&
+            this.ActiveKey.Enabled.includes(this.ScoreNode.DefaultSheet.ActiveKey)
+        ) {
+            this.ActiveKey.Value = this.ScoreNode.DefaultSheet.ActiveKey;
+        } else {
+            this.ActiveKey.Value = this.ScoreNode.MainKey;
         }
     }
 
-    static showFromNode(scoreNode: ScoreNode, caption: string): ASModalScore {
-        return new ASModalScore({scoreNode: scoreNode, caption: caption}).show();
+    static showFromNode(node: ScoreNode | SheetNode, caption: string): ASModalScore {
+        let scoreNode: ScoreNode;
+        let sheetNode: SheetNode;
+        if (node instanceof ScoreNode || node instanceof SheetNode) {
+            if (node instanceof ScoreNode) {
+                scoreNode = node;
+                sheetNode = scoreNode.DefaultSheet;
+            } else if (node instanceof SheetNode) {
+                sheetNode = node;
+                scoreNode = sheetNode.ParentScore;
+            }
+            return new ASModalScore({scoreNode: scoreNode, sheetNode: sheetNode, caption: caption}).show();
+        }
+        return null;
     }
 
     public show(): ASModalScore {
@@ -162,8 +180,8 @@ export class ASModalScore extends ASModal {
         return <MajorKeys>this.$Elements.mainKey;
     }
 
-    public get Measures(): HTMLInputElement {
-        return <HTMLInputElement>this.$Elements.measures;
+    public get Measures(): MeasureRange {
+        return <MeasureRange>this.$Elements.measures;
     }
 
     public get PracticeKeys(): MajorKeys {
@@ -174,7 +192,11 @@ export class ASModalScore extends ASModal {
         return <ScoreNode>this.$Argument.scoreNode;
     }
 
-    public get ActiveKeys(): MajorKeys {
+    public get SheetNode(): SheetNode {
+        return <SheetNode>this.$Argument.sheetNode;
+    }
+
+    public get ActiveKey(): MajorKeys {
         return <MajorKeys>this.$Elements.activeKey;
     }
 
@@ -183,11 +205,18 @@ export class ASModalScore extends ASModal {
     }
 
     public okAction(): void{
-        this.ScoreNode.Title = this.Title.value;
-        this.ScoreNode.Subtitle = this.Subtitle.value;
         this.ScoreNode.Author = this.Author.value;
-        this.ScoreNode.DefaultSheet.PracticeKeys = this.PracticeKeys.Values;
-        console.log(this.ScoreNode.DefaultSheet.PracticeKeys);
+        if (this.ScoreNode.Sequence===0) {
+            this.ScoreNode.Title = this.Title.value;
+            this.ScoreNode.Subtitle = this.Subtitle.value;
+        }
+        this.SheetNode.Title = this.Title.value;
+        this.SheetNode.Subtitle = this.Subtitle.value;
+        this.SheetNode.PracticeKeys = this.PracticeKeys.Checked;
+        this.SheetNode.ActiveKey = this.ActiveKey.Value;
+        this.SheetNode.MeasureStart = this.Measures.MeasureStart;
+        this.SheetNode.MeasureEnd = this.Measures.MeasureEnd;
+        this.SheetNode.HiddenParts = this.Parts.HiddenParts;
     }
 }
 

@@ -2,12 +2,14 @@ import { ASCSS } from "./ASCSS";
 import {
     TVariableMajorKeyNumberArray,
     SheetClass,
-    TPartStave
+    TPartStave,
+    THiddenPart
 } from "@Common/DataObjects";
 
 import { LibraryNode } from "./LibraryNode";
 import { ScoreNode } from "./ScoreNode";
 import { ASModal } from "./ASModal";
+import { ASModalScore } from "./ASModalScore";
 
 ASCSS.SheetNode = {
 };
@@ -48,7 +50,7 @@ export class SheetNode extends LibraryNode {
             console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
-            ASModal.show("Sheet Settings");
+            ASModalScore.showFromNode(this, "Sheet / Parent Score Settings");
             console.log(this.constructor.name, "clicked", "settings");
         };
     }
@@ -69,36 +71,52 @@ export class SheetNode extends LibraryNode {
         return this;
     }
 
-/*
-    protected fields: ISheetFields = {
-        sheetId: undefined,
-        parentScoreId: undefined,
-        sequence: undefined,
-        status: undefined,
-        title: undefined,
-        subtitle: undefined,
-        activeKey: undefined,
-        activeKeys: undefined,
-        measureStart: undefined,
-        measureEnd: undefined,
-        selectedParts: undefined,
-        selectedStaves: undefined,
-        transposeBy: undefined,
-        shot: undefined,
-        done: undefined,
-        loop: undefined,
-    };
-*/
-    public get SheetClass(): SheetClass {
-        return <SheetClass>this.fields;
+    public get ActiveKey(): number {
+        return this.SheetClass.ActiveKey;
     }
 
-    public set SheetClass(sheetClass: SheetClass) {
-        this.fields = sheetClass;
+    public set ActiveKey(activeKey: number) {
+        this.SheetClass.ActiveKey = activeKey;
+    }
+
+    public get Author(): string {
+        return this.ParentScore.Author;
+    }
+
+    public get HiddenParts(): THiddenPart {
+        return this.SheetClass.HiddenParts;
+    }
+
+    public set HiddenParts(hiddenParts: THiddenPart) {
+        this.SheetClass.HiddenParts = hiddenParts;
     }
 
     public get Id(): number {
         return this.SheetId;
+    }
+
+    public get MainKey(): number {
+        return this.ParentScore.MainKey;
+    }
+
+    public get Measures(): number {
+        return this.ParentScore.Measures;
+    }
+
+    public get MeasureEnd(): number {
+        return this.SheetClass.MeasureEnd;
+    }
+
+    public set MeasureEnd(measureEnd: number) {
+        this.SheetClass.MeasureEnd = measureEnd;
+    }
+
+    public get MeasureStart(): number {
+        return this.SheetClass.MeasureStart;
+    }
+
+    public set MeasureStart(measureStart: number) {
+        this.SheetClass.MeasureStart = measureStart;
     }
 
     public get ParentId(): number {
@@ -117,20 +135,24 @@ export class SheetNode extends LibraryNode {
         }
     }
 
-    public get SheetId(): number {
-        return this.SheetClass.SheetId;
-    }
-
-    public set SheetId(sheetId: number) {
-        this.SheetClass.SheetId = sheetId;
-    }
-
     public get ParentScoreId(): number {
         return this.SheetClass.ParentScoreId;
     }
 
     public set ParentScoreId(parentScoreId: number) {
         this.SheetClass.ParentScoreId = parentScoreId;
+    }
+
+    public get Parts(): TPartStave[] {
+        return this.ParentScore.Parts;
+    }
+
+    public get PracticeKeys(): number[] {
+        return this.SheetClass.PracticeKeys;
+    }
+
+    public set PracticeKeys(practiceKeys: number[]) {
+        this.SheetClass.PracticeKeys = practiceKeys;
     }
 
     public get Sequence(): number {
@@ -141,20 +163,28 @@ export class SheetNode extends LibraryNode {
         this.SheetClass.Sequence = sequence;
     }
 
+    public get SheetClass(): SheetClass {
+        return <SheetClass>this.fields;
+    }
+
+    public set SheetClass(sheetClass: SheetClass) {
+        this.fields = sheetClass;
+    }
+
+    public get SheetId(): number {
+        return this.SheetClass.SheetId;
+    }
+
+    public set SheetId(sheetId: number) {
+        this.SheetClass.SheetId = sheetId;
+    }
+
     public get Status(): string[] {
         return this.SheetClass.Status;
     }
 
     public set Status(status: string[]) {
         this.SheetClass.Status = status;
-    }
-
-    public get Title(): string {
-        return this.SheetClass.Title;
-    }
-
-    public set Title(title: string) {
-        this.SheetClass.Title = title;
     }
 
     public get Subtitle(): string {
@@ -165,36 +195,12 @@ export class SheetNode extends LibraryNode {
         this.SheetClass.Subtitle = subtitle;
     }
 
-    public get Author(): string {
-        return this.ParentScore.Author;
+    public get Title(): string {
+        return this.SheetClass.Title;
     }
 
-    public get MainKey(): number {
-        return this.ParentScore.MainKey;
-    }
-
-    public get Measures(): number {
-        return this.ParentScore.Measures;
-    }
-
-    public get Parts(): TPartStave[] {
-        return this.ParentScore.Parts;
-    }
-
-    public get ActiveKey(): number {
-        return this.SheetClass.ActiveKey;
-    }
-
-    public set ActiveKey(activeKey: number) {
-        this.SheetClass.ActiveKey = activeKey;
-    }
-
-    public get PracticeKeys(): number[] {
-        return this.SheetClass.PracticeKeys;
-    }
-
-    public set PracticeKeys(practiceKeys: number[]) {
-        this.SheetClass.PracticeKeys = practiceKeys;
+    public set Title(title: string) {
+        this.SheetClass.Title = title;
     }
 
     public practiceKeysAdd(practiceKey: number): void {
@@ -209,21 +215,16 @@ export class SheetNode extends LibraryNode {
         return this.SheetClass.practiceKeysExists(practiceKey);
     }
 
-    /*
-    activeKeys: undefined,
-    measureStart: undefined,
-    measureEnd: undefined,
-    selectedParts: undefined,
-    selectedStaves: undefined,
-    transposeBy: undefined,
-    shot: undefined,
-    done: undefined,
-    loop: undefined,
-*/
     public doSelected(): void{
         ;
         console.log(this.SheetId, "SELECTED!");
     }
+
+    public update(): void{
+        this.$Caption = this.SheetClass.Title;
+        console.log(this.constructor.name, "updated", this.PracticeKeys );
+    }
+
 }
 
 customElements.define("sheet-node", SheetNode);

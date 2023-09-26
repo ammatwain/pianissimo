@@ -47,7 +47,7 @@ export class ScoreNode extends LibraryNode {
             console.log(this.constructor.name, "clicked", "delete");
         };
         this.$Elements.settings.onclick = (): void => {
-            ASModalScore.showFromNode(this, "Rack Settings");
+            ASModalScore.showFromNode(this, "Score / Default sheet Settings");
             console.log(this.constructor.name, "clicked", "settings");
         };
     }

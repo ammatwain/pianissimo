@@ -11,7 +11,7 @@ export type TDBSheetObject = {
 	activeKey: number;
 	measureStart: number;
 	measureEnd: number;
-	selectedParts: string;
+	hiddenParts: string;
 	transposeSettings: string;
 	shot: string;
 	done: string;
@@ -25,6 +25,8 @@ export type TTransposeSettings = {
 	removeKeySignatures: boolean;
 };
 
+export type THiddenPart = {[key: number]: number[]};
+
 export type TSheetObject = {
     sheetId: number;
 	parentScoreId: number;
@@ -36,7 +38,7 @@ export type TSheetObject = {
 	activeKey: number;
 	measureStart: number;
 	measureEnd: number;
-	selectedParts: TPartStave[];
+	hiddenParts: THiddenPart;
 	transposeSettings: TTransposeSettings;
 	shot: number[];
 	done: number[];

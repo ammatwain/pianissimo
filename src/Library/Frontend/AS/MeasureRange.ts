@@ -1,7 +1,7 @@
 import { ASCSS } from "./ASCSS";
 import { AS, ASCore } from "./ASCore";
 
-ASCSS.DualRange = {
+ASCSS.MeasureRange = {
     "box-sizing": "border-box",
     "display":"grid",
     "grid-gap":"1px",
@@ -71,24 +71,24 @@ ASCSS.DualRange = {
     }
 };
 
-export class DualRange extends ASCore {
-    private min: number = 100;
-    private max: number = 0;
+export class MeasureRange extends ASCore {
+    private min: number = 0;
+    private max: number = 100;
     private selectedMin: number = 100;
     private selectedMax: number = 0;
-    constructor(min: number, max: number, selectedMin: number = null, selectedMax: number = null) {
+    constructor(max: number, measureStart: number = null, measureEnd: number = null) {
         super();
 
-        this.setMinMax(min,max);
+        this.setMax(max);
 
-        if (!selectedMin) {
-            selectedMin = this.Min;
+        if (!measureStart) {
+            measureStart = this.Min;
         }
-        if (!selectedMax) {
-            selectedMax = this.Max;
+        if (!measureEnd) {
+            measureEnd = this.Max;
         }
-        this.SelectedMin = Math.min(selectedMin,selectedMax);
-        this.SelectedMax = Math.max(selectedMin,selectedMax);
+        this.MeasureStart = Math.min(measureStart,measureEnd);
+        this.MeasureEnd = Math.max(measureStart,measureEnd);
     }
 
     protected $preConnect(): void {
@@ -123,16 +123,19 @@ export class DualRange extends ASCore {
     protected $alwaysConnect(): void {
         super.$alwaysConnect();
         this.InputMin.oninput = (event: InputEvent): void => {
-            this.SelectedMin = Number(this.InputMin.value);
+            this.MeasureStart = Number(this.InputMin.value);
         };
         this.InputMax.oninput = (event: InputEvent): void => {
-            this.SelectedMax = Number(this.InputMax.value);
+            this.MeasureEnd = Number(this.InputMax.value);
         };
     }
 
-    public setMinMax(min: number, max: number): void {
-        this.min = Math.min(min,max);
-        this.max = Math.max(min,max);
+    public setMax(max: number): void {
+        if(max<1) {
+            throw new Error("Bad measure value");
+        }
+        this.min = 0;
+        this.max = max -1;
 
         this.InputMin.setAttribute("min",String(this.Min));
         this.InputMin.setAttribute("max",String(this.Max));
@@ -159,51 +162,34 @@ export class DualRange extends ASCore {
         return <HTMLLabelElement>this.$Elements.labelMin;
     }
 
-    public get SelectedMax(): number {
+    public get MeasureEnd(): number {
         return Math.max(Number(this.InputMin.value),Number(this.InputMax.value));
     }
 
-    public set SelectedMax(valMax: number) {
-        /*
+    public set MeasureEnd(measureEnd: number) {
         const valMin: number = Number(this.InputMin.value);
-        if (!(valMax>=valMin)){
-            valMax = valMin;
-            this.InputMax.value = String(valMax);
+        if (!(measureEnd>=valMin)){
+            this.MeasureStart = measureEnd;
         }
-        this.LabelMax.textContent = String(valMax);
-        */
-        const valMin: number = Number(this.InputMin.value);
-        if (!(valMax>=valMin)){
-            this.SelectedMin = valMax;
+        if (Number(this.InputMax.value) !== measureEnd) {
+            this.InputMax.value = String(measureEnd);
         }
-        if (Number(this.InputMax.value) !== valMax) {
-            this.InputMax.value = String(valMax);
-        }
-        this.LabelMax.textContent = String(valMax);
+        this.LabelMax.textContent = String(measureEnd+1);
     }
 
-    public get SelectedMin(): number {
+    public get MeasureStart(): number {
         return Math.min(Number(this.InputMin.value),Number(this.InputMax.value));
     }
 
-    public set SelectedMin(valMin: number) {
-        /*
+    public set MeasureStart(measureStart: number) {
         const valMax: number = Number(this.InputMax.value);
-        if (!(valMin<=valMax)){
-            valMin = valMax;
-            this.InputMin.value = String(valMin);
+        if (!(measureStart<=valMax)){
+            this.MeasureEnd = measureStart;
         }
-        this.LabelMin.textContent = String(valMin);
-        */
-        const valMax: number = Number(this.InputMax.value);
-        if (!(valMin<=valMax)){
-            this.SelectedMax = valMin;
+        if (Number(this.InputMin.value) !== measureStart) {
+            this.InputMin.value = String(measureStart);
         }
-        if (Number(this.InputMin.value) !== valMin) {
-            this.InputMin.value = String(valMin);
-        }
-        this.LabelMin.textContent = String(valMin);
-
+        this.LabelMin.textContent = String(measureStart+1);
     }
 
     public get Max(): number {
@@ -216,4 +202,4 @@ export class DualRange extends ASCore {
 
 }
 
-customElements.define("dual-range", DualRange);
+customElements.define("measure-range", MeasureRange);

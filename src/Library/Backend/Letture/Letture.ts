@@ -6,7 +6,7 @@ import { SqlQuery } from "@Backend/Letture/Queries";
 import { IBranchObject } from "@Interfaces/IBranchObject";
 import { STR } from "@Library/Global/STR";
 import { TDBRackObject, TRackObject } from "@DataObjects/TRackObject";
-import { TDBScoreObject, TDBSheetObject, TScoreObject, TSheetObject } from "@Library/Common/DataObjects";
+import { TDBScoreObject, TDBSheetObject, THiddenPart, TScoreObject, TSheetObject } from "@Library/Common/DataObjects";
 //import { Config } from "../Config";
 
 export class Letture extends Store {
@@ -60,8 +60,8 @@ export class Letture extends Store {
             rackId: Number(rackObject.rackId),
             parentRackId: Number(rackObject.parentRackId) || 0,
             sequence: Number(rackObject.sequence) || 0,
-            status: JSON.stringify(rackObject.status),
-            title: rackObject.title,
+            status: JSON.stringify(rackObject.status).replaceAll("'","''"),
+            title: rackObject.title.replaceAll("'","''"),
         };
     }
 
@@ -101,14 +101,14 @@ export class Letture extends Store {
             scoreId: Number(scoreObject.scoreId),
             parentRackId: Number(scoreObject.parentRackId) || 0,
             sequence: Number(scoreObject.sequence) || 0,
-            status: JSON.stringify(scoreObject.status),
-            title: scoreObject.title,
-            subtitle: scoreObject.subtitle,
-            author: scoreObject.author,
+            status: JSON.stringify(scoreObject.status).replaceAll("'","''"),
+            title: scoreObject.title.replaceAll("'","''"),
+            subtitle: scoreObject.subtitle.replaceAll("'","''"),
+            author: scoreObject.author.replaceAll("'","''"),
             measures: Number(scoreObject.measures),
-            parts: JSON.stringify(scoreObject.parts),
+            parts: JSON.stringify(scoreObject.parts).replaceAll("'","''"),
             mainKey: Number(scoreObject.mainKey),
-            mainTempo: JSON.stringify(scoreObject.mainTempo),
+            mainTempo: JSON.stringify(scoreObject.mainTempo).replaceAll("'","''"),
         };
     }
 
@@ -169,8 +169,8 @@ export class Letture extends Store {
             practiceKeys: JSON.parse(dbSheetObject.practiceKeys),
             activeKey: Number(dbSheetObject.activeKey) || 0,
             measureStart: Number(dbSheetObject.measureStart),
-            measureEnd: Number(dbSheetObject.measureStart),
-            selectedParts: JSON.parse(dbSheetObject.selectedParts),
+            measureEnd: Number(dbSheetObject.measureEnd),
+            hiddenParts: <THiddenPart>JSON.parse(dbSheetObject.hiddenParts),
             transposeSettings: JSON.parse(dbSheetObject.transposeSettings),
             shot: JSON.parse(dbSheetObject.shot),
             done: JSON.parse(dbSheetObject.done),
@@ -183,18 +183,18 @@ export class Letture extends Store {
             sheetId: Number(sheetObject.sheetId),
             parentScoreId: Number(sheetObject.parentScoreId) || 0,
             sequence: Number(sheetObject.sequence) || 0,
-            status: JSON.stringify(sheetObject.status),
-            title: sheetObject.title,
-            subtitle: sheetObject.subtitle,
-            practiceKeys: JSON.stringify(sheetObject.practiceKeys),
+            status: JSON.stringify(sheetObject.status).replaceAll("'","''"),
+            title: sheetObject.title.replaceAll("'","''"),
+            subtitle: sheetObject.subtitle.replaceAll("'","''"),
+            practiceKeys: JSON.stringify(sheetObject.practiceKeys).replaceAll("'","''"),
             activeKey: Number(sheetObject.activeKey) || 0,
             measureStart: Number(sheetObject.measureStart),
-            measureEnd: Number(sheetObject.measureStart),
-            selectedParts: JSON.stringify(sheetObject.selectedParts),
-            transposeSettings: JSON.stringify(sheetObject.transposeSettings),
-            shot: JSON.stringify(sheetObject.shot),
-            done: JSON.stringify(sheetObject.done),
-            loop: JSON.stringify(sheetObject.loop),
+            measureEnd: Number(sheetObject.measureEnd),
+            hiddenParts: JSON.stringify(sheetObject.hiddenParts).replaceAll("'","''"),
+            transposeSettings: JSON.stringify(sheetObject.transposeSettings).replaceAll("'","''"),
+            shot: JSON.stringify(sheetObject.shot).replaceAll("'","''"),
+            done: JSON.stringify(sheetObject.done).replaceAll("'","''"),
+            loop: JSON.stringify(sheetObject.loop).replaceAll("'","''"),
         };
     }
 
@@ -217,7 +217,7 @@ export class Letture extends Store {
                 "activeKey",
                 "measureStart",
                 "measureEnd",
-                "selectedParts",
+                "hiddenParts",
                 "transposeSettings",
                 "shot",
                 "done",
@@ -233,7 +233,7 @@ export class Letture extends Store {
                 '${sheet.activeKey}',
                 '${sheet.measureStart}',
                 '${sheet.measureEnd}',
-                '${sheet.selectedParts}',
+                '${sheet.hiddenParts}',
                 '${sheet.transposeSettings}',
                 '${sheet.shot}',
                 '${sheet.done}',

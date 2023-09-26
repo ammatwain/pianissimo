@@ -114,6 +114,42 @@ export class MajorKeys extends ASCore {
         });
     }
 
+    public setEnabled(values: number[], impliesDisablingOtherElements: boolean = true): void {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            if(impliesDisablingOtherElements) {
+                check.disabled = !values.includes(key);
+            } else {
+                if (values.includes(key)) {
+                    check.disabled = false;
+                }
+            }
+        });
+    }
+
+    public setChecked(values: number[], impliesUncheckOtherElements: boolean = true): void {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            if(impliesUncheckOtherElements) {
+                check.checked = values.includes(key);
+            } else {
+                if (values.includes(key)) {
+                    check.checked = true;
+                }
+            }
+        });
+    }
+
+    public setDisabled(values: number[], impliesEnablingOtherElements: boolean = true): void {
+        this.Checks.forEach((check: HTMLInputElement, key: number ) => {
+            if(impliesEnablingOtherElements) {
+                check.disabled = values.includes(key);
+            } else {
+                if (values.includes(key)) {
+                    check.disabled = true;
+                }
+            }
+        });
+    }
+
     public get Enabled(): number[] {
         const values: number[] = [];
         for (let i: number = -7; i<=7 ; i++){
