@@ -9,6 +9,7 @@ import { RackClass } from "@Common/DataObjects/RackClass";
 import { ScoreClass } from "@Common/DataObjects/ScoreClass";
 import { SheetClass } from "@Common/DataObjects/SheetClass";
 import { Library } from "../Library/Library";
+import { MusicScore } from "../AS/MusicScore";
 
 export class Application {
     private header: HTMLDivElement;
@@ -16,6 +17,7 @@ export class Application {
     private left: HTMLDivElement;
     private right: HTMLDivElement;
     private main: HTMLDivElement;
+    private musicScore: MusicScore;
     private library: any;
 
     constructor(){
@@ -54,6 +56,8 @@ export class Application {
                 this.library = result;
                 this.buildTree(this.library);
             });
+            this.musicScore = new MusicScore();
+            this.main.appendChild(this.musicScore);
         });
     }
 }

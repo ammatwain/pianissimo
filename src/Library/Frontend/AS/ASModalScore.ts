@@ -31,7 +31,6 @@ ASCSS.ASModalRack = {
 };
 
 export class ASModalScore extends ASModal {
-
     constructor (args: {caption: string, scoreNode: ScoreNode, sheetNode: SheetNode }){
         super(args);
     }
@@ -61,7 +60,13 @@ export class ASModalScore extends ASModal {
         labelAuthor.classList.add("label");
         labelAuthor.textContent = "Author:";
         this.$Elements.author = <HTMLInputElement>document.createElement("input");
-
+        if (this.ScoreMode) {
+            labelAuthor.style.display="";
+            this.$Elements.author.style.display="";
+        } else {
+            labelAuthor.style.display="none";
+            this.$Elements.author.style.display="none";
+        }
         const labelPracticeKeys: HTMLDivElement = <HTMLDivElement>document.createElement("div");
         labelPracticeKeys.classList.add("label");
         labelPracticeKeys.innerHTML = "Practice Keys: <em>(MainKey is unselectable)</em>";
@@ -119,6 +124,7 @@ export class ASModalScore extends ASModal {
         this.Measures.MeasureStart = this.SheetNode.MeasureStart;
         this.Measures.MeasureEnd = this.SheetNode.MeasureEnd;
         this.Parts.Parts = this.ScoreNode.Parts;
+        this.Parts.HiddenParts = this.SheetNode.HiddenParts;
         this.PracticeKeys.doClick = (): void => {
             this.syncCheckBoxes();
         };
@@ -131,10 +137,10 @@ export class ASModalScore extends ASModal {
         this.ActiveKey.setEnabled(this.PracticeKeys.Values);
 
         if (
-            this.ScoreNode.DefaultSheet.ActiveKey !== null &&
-            this.ActiveKey.Enabled.includes(this.ScoreNode.DefaultSheet.ActiveKey)
+            this.SheetNode.ActiveKey !== null &&
+            this.ActiveKey.Enabled.includes(this.SheetNode.ActiveKey)
         ) {
-            this.ActiveKey.Value = this.ScoreNode.DefaultSheet.ActiveKey;
+            this.ActiveKey.Value = this.SheetNode.ActiveKey;
         } else {
             this.ActiveKey.Value = this.ScoreNode.MainKey;
         }
@@ -162,6 +168,14 @@ export class ASModalScore extends ASModal {
 
     public get Id(): number {
         return this.ScoreNode.Id;
+    }
+
+    public get ScoreMode(): boolean{
+        return this.ScoreNode.DefaultSheet === this.SheetNode;
+    }
+
+    public get SheetMode(): boolean{
+        return !this.ScoreMode;
     }
 
     public get Title(): HTMLInputElement {
