@@ -15,7 +15,7 @@ export class MusicXmlRW {
     private xmlDom: XmlDocument;
 
     public get Zipped(): Buffer {
-        return zlib.deflateRawSync(this.xmlStr);
+        return MusicXmlRW.zip(this.xmlStr);
     }
 
     public get XmlStr(): string {
@@ -37,14 +37,25 @@ export class MusicXmlRW {
         this.xmlDom = new XmlDocument(this.xmlStr);
     }
 
+    public setZippedData(zip: Buffer): void {
+        this.xmlStr = MusicXmlRW.unzip(zip);
+        this.xmlDom = new XmlDocument(this.xmlStr);
+    }
+
+    public static unzip(zippedData: Buffer): string {
+        return zlib.inflateRawSync(zippedData).toString("utf-8");
+    }
+
+    public static zip(unzippedData: string): Buffer {
+        return zlib.deflateRawSync(unzippedData);
+    }
+
     loadXml(filename: string): void {
         if (fs.existsSync(filename)) {
             this.filename = filename;
-
             const xml: string = fs.readFileSync(this.filename).toString("utf-8").trim();
             this.setData(xml);
             this.xmlDom.attr.version = "4.0";
-
         }
     }
 

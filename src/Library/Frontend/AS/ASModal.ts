@@ -129,16 +129,22 @@ export class ASModal extends ASCore {
 
         this.$Elements.spacer = <HTMLDivElement>document.createElement("div");
         this.$Elements.spacer.classList.add("spacer");
+
         this.$Elements.cancelButton = <HTMLButtonElement>document.createElement("button");
         this.$Elements.okButton = <HTMLButtonElement>document.createElement("button");
+        //this.$Elements.goButton = <HTMLButtonElement>document.createElement("button");
+        //this.$Elements.goButton.style.display = "none";
+        this.$Elements.cancelButton.innerHTML = "Cancel";
+        this.$Elements.okButton.innerHTML = "Ok";
+        //this.$Elements.goButton.innerHTML = "Ok & Go!";
 
         this.$Elements.footer = <HTMLDivElement>document.createElement("div");
         this.$Elements.footer.classList.add("footer");
+
         this.$Elements.footer.appendChild(this.$Elements.spacer);
         this.$Elements.footer.appendChild(this.$Elements.cancelButton);
         this.$Elements.footer.appendChild(this.$Elements.okButton);
-        this.$Elements.cancelButton.innerHTML = "Cancel";
-        this.$Elements.okButton.innerHTML = "Ok";
+        //this.$Elements.footer.appendChild(this.$Elements.goButton);
 
         this.$Elements.window = <HTMLDivElement>document.createElement("div");
         this.$Elements.window.classList.add("window");

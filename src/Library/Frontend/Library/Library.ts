@@ -13,6 +13,7 @@ import { ScoreNode } from "@Frontend/AS/ScoreNode";
 import { SheetNode } from "@Frontend/AS/SheetNode";
 import { ASNode } from "../AS";
 import { TResponse } from "@Library/Common/DataObjects/TResponse";
+import { TMusicXmlObject } from "@Library/Common/DataObjects";
 export class LibraryObjectMap extends Map<number, TLibraryObject> {};
 export class RackObjectMap extends Map<number, TRackObject> {};
 export class ScoreObjectMap extends Map<number, TScoreObject> {};
@@ -458,7 +459,7 @@ export class TLibrary{
                 activeKey: scoreObject.mainKey,
                 measureStart: 1,
                 measureEnd: scoreObject.measures,
-                hiddenParts: scoreObject.parts,
+                hiddenParts: {},
                 transposeSettings: {
                     type:"transposeByKey",
                     octave:0,
@@ -486,6 +487,33 @@ export class TLibrary{
             });
         }
         return this;
+    }
+
+    async getMusicXmlObject(parentScoreId: number): Promise<TMusicXmlObject> {
+        return window.electron.ipcRenderer.invoke("request-musicxml", parentScoreId ).then((response: TResponse): TMusicXmlObject =>{
+            if (response) {
+                console.log(response);
+                if ("error" in response) {
+                    if (!response.error) {
+                        if (
+                            response.type === "TMusicXmlObject" &&
+                            response.data
+                        ) {
+                            if (
+                                ("parentScoreId" in (<TMusicXmlObject>response.data)) &&
+                                (<TMusicXmlObject>response.data).parentScoreId === parentScoreId &&
+                                ("musicXml" in (<TMusicXmlObject>response.data)) &&
+                                (<TMusicXmlObject>response.data).musicXml
+                            ) {
+                                return <TMusicXmlObject>response.data;
+                            }
+                        }
+                    }
+                }
+            } else {
+                return null;
+            }
+        });
     }
 
     buildTree(): TLibrary {

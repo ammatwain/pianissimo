@@ -2,7 +2,7 @@ import { ASCore } from "./ASCore";
 import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import { WebMidi, Input as MidiInput } from "../WebMidi";
-import { ScoreClass, SheetClass } from "@Library/Common/DataObjects";
+import { ScoreClass, SheetClass, TMusicXmlObject } from "@Common/DataObjects";
 import { ASCSS } from "./ASCSS";
 import { SheetNode } from "./SheetNode";
 import { ScoreNode } from "./ScoreNode";
@@ -11,15 +11,17 @@ ASCSS.MusicScore = {
     "bottom":"0px",
     "display":"block",
     "left":"0px",
-    "position":"absolute",
+    "position":"relative",
     "right":"0px",
     "top":"0px",
     ">.canvas":{
-        "background-color":"rgba(0,0,0,0.5)",
+        "background-color":"#f5f5f5",
         "bottom":"0px",
         "display":"block",
         "left":"0px",
-        "position":"absolute",
+        "overflow":"hidden",
+        "overflow-y":"auto",
+        "position":"relative",
         "right":"0px",
         "top":"0px",
     },
@@ -46,9 +48,9 @@ export class MusicScore extends ASCore {
     private osmd: OpenSheetMusicDisplay;
     private etc: ExtendedTransposeCalculator;
     private midiInput: MidiInput;
+    private musicXmlId: number = null;
 
     public $preConnect(): void {
-        super.$preConnect();
         this.$Elements.canvas = <HTMLDivElement>document.createElement("div");
         this.$Elements.canvas.classList.add("canvas");
         this.appendChild(this.$Elements.canvas);
@@ -56,10 +58,15 @@ export class MusicScore extends ASCore {
         this.$Elements.sleeper = <HTMLDivElement>document.createElement("div");
         this.$Elements.sleeper.classList.add("sleeper");
         this.appendChild(this.$Elements.sleeper);
+        super.$preConnect();
     }
 
     public get Canvas(): HTMLDivElement {
         return <HTMLDivElement>this.$Elements.canvas;
+    }
+
+    public get ETC(): ExtendedTransposeCalculator {
+        return this.etc || null;
     }
 
     public get Id(): number {
@@ -68,11 +75,46 @@ export class MusicScore extends ASCore {
         }
     }
 
+    public get OSMD(): OpenSheetMusicDisplay {
+        return this.osmd || null;
+    }
+
     public get ScoreClass(): ScoreClass {
         if (this.ScoreNode) {
             return this.ScoreNode.ScoreClass;
         } else {
             return null;
+        }
+    }
+
+    public get MusicXmlId(): number {
+        return this.musicXmlId;
+    }
+
+    public set MusicXmlId(musicXmlId: number) {
+        if (this.musicXmlId !== musicXmlId) {
+            this.musicXmlId = musicXmlId;
+            if (this.ScoreNode && this.ScoreNode.ScoreId === this.musicXmlId) {
+                this.ScoreNode.Library.getMusicXmlObject(this.musicXmlId ).then((musicXmlObject: TMusicXmlObject) =>{
+                    if (musicXmlObject) {
+                        this.OSMD.load(musicXmlObject.musicXml).then(() => {
+                            // trasposition
+                            this.ETC.Options.transposeToKey(this.SheetClass.ActiveKey);
+                            console.log(this.SheetClass.MeasureStart);
+                            console.log(this.SheetClass.MeasureEnd);
+                            this.OSMD.setOptions({
+                                measureNumberInterval: 1,
+                                drawFromMeasureNumber: this.SheetClass.MeasureStart+1,
+                                drawUpToMeasureNumber: this.SheetClass.MeasureEnd+1,
+                                //defaultColorMusic: "#cccccc",
+                           });
+        
+                            this.OSMD.updateGraphic();
+                            this.OSMD.render();
+                        });
+                    }
+                });
+            }
         }
     }
 
@@ -93,17 +135,25 @@ export class MusicScore extends ASCore {
     }
 
     public get SheetNode(): SheetNode {
-        if (this.sheetNode && this.sheetNode instanceof SheetNode ){
-            return this.SheetNode;
+        if (
+            this.sheetNode &&
+            this.sheetNode instanceof SheetNode
+         ){
+            return this.sheetNode;
         } else {
             return null;
         }
     }
 
     public set SheetNode(sheetNode: SheetNode) {
-        if (sheetNode && sheetNode instanceof SheetNode ){
+        if (
+            sheetNode &&
+            sheetNode instanceof SheetNode &&
+            this.sheetNode !== sheetNode
+         ){
             this.sheetNode = sheetNode;
             this.setAttribute("as-id",String(this.Id));
+            this.MusicXmlId = this.ScoreNode.ScoreId;
         }
     }
 
@@ -140,4 +190,4 @@ export class MusicScore extends ASCore {
 
 }
 
-customElements.define("music-sheet", MusicScore);
+customElements.define("music-score", MusicScore);

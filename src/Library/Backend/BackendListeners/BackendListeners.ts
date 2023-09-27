@@ -12,7 +12,7 @@ import { IDiaryObject } from "@Library/Common/Interfaces/IDiaryObject";
 import { TScoreObject } from "@DataObjects/TScoreObject";
 import { TSheetObject } from "@DataObjects/TSheetObject";
 import { MusicXmlRW, PianissimoID } from "@Library/Backend/MusicXmlRW/MusicXmlRW";
-import { TZippedObject } from "@Library/Common/DataObjects/TZippedObject";
+import { TDBZippedObject, TMusicXmlObject } from "@Library/Common/DataObjects/TZippedObject";
 import { Config } from "../Config";
 import { TResponseUpdateField } from "@Library/Common/DataObjects/TResponseUpdateField";
 import { TResponse } from "@Library/Common/DataObjects/TResponse";
@@ -256,6 +256,30 @@ WHERE
     });
 
 
+    ipcMain.handle("request-musicxml", async (
+        event: Electron.IpcMainEvent, parentScoreId: number
+    ): Promise<TResponse> => {
+        const response: TResponse = {
+            error : 1,
+            message : "MusicXml error on DB",
+            type : null,
+            data : null,
+        };
+        const musicXmlObject: TMusicXmlObject = database.getMusicXml(parentScoreId);
+        if (
+            musicXmlObject &&
+            "parentScoreId" in musicXmlObject &&
+            musicXmlObject.parentScoreId === parentScoreId &&
+            "musicXml" in musicXmlObject &&
+            musicXmlObject.musicXml
+        ) {
+            response.error = 0;
+            response.message = "";
+            response.type = "TMusicXmlObject";
+            response.data = musicXmlObject;
+        }
+        return response;
+    });
 
     ipcMain.handle("request-add-score", async (
         event: Electron.IpcMainEvent,
@@ -358,7 +382,7 @@ function createNewScoreFromFile(
     database: Letture,
     score: TScoreObject,
     filename: string
-): { score: TScoreObject, sheet: TSheetObject, zipped: TZippedObject } {
+): { score: TScoreObject, sheet: TSheetObject, zipped: TDBZippedObject } {
     if (FS.existsSync(filename)){
         const mmxl: MusicXmlRW = new MusicXmlRW();
         mmxl.loadXml(filename);
@@ -384,7 +408,7 @@ function createNewScoreFromFile(
             );
         `);
 
-        const resultZipped: TZippedObject = <TZippedObject>database.prepare(`
+        const resultZipped: TDBZippedObject = <TDBZippedObject>database.prepare(`
         SELECT * FROM
         "zippeds"
         WHERE
@@ -407,7 +431,7 @@ function createNewScoreFromFile(
                     activeKey: resultScore.mainKey,
                     measureStart: 0,
                     measureEnd: resultScore.measures-1,
-                    hiddenParts: resultScore.parts,
+                    hiddenParts: {},
                     transposeSettings: {type:"transposeByKey",octave:0,transposeKeySignatures:true,removeKeySignatures:false},
                     shot: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
                     done: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],

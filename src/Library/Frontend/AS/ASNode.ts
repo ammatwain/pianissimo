@@ -377,6 +377,10 @@ export class ASNode extends ASCore {
             this.$toggleCheck();
         };
 
+        this.$Elements.percent.onclick = (): void => {
+            this.$toggleCheck();
+        };
+
         this.ondragend = (event: DragEvent): void => {
             event.stopImmediatePropagation();
             if (this.$DragAndDropMode === 1) {

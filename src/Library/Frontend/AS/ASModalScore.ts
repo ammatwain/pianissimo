@@ -220,7 +220,7 @@ export class ASModalScore extends ASModal {
 
     public okAction(): void{
         this.ScoreNode.Author = this.Author.value;
-        if (this.ScoreNode.Sequence===0) {
+        if (this.ScoreMode) {
             this.ScoreNode.Title = this.Title.value;
             this.ScoreNode.Subtitle = this.Subtitle.value;
         }

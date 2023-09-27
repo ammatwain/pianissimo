@@ -10,6 +10,7 @@ import { LibraryNode } from "./LibraryNode";
 import { ScoreNode } from "./ScoreNode";
 import { ASModal } from "./ASModal";
 import { ASModalScore } from "./ASModalScore";
+import { MusicScore } from "./MusicScore";
 
 ASCSS.SheetNode = {
 };
@@ -216,8 +217,10 @@ export class SheetNode extends LibraryNode {
     }
 
     public doSelected(): void{
-        ;
-        console.log(this.SheetId, "SELECTED!");
+        const musicScore: MusicScore = <MusicScore>document.querySelector("music-score");
+        if (musicScore) {
+            musicScore.SheetNode = this;
+        }
     }
 
     public update(): void{

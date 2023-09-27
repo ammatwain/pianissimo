@@ -194,7 +194,6 @@ export class SheetClass extends LibraryClass {
         this.done = new TFifteenKeys();
         this.loop = new TFifteenKeys();
         this.practiceKeys.Values = this.SheetObject.practiceKeys;
-        console.log(this.practiceKeys.Values);
         this.shot.Values = this.SheetObject.shot;
         this.done.Values = this.SheetObject.done;
         this.loop.Values = this.SheetObject.loop;
@@ -421,7 +420,6 @@ export class SheetClass extends LibraryClass {
     }
 
     protected updateField(field: string, value: any): boolean {
-        console.log(field,value);
         if (field in this.SheetObject) {
             return this.$updateDb({
                 table:"sheets",

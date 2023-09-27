@@ -33,34 +33,47 @@ body>#footer{
 }
 
 body>#central{
+    background-color: yellow;
     box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 30% 1fr 20%;
+    //display: grid;
+    display: block;
+    //grid-template-columns: auto 1fr 20%;
     overflow: hidden;
-    overflow-y: auto;
+    position: relative;
 }
 
 body>#central>#left,
 body>#central>#left{
-    background-color: rgba(0,0,0,0.1);
+    background-color: #ffffff;
     box-sizing: border-box;
+    display: inline-block;
     max-height: 100%;
-    max-width: 100%;
     min-height: 100%;
-    min-width: 100%;
+    opacity: 0;
     overflow: hidden;
     overflow-y: auto;
     padding: 4px;
+    position: relative;
+    transform: translate(calc(-100% + 24px),0);
+    transition: transform,opacity 1s ease-out;
+    &:hover{
+        opacity: 1;
+        transform: translate(0%,0);
+    }
 }
 
 body>#central>#main{
     background-color: white;
+    bottom: 0px;
     box-sizing: border-box;
+    left: 0px;
     max-height: 100%;
     max-width: 100%;
     min-height: 100%;
     min-width: 100%;
     overflow: hidden;
     overflow-y: auto;
-    position: relative;
+    position: absolute;
+    right: 0px;
+    top: 0px;
 }

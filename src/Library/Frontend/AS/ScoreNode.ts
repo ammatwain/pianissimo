@@ -4,6 +4,7 @@ import { LibraryNode } from "./LibraryNode";
 import { RackNode } from "./RackNode";
 import { ASModalScore } from "./ASModalScore";
 import { SheetNode } from "./SheetNode";
+import { MusicScore } from "./MusicScore";
 
 ASCSS.ScoreNode = {
 };
@@ -197,6 +198,13 @@ export class ScoreNode extends LibraryNode {
     public update(): void{
         this.$Caption = this.ScoreClass.Title;
         console.log(this.constructor.name, "updated");
+    }
+
+    public doSelected(): void {
+        const musicScore: MusicScore = <MusicScore>document.querySelector("music-score");
+        if (musicScore) {
+            musicScore.SheetNode = this.DefaultSheet;
+        }
     }
 }
 

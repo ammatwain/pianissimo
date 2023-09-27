@@ -186,7 +186,8 @@ export class ASCore extends AS {
     private $processTemplateObject(cssTemplate: any, parents: string = ""): string{
         let s: string = "";
         if (cssTemplate instanceof Object) {
-            Object.keys(cssTemplate).forEach((cssTemplateKey)=>{
+            Object.keys(cssTemplate).forEach((cssTemplateKey: string)=>{
+                // INIZIO ORIGINALE
                 const value: any = cssTemplate[cssTemplateKey];
                 if (value instanceof Object){
                     if (parents !== "") {s += "}\r\n";}
@@ -195,6 +196,7 @@ export class ASCore extends AS {
                 } else {
                     s += `\t${cssTemplateKey}:${value};\r\n`;
                 }
+                // FINE ORIGINALE
             });
             if (parents === "") {s += "}\r\n";}
         }
