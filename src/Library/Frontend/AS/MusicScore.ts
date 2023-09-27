@@ -11,18 +11,20 @@ ASCSS.MusicScore = {
     "bottom":"0px",
     "display":"block",
     "left":"0px",
-    "position":"relative",
+    "position":"absolute",
     "right":"0px",
     "top":"0px",
     ">.canvas":{
         "background-color":"#f5f5f5",
-        "bottom":"0px",
         "display":"block",
         "left":"0px",
+        "max-height":"100%",
+        "max-width":"100%",
+        "min-height":"100%",
+        "min-width":"100%",
         "overflow":"hidden",
         "overflow-y":"auto",
-        "position":"relative",
-        "right":"0px",
+        "position":"absolute",
         "top":"0px",
     },
     ">.sleeper":{
@@ -99,16 +101,17 @@ export class MusicScore extends ASCore {
                     if (musicXmlObject) {
                         this.OSMD.load(musicXmlObject.musicXml).then(() => {
                             // trasposition
+                            console.log(this.ETC.Options.OSMD.TransposeCalculator);
                             this.ETC.Options.transposeToKey(this.SheetClass.ActiveKey);
                             console.log(this.SheetClass.MeasureStart);
                             console.log(this.SheetClass.MeasureEnd);
                             this.OSMD.setOptions({
                                 measureNumberInterval: 1,
-                                drawFromMeasureNumber: this.SheetClass.MeasureStart+1,
-                                drawUpToMeasureNumber: this.SheetClass.MeasureEnd+1,
-                                //defaultColorMusic: "#cccccc",
-                           });
-        
+                                drawFromMeasureNumber: this.SheetClass.MeasureStart,
+                                drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
+                                defaultColorMusic: "#1f1f1f",
+                            });
+
                             this.OSMD.updateGraphic();
                             this.OSMD.render();
                         });
@@ -174,7 +177,8 @@ export class MusicScore extends ASCore {
                 followCursor: true,
             });
 
-            this.etc = new ExtendedTransposeCalculator(this.osmd );
+            this.etc = new ExtendedTransposeCalculator(this.osmd);
+            this.OSMD.TransposeCalculator = this.ETC;
 
             this.sleeperHide();
         });
@@ -188,6 +192,9 @@ export class MusicScore extends ASCore {
         this.Sleeper.style.display="block";
     }
 
+    public update(): void {
+
+    }
 }
 
 customElements.define("music-score", MusicScore);

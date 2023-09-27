@@ -193,8 +193,8 @@ export class Letture extends Store {
             if (scoreObject) {
                 sheetObject.practiceKeys = [scoreObject.mainKey];
                 sheetObject.activeKey = scoreObject.mainKey;
-                sheetObject.measureStart = 0;
-                sheetObject.measureEnd = scoreObject.measures - 1 ;
+                sheetObject.measureStart = 1;
+                sheetObject.measureEnd = scoreObject.measures;
                 sheetObject.hiddenParts = {};
                 sheetObject.transposeSettings = {
                     type:"transposeByKey",

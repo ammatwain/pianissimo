@@ -134,8 +134,8 @@ export class MeasureRange extends ASCore {
         if(max<1) {
             throw new Error("Bad measure value");
         }
-        this.min = 0;
-        this.max = max -1;
+        this.min = 1;
+        this.max = max;
 
         this.InputMin.setAttribute("min",String(this.Min));
         this.InputMin.setAttribute("max",String(this.Max));
@@ -174,7 +174,7 @@ export class MeasureRange extends ASCore {
         if (Number(this.InputMax.value) !== measureEnd) {
             this.InputMax.value = String(measureEnd);
         }
-        this.LabelMax.textContent = String(measureEnd+1);
+        this.LabelMax.textContent = String(measureEnd);
     }
 
     public get MeasureStart(): number {
@@ -189,7 +189,7 @@ export class MeasureRange extends ASCore {
         if (Number(this.InputMin.value) !== measureStart) {
             this.InputMin.value = String(measureStart);
         }
-        this.LabelMin.textContent = String(measureStart+1);
+        this.LabelMin.textContent = String(measureStart);
     }
 
     public get Max(): number {
