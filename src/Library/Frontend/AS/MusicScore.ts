@@ -95,7 +95,6 @@ export class MusicScore extends ASCore {
 
     public set MusicXmlId(musicXmlId: number) {
         if (this.musicXmlId !== musicXmlId) {
-            this.musicXmlId = musicXmlId;
             if (this.ScoreNode && this.ScoreNode.ScoreId === this.musicXmlId) {
                 this.ScoreNode.Library.getMusicXmlObject(this.musicXmlId ).then((musicXmlObject: TMusicXmlObject) =>{
                     if (musicXmlObject) {
