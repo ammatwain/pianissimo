@@ -274,7 +274,7 @@ export class MusicScore extends ASCore {
     colorizeIstructions(color: string = "#ff0000"): void {
         for (let m: number = 0; m < this.OSMD.GraphicSheet. MeasureList.length; m++) {
             for (let s: number = 0; s < this.OSMD.GraphicSheet.MeasureList[m].length; s++) {
-                for (let se: number = 0; se < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries.length; se++) {
+                for (let se: number = 0; se < this.OSMD.GraphicSheet.MusicPages[0].MusicSystems[0].StaffLines[0].  MeasureList[m][s].staffEntries.length; se++) {
                     for (let gve: number = 0; gve < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries.length; gve++) {
                         for (
                             let note: number = 0;
