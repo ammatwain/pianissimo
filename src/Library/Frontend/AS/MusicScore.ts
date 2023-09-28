@@ -97,7 +97,7 @@ export class MusicScore extends ASCore {
 
     public set MusicXmlId(musicXmlId: number) {
         if (this.musicXmlId !== musicXmlId) {
-            this.musicXmlId = musicXmlId
+            this.musicXmlId = musicXmlId;
             if (this.ScoreNode && this.ScoreNode.ScoreId === this.musicXmlId) {
                 this.update();
             }
@@ -197,7 +197,7 @@ export class MusicScore extends ASCore {
                         measureNumberInterval: 1,
                         drawFromMeasureNumber: this.SheetClass.MeasureStart,
                         drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
-                        defaultColorMusic: "#1f1f1f",
+                        //defaultColorMusic: "#1f1f1f",
                     });
                     // strings
                     if (this.ScoreMode){
@@ -227,20 +227,86 @@ export class MusicScore extends ASCore {
                         });
                         */
                     });
-                    for (let i: 0; i < this.OSMD.GraphicSheet.MeasureList.length; i++) {
-                        const graphicalNote: any = this.OSMD.GraphicSheet.MeasureList[0][0].staffEntries[0].graphicalVoiceEntries[0].notes[0];
-                        console.log(graphicalNote);
-                        graphicalNote.getSVGGElement().children[0].children[0].children[0].style.fill = "#FF0000";
-                    }
                     this.OSMD.render();
-                    const graphicalNote: GraphicalNote = this.OSMD.GraphicSheet.MeasureList[0][0].staffEntries[0].graphicalVoiceEntries[0].notes[0];
-                    console.log(graphicalNote);
-                    graphicalNote.getSVGGElement().children[0].children[0].children[0].style.fill = "#FF0000";
+                    //this.colorizeNotes("red");
                     this.sleeperHide();
                 });
             }
         });
     }
+
+    colorizeNotes(color: string = "#ff0000"): void {
+        for (let m: number = 0; m < this.OSMD.GraphicSheet.MeasureList.length; m++) {
+            for (let s: number = 0; s < this.OSMD.GraphicSheet.MeasureList[m].length; s++) {
+                for (let se: number = 0; se < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries.length; se++) {
+                    for (let gve: number = 0; gve < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries.length; gve++) {
+                        for (
+                            let note: number = 0;
+                            note < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes.length;
+                            note++)
+                        {
+                            const graphicalNote: any =
+                            this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes[note];
+                            const svg: any = graphicalNote.getSVGGElement();
+                            if ("children" in svg){
+                                for (let a: number = 0; a<svg.children.length; a++){
+                                    console.log(`a:${a}`);
+                                    if ("children" in svg.children[a]){
+                                        for (let b: number = 0; b<svg.children[a].children.length; b++){
+                                            console.log(`a:${a}, b:${b}`);
+                                            if ("children" in svg.children[a].children[b]){
+                                                for (let c: number = 0; c<svg.children[a].children[b].children.length; c++){
+                                                    console.log(`a:${a}, b:${b}, c:${c}`);
+                                                    svg.children[a].children[b].children[c].style.fill = color;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+/*
+    colorizeIstructions(color: string = "#ff0000"): void {
+        for (let m: number = 0; m < this.OSMD.GraphicSheet. MeasureList.length; m++) {
+            for (let s: number = 0; s < this.OSMD.GraphicSheet.MeasureList[m].length; s++) {
+                for (let se: number = 0; se < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries.length; se++) {
+                    for (let gve: number = 0; gve < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries.length; gve++) {
+                        for (
+                            let note: number = 0;
+                            note < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes.length;
+                            note++)
+                        {
+                            const graphicalNote: any =
+                            this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalLink.GetStaffEntryLink.;
+                            const svg: any = graphicalNote.getSVGGElement();
+                            if ("children" in svg){
+                                for (let a: number = 0; a<svg.children.length; a++){
+                                    console.log(`a:${a}`);
+                                    if ("children" in svg.children[a]){
+                                        for (let b: number = 0; b<svg.children[a].children.length; b++){
+                                            console.log(`a:${a}, b:${b}`);
+                                            if ("children" in svg.children[a].children[b]){
+                                                for (let c: number = 0; c<svg.children[a].children[b].children.length; c++){
+                                                    console.log(`a:${a}, b:${b}, c:${c}`);
+                                                    svg.children[a].children[b].children[c].style.fill = color;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    */
 }
 
 customElements.define("music-score", MusicScore);
