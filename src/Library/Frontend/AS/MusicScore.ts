@@ -233,7 +233,7 @@ export class MusicScore extends ASCore {
                         graphicalNote.getSVGGElement().children[0].children[0].children[0].style.fill = "#FF0000";
                     }
                     this.OSMD.render();
-                    const graphicalNote: any = this.OSMD.GraphicSheet.MeasureList[0][0].staffEntries[0].graphicalVoiceEntries[0].notes[0];
+                    const graphicalNote: GraphicalNote = this.OSMD.GraphicSheet.MeasureList[0][0].staffEntries[0].graphicalVoiceEntries[0].notes[0];
                     console.log(graphicalNote);
                     graphicalNote.getSVGGElement().children[0].children[0].children[0].style.fill = "#FF0000";
                     this.sleeperHide();
