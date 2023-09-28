@@ -95,10 +95,10 @@ if(!(app.isPackaged && FS.existsSync(Config.Database))) {
 */
 
     // COPY DEFAULT DB
-    FS.copyFileSync(
-        PATH.resolve(__dirname,"Data/pianissimo.db"),
-        Config.Database
-    );
+    //FS.copyFileSync(
+    //    PATH.resolve(__dirname,"Data/pianissimo.db"),
+    //    Config.Database
+    //);
 }
 
 const letture: Letture =  new Letture(Config.Database);

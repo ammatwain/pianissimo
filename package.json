@@ -1,7 +1,7 @@
 {
     "name": "pianissimo",
     "productName": "pianissimo",
-    "version": "0.2.894",
+    "version": "0.2.898",
     "description": "pianissimo",
     "main": ".webpack/main",
     "scripts": {
@@ -62,7 +62,7 @@
         "browser-or-node": "^2.1.1",
         "directory-tree": "^3.5.1",
         "electron-squirrel-startup": "^1.0.0",
-        "extended-transpose-calculator": "github:ammatwain/ExtendedTransposeCalculator",
+        "extended-transpose-calculator": "^0.2.32",
         "glob": "^10.3.3",
         "md5-file": "^5.0.0",
         "npm-run-all": "^4.1.5",

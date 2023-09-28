@@ -1,8 +1,8 @@
 import { ASCore } from "./ASCore";
-import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { OpenSheetMusicDisplay, GraphicalNote } from "opensheetmusicdisplay";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import { WebMidi, Input as MidiInput } from "../WebMidi";
-import { ScoreClass, SheetClass, TMusicXmlObject } from "@Common/DataObjects";
+import { ScoreClass, SheetClass, THiddenPart, TMusicXmlObject } from "@Common/DataObjects";
 import { ASCSS } from "./ASCSS";
 import { SheetNode } from "./SheetNode";
 import { ScoreNode } from "./ScoreNode";
@@ -29,11 +29,13 @@ ASCSS.MusicScore = {
     },
     ">.sleeper":{
         "background-color":"rgba(0,0,0,0.5)",
-        "bottom":"0px",
         "display":"block",
         "left":"0px",
+        "max-height":"100%",
+        "max-width":"100%",
+        "min-height":"100%",
+        "min-width":"100%",
         "position":"absolute",
-        "right":"0px",
         "top":"0px",
         ":before":{
             "content":"'wait'",
@@ -59,7 +61,7 @@ export class MusicScore extends ASCore {
 
         this.$Elements.sleeper = <HTMLDivElement>document.createElement("div");
         this.$Elements.sleeper.classList.add("sleeper");
-        this.appendChild(this.$Elements.sleeper);
+        this.sleeperShow();
         super.$preConnect();
     }
 
@@ -95,29 +97,19 @@ export class MusicScore extends ASCore {
 
     public set MusicXmlId(musicXmlId: number) {
         if (this.musicXmlId !== musicXmlId) {
+            this.musicXmlId = musicXmlId
             if (this.ScoreNode && this.ScoreNode.ScoreId === this.musicXmlId) {
-                this.ScoreNode.Library.getMusicXmlObject(this.musicXmlId ).then((musicXmlObject: TMusicXmlObject) =>{
-                    if (musicXmlObject) {
-                        this.OSMD.load(musicXmlObject.musicXml).then(() => {
-                            // trasposition
-                            console.log(this.ETC.Options.OSMD.TransposeCalculator);
-                            this.ETC.Options.transposeToKey(this.SheetClass.ActiveKey);
-                            console.log(this.SheetClass.MeasureStart);
-                            console.log(this.SheetClass.MeasureEnd);
-                            this.OSMD.setOptions({
-                                measureNumberInterval: 1,
-                                drawFromMeasureNumber: this.SheetClass.MeasureStart,
-                                drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
-                                defaultColorMusic: "#1f1f1f",
-                            });
-
-                            this.OSMD.updateGraphic();
-                            this.OSMD.render();
-                        });
-                    }
-                });
+                this.update();
             }
         }
+    }
+
+    public get ScoreMode(): boolean {
+        return this.ScoreNode.DefaultSheet === this.SheetNode;
+    }
+
+    public get SheetMode(): boolean {
+        return !this.ScoreMode;
     }
 
     public get ScoreNode(): ScoreNode {
@@ -175,24 +167,79 @@ export class MusicScore extends ASCore {
                 disableCursor: false,
                 followCursor: true,
             });
-
+            console.log();
             this.etc = new ExtendedTransposeCalculator(this.osmd);
             this.OSMD.TransposeCalculator = this.ETC;
-
+            console.log("this.OSMD, this.ETC)", this.OSMD, this.ETC);
             this.sleeperHide();
         });
     }
 
     public sleeperHide(): void {
-        this.Sleeper.style.display="none";
+        this.removeChild(this.$Elements.sleeper);
     }
 
     public sleeperShow(): void {
-        this.Sleeper.style.display="block";
+        this.appendChild(this.$Elements.sleeper);
     }
 
     public update(): void {
+        this.ScoreNode.Library.getMusicXmlObject(this.musicXmlId ).then((musicXmlObject: TMusicXmlObject) =>{
+            if (musicXmlObject) {
+                this.OSMD.load(musicXmlObject.musicXml).then(() => {
+                    this.sleeperShow();
+                    // trasposition
+                    console.log(this.ETC.Options.OSMD.TransposeCalculator);
+                    this.ETC.Options.transposeToKey(this.SheetClass.ActiveKey);
+                    console.log(this.SheetClass.MeasureStart);
+                    console.log(this.SheetClass.MeasureEnd);
+                    this.OSMD.setOptions({
+                        measureNumberInterval: 1,
+                        drawFromMeasureNumber: this.SheetClass.MeasureStart,
+                        drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
+                        defaultColorMusic: "#1f1f1f",
+                    });
+                    // strings
+                    if (this.ScoreMode){
+                        this.OSMD.Sheet.TitleString = this.ScoreNode.Title;
+                        this.OSMD.Sheet.SubtitleString = this.ScoreNode.Subtitle;
+                    } else {
+                        this.OSMD.Sheet.TitleString = `${this.ScoreNode.Title} - ${this.SheetNode.Title}`;
+                        this.OSMD.Sheet.SubtitleString = `${this.ScoreNode.Subtitle} - ${this.SheetNode.Subtitle}`;
+                    }
+                    this.OSMD.Sheet.ComposerString = this.ScoreNode.Author;
+                    //
+                    console.log("instruments", this.OSMD.Sheet.Instruments.length);
+                    this.OSMD.updateGraphic();
 
+                    Object.keys(this.SheetNode.HiddenParts).forEach((key: string) => {
+                        const keyNumber: number = Number(key);
+                        this.OSMD.Sheet.Parts[keyNumber].Visible = false;
+                        /*
+                        console.log("instrument", this.OSMD.Sheet.Instruments[keyNumber].Voices.length);
+                        const staves: number[] = this.SheetNode.HiddenParts[key];
+                        staves.forEach((staff: number) => {
+                            staff = Number(staff);
+                            this.OSMD.Sheet.Parts[keyNumber].Voices[staff].Visible = false
+                            console.log(
+                                this.OSMD.Sheet.Parts[keyNumber].Voices[staff].Visible
+                            );
+                        });
+                        */
+                    });
+                    for (let i: 0; i < this.OSMD.GraphicSheet.MeasureList.length; i++) {
+                        const graphicalNote: any = this.OSMD.GraphicSheet.MeasureList[0][0].staffEntries[0].graphicalVoiceEntries[0].notes[0];
+                        console.log(graphicalNote);
+                        graphicalNote.getSVGGElement().children[0].children[0].children[0].style.fill = "#FF0000";
+                    }
+                    this.OSMD.render();
+                    const graphicalNote: any = this.OSMD.GraphicSheet.MeasureList[0][0].staffEntries[0].graphicalVoiceEntries[0].notes[0];
+                    console.log(graphicalNote);
+                    graphicalNote.getSVGGElement().children[0].children[0].children[0].style.fill = "#FF0000";
+                    this.sleeperHide();
+                });
+            }
+        });
     }
 }
 
