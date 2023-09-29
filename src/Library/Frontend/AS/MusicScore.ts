@@ -1,5 +1,5 @@
 import { ASCore } from "./ASCore";
-import { OpenSheetMusicDisplay, GraphicalNote } from "opensheetmusicdisplay";
+import { ExtendedOpenSheetMusicDisplay } from "../Extends/ExtendedOpenMusicDisplayManager";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import { WebMidi, Input as MidiInput } from "../WebMidi";
 import { ScoreClass, SheetClass, THiddenPart, TMusicXmlObject } from "@Common/DataObjects";
@@ -49,7 +49,7 @@ ASCSS.MusicScore = {
 
 export class MusicScore extends ASCore {
     private sheetNode: SheetNode;
-    private osmd: OpenSheetMusicDisplay;
+    private osmd: ExtendedOpenSheetMusicDisplay;
     private etc: ExtendedTransposeCalculator;
     private midiInput: MidiInput;
     private musicXmlId: number = null;
@@ -79,7 +79,7 @@ export class MusicScore extends ASCore {
         }
     }
 
-    public get OSMD(): OpenSheetMusicDisplay {
+    public get OSMD(): ExtendedOpenSheetMusicDisplay {
         return this.osmd || null;
     }
 
@@ -96,12 +96,12 @@ export class MusicScore extends ASCore {
     }
 
     public set MusicXmlId(musicXmlId: number) {
-        if (this.musicXmlId !== musicXmlId) {
+        //if (this.musicXmlId !== musicXmlId) {
             this.musicXmlId = musicXmlId;
             if (this.ScoreNode && this.ScoreNode.ScoreId === this.musicXmlId) {
                 this.update();
             }
-        }
+        //}
     }
 
     public get ScoreMode(): boolean {
@@ -160,7 +160,7 @@ export class MusicScore extends ASCore {
         WebMidi.enable().then(() => {
             console.log("WebMidi.js has been enabled!");
             // osmd
-            this.osmd = new OpenSheetMusicDisplay(this.Canvas, {
+            this.osmd = new ExtendedOpenSheetMusicDisplay(this.Canvas, {
                 backend: "svg",
                 drawTitle: true,
                 drawSubtitle: true,
@@ -190,13 +190,18 @@ export class MusicScore extends ASCore {
                     this.sleeperShow();
                     // trasposition
                     console.log(this.ETC.Options.OSMD.TransposeCalculator);
-                    this.ETC.Options.transposeToKey(this.SheetClass.ActiveKey);
+                    this.ETC.Options.transposeToKeyRelation(this.SheetClass.ActiveKey);
                     console.log(this.SheetClass.MeasureStart);
                     console.log(this.SheetClass.MeasureEnd);
+
+                    this.OSMD.HiddenParts = this.SheetClass.HiddenParts;
+                    this.OSMD.MeasureStart = this.SheetClass.MeasureStart;
+                    this.OSMD.MeasureEnd = this.SheetClass.MeasureEnd;
+
                     this.OSMD.setOptions({
                         measureNumberInterval: 1,
-                        drawFromMeasureNumber: this.SheetClass.MeasureStart,
-                        drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
+                        //drawFromMeasureNumber: this.SheetClass.MeasureStart,
+                        //drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
                         //defaultColorMusic: "#1f1f1f",
                     });
                     // strings
@@ -211,11 +216,10 @@ export class MusicScore extends ASCore {
                     //
                     console.log("instruments", this.OSMD.Sheet.Instruments.length);
                     this.OSMD.updateGraphic();
-
+/*
                     Object.keys(this.SheetNode.HiddenParts).forEach((key: string) => {
                         const keyNumber: number = Number(key);
                         this.OSMD.Sheet.Parts[keyNumber].Visible = false;
-                        /*
                         console.log("instrument", this.OSMD.Sheet.Instruments[keyNumber].Voices.length);
                         const staves: number[] = this.SheetNode.HiddenParts[key];
                         staves.forEach((staff: number) => {
@@ -225,95 +229,14 @@ export class MusicScore extends ASCore {
                                 this.OSMD.Sheet.Parts[keyNumber].Voices[staff].Visible
                             );
                         });
-                        */
                     });
+*/
                     this.OSMD.render();
-                    this.colorizeNotes("red");
                     this.sleeperHide();
                 });
             }
         });
     }
-
-    colorizeNotes(color: string = "#ff0000"): void {
-        for (let m: number = 0; m < this.OSMD.GraphicSheet.MeasureList.length; m++) {
-            for (let s: number = 0; s < this.OSMD.GraphicSheet.MeasureList[m].length; s++) {
-                for (let se: number = 0; se < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries.length; se++) {
-                    for (let gve: number = 0; gve < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries.length; gve++) {
-                        for (
-                            let note: number = 0;
-                            note < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes.length;
-                            note++)
-                        {
-                            const graphicalNote: any =
-                            this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes[note];
-                            const svg: any = graphicalNote.getSVGGElement();
-                            if (svg && "children" in svg){
-                                svg.style.fill = color;
-                                svg.style.stroke = color;
-                                for (let a: number = 0; a<svg.children.length; a++){
-                                    console.log(`a:${a}`);
-                                    svg.children[a].style.fill = color;
-                                    svg.children[a].style.stroke = color;
-                                    if ("children" in svg.children[a]){
-                                        for (let b: number = 0; b<svg.children[a].children.length; b++){
-                                            console.log(`a:${a}, b:${b}`);
-                                            svg.children[a].children[b].style.fill = color;
-                                            svg.children[a].children[b].style.stroke = color;
-                                            if ("children" in svg.children[a].children[b]){
-                                                for (let c: number = 0; c<svg.children[a].children[b].children.length; c++){
-                                                    console.log(`a:${a}, b:${b}, c:${c}`);
-                                                    svg.children[a].children[b].children[c].style.fill = color;
-                                                    svg.children[a].children[b].children[c].style.stroke = color;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-/*
-    colorizeIstructions(color: string = "#ff0000"): void {
-        for (let m: number = 0; m < this.OSMD.GraphicSheet. MeasureList.length; m++) {
-            for (let s: number = 0; s < this.OSMD.GraphicSheet.MeasureList[m].length; s++) {
-                for (let se: number = 0; se < this.OSMD.GraphicSheet.MusicPages[0].MusicSystems[0].StaffLines[0].  MeasureList[m][s].staffEntries.length; se++) {
-                    for (let gve: number = 0; gve < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries.length; gve++) {
-                        for (
-                            let note: number = 0;
-                            note < this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes.length;
-                            note++)
-                        {
-                            const graphicalNote: any =
-                            this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalLink.GetStaffEntryLink.;
-                            const svg: any = graphicalNote.getSVGGElement();
-                            if ("children" in svg){
-                                for (let a: number = 0; a<svg.children.length; a++){
-                                    console.log(`a:${a}`);
-                                    if ("children" in svg.children[a]){
-                                        for (let b: number = 0; b<svg.children[a].children.length; b++){
-                                            console.log(`a:${a}, b:${b}`);
-                                            if ("children" in svg.children[a].children[b]){
-                                                for (let c: number = 0; c<svg.children[a].children[b].children.length; c++){
-                                                    console.log(`a:${a}, b:${b}, c:${c}`);
-                                                    svg.children[a].children[b].children[c].style.fill = color;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    */
 }
 
 customElements.define("music-score", MusicScore);
