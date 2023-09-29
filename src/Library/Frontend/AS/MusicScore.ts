@@ -228,7 +228,7 @@ export class MusicScore extends ASCore {
                         */
                     });
                     this.OSMD.render();
-                    //this.colorizeNotes("red");
+                    this.colorizeNotes("red");
                     this.sleeperHide();
                 });
             }
@@ -248,16 +248,23 @@ export class MusicScore extends ASCore {
                             const graphicalNote: any =
                             this.OSMD.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes[note];
                             const svg: any = graphicalNote.getSVGGElement();
-                            if ("children" in svg){
+                            if (svg && "children" in svg){
+                                svg.style.fill = color;
+                                svg.style.stroke = color;
                                 for (let a: number = 0; a<svg.children.length; a++){
                                     console.log(`a:${a}`);
+                                    svg.children[a].style.fill = color;
+                                    svg.children[a].style.stroke = color;
                                     if ("children" in svg.children[a]){
                                         for (let b: number = 0; b<svg.children[a].children.length; b++){
                                             console.log(`a:${a}, b:${b}`);
+                                            svg.children[a].children[b].style.fill = color;
+                                            svg.children[a].children[b].style.stroke = color;
                                             if ("children" in svg.children[a].children[b]){
                                                 for (let c: number = 0; c<svg.children[a].children[b].children.length; c++){
                                                     console.log(`a:${a}, b:${b}, c:${c}`);
                                                     svg.children[a].children[b].children[c].style.fill = color;
+                                                    svg.children[a].children[b].children[c].style.stroke = color;
                                                 }
                                             }
                                         }
