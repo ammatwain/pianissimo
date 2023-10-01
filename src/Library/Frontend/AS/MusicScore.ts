@@ -1,11 +1,10 @@
 import { ASCore } from "./ASCore";
-import { ExtendedOpenSheetMusicDisplay } from "../Extends/ExtendedOpenMusicDisplayManager";
-import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
-import { WebMidi, Input as MidiInput } from "../WebMidi";
 import { ScoreClass, SheetClass, THiddenPart, TMusicXmlObject } from "@Common/DataObjects";
 import { ASCSS } from "./ASCSS";
 import { SheetNode } from "./SheetNode";
 import { ScoreNode } from "./ScoreNode";
+import { Maestro } from "../Maestro";
+import { STR } from "@Library/Global/STR";
 
 ASCSS.MusicScore = {
     "bottom":"0px",
@@ -48,11 +47,14 @@ ASCSS.MusicScore = {
 };
 
 export class MusicScore extends ASCore {
+    private maestro: Maestro;
     private sheetNode: SheetNode;
-    private osmd: ExtendedOpenSheetMusicDisplay;
-    private etc: ExtendedTransposeCalculator;
-    private midiInput: MidiInput;
     private musicXmlId: number = null;
+
+    public $alwaysConnect(): void {
+        super.$alwaysConnect();
+        this.maestro = new Maestro(this);
+    }
 
     public $preConnect(): void {
         this.$Elements.canvas = <HTMLDivElement>document.createElement("div");
@@ -69,18 +71,10 @@ export class MusicScore extends ASCore {
         return <HTMLDivElement>this.$Elements.canvas;
     }
 
-    public get ETC(): ExtendedTransposeCalculator {
-        return this.etc || null;
-    }
-
     public get Id(): number {
         if (this.SheetClass) {
             return this.SheetClass.SheetId;
         }
-    }
-
-    public get OSMD(): ExtendedOpenSheetMusicDisplay {
-        return this.osmd || null;
     }
 
     public get ScoreClass(): ScoreClass {
@@ -155,26 +149,6 @@ export class MusicScore extends ASCore {
         return <HTMLDivElement>this.$Elements.sleeper;
     }
 
-    public $alwaysConnect(): void {
-        super.$alwaysConnect();
-        WebMidi.enable().then(() => {
-            console.log("WebMidi.js has been enabled!");
-            // osmd
-            this.osmd = new ExtendedOpenSheetMusicDisplay(this.Canvas, {
-                backend: "svg",
-                drawTitle: true,
-                drawSubtitle: true,
-                disableCursor: false,
-                followCursor: true,
-            });
-            console.log();
-            this.etc = new ExtendedTransposeCalculator(this.osmd);
-            this.OSMD.TransposeCalculator = this.ETC;
-            console.log("this.OSMD, this.ETC)", this.OSMD, this.ETC);
-            this.sleeperHide();
-        });
-    }
-
     public sleeperHide(): void {
         this.removeChild(this.$Elements.sleeper);
     }
@@ -186,19 +160,17 @@ export class MusicScore extends ASCore {
     public update(): void {
         this.ScoreNode.Library.getMusicXmlObject(this.musicXmlId ).then((musicXmlObject: TMusicXmlObject) =>{
             if (musicXmlObject) {
-                this.OSMD.load(musicXmlObject.musicXml).then(() => {
+                this.maestro.loadXmSheet(musicXmlObject.musicXml, this.SheetNode);
+/*
+                this.maestro.OSMD.load(musicXmlObject.musicXml).then(() => {
                     this.sleeperShow();
                     // trasposition
-                    console.log(this.ETC.Options.OSMD.TransposeCalculator);
-                    this.ETC.Options.transposeToKeyRelation(this.SheetClass.ActiveKey);
-                    console.log(this.SheetClass.MeasureStart);
-                    console.log(this.SheetClass.MeasureEnd);
+                    this.maestro.ETC.Options.transposeToKey(this.SheetClass.ActiveKey);
+                    this.maestro.OSMD.HiddenParts = this.SheetClass.HiddenParts;
+                    this.maestro.OSMD.MeasureStart = this.SheetClass.MeasureStart;
+                    this.maestro.OSMD.MeasureEnd = this.SheetClass.MeasureEnd;
 
-                    this.OSMD.HiddenParts = this.SheetClass.HiddenParts;
-                    this.OSMD.MeasureStart = this.SheetClass.MeasureStart;
-                    this.OSMD.MeasureEnd = this.SheetClass.MeasureEnd;
-
-                    this.OSMD.setOptions({
+                    this.maestro.OSMD.setOptions({
                         measureNumberInterval: 1,
                         //drawFromMeasureNumber: this.SheetClass.MeasureStart,
                         //drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
@@ -206,34 +178,20 @@ export class MusicScore extends ASCore {
                     });
                     // strings
                     if (this.ScoreMode){
-                        this.OSMD.Sheet.TitleString = this.ScoreNode.Title;
-                        this.OSMD.Sheet.SubtitleString = this.ScoreNode.Subtitle;
+                        this.maestro.OSMD.Sheet.TitleString = this.ScoreNode.Title;
+                        this.maestro.OSMD.Sheet.SubtitleString = this.ScoreNode.Subtitle;
                     } else {
-                        this.OSMD.Sheet.TitleString = `${this.ScoreNode.Title} - ${this.SheetNode.Title}`;
-                        this.OSMD.Sheet.SubtitleString = `${this.ScoreNode.Subtitle} - ${this.SheetNode.Subtitle}`;
+                        this.maestro.OSMD.Sheet.TitleString = `${this.ScoreNode.Title} - ${this.SheetNode.Title}`;
+                        this.maestro.OSMD.Sheet.SubtitleString = `${this.ScoreNode.Subtitle} - ${this.SheetNode.Subtitle}`;
                     }
-                    this.OSMD.Sheet.ComposerString = this.ScoreNode.Author;
-                    //
-                    console.log("instruments", this.OSMD.Sheet.Instruments.length);
-                    this.OSMD.updateGraphic();
-/*
-                    Object.keys(this.SheetNode.HiddenParts).forEach((key: string) => {
-                        const keyNumber: number = Number(key);
-                        this.OSMD.Sheet.Parts[keyNumber].Visible = false;
-                        console.log("instrument", this.OSMD.Sheet.Instruments[keyNumber].Voices.length);
-                        const staves: number[] = this.SheetNode.HiddenParts[key];
-                        staves.forEach((staff: number) => {
-                            staff = Number(staff);
-                            this.OSMD.Sheet.Parts[keyNumber].Voices[staff].Visible = false
-                            console.log(
-                                this.OSMD.Sheet.Parts[keyNumber].Voices[staff].Visible
-                            );
-                        });
-                    });
-*/
-                    this.OSMD.render();
+                    this.maestro.OSMD.Sheet.ComposerString = this.ScoreNode.Author;
+                    this.maestro.OSMD.updateGraphic();
+                    this.maestro.OSMD.render();
+                    this.maestro.reset();
+                    //sthis.maestro.OSMD.cursor.show();
                     this.sleeperHide();
                 });
+*/
             }
         });
     }

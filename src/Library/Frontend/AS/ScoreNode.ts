@@ -202,7 +202,6 @@ export class ScoreNode extends LibraryNode {
 
     public doSelected(): void {
         const musicScore: MusicScore = <MusicScore>document.querySelector("music-score");
-        console.log(musicScore);
         if (musicScore) {
             musicScore.SheetNode = this.DefaultSheet;
         }

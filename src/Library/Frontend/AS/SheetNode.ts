@@ -216,6 +216,30 @@ export class SheetNode extends LibraryNode {
         return this.SheetClass.practiceKeysExists(practiceKey);
     }
 
+    public shotAdd(key: number, value: number): boolean {
+        return this.SheetClass.shotAdd(key,value);
+    }
+
+    public doneAdd(key: number, value: number): boolean {
+        return this.SheetClass.doneAdd(key,value);
+    }
+
+    public loopAdd(key: number, value: number): boolean {
+        return this.SheetClass.loopAdd(key,value);
+    }
+
+    public shotSet(key: number, value: number): boolean {
+        return this.SheetClass.shotSet(key,value);
+    }
+
+    public doneSet(key: number, value: number): boolean {
+        return this.SheetClass.doneSet(key,value);
+    }
+
+    public loopSet(key: number, value: number): boolean {
+        return this.SheetClass.loopSet(key,value);
+    }
+
     public doSelected(): void{
         const musicScore: MusicScore = <MusicScore>document.querySelector("music-score");
         if (musicScore) {

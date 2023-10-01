@@ -25,7 +25,7 @@ export class Application {
     }
 
     buildTree(data: any): void {
-        console.log(data);
+//        console.log(data);
         Library.LibraryName = data.libraryName;
 
         const root: LibraryNode = Library.RootNode;

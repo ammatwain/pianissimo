@@ -1,25 +1,25 @@
 import { STR } from "@Global/STR";
-import { RepetitionInstruction, Note, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { Input } from "@Frontend/WebMidi";
+import {OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+
+import { RepetitionInstruction, Note, ExtendedOpenSheetMusicDisplay } from "../Extends/ExtendedOpenMusicDisplayManager";
+import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
+import { WebMidi, Input as MidiInput, NoteMessageEvent } from "../WebMidi";
 import { SheetFlowCalculator } from "@Frontend/SheetFlow";
-import { BranchClass } from "@Frontend/BranchClass";
+import { SheetNode } from "@Frontend/AS/SheetNode";
 import { IExercise } from "@Common/Interfaces/IExercise";
 import { IBranchObject, IDiaryObject } from "@Library/Common";
-import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
-import { WTree } from "@Frontend/WTree";
-import { WBranches, WBranch } from "@Frontend/WBranch";
+import { MusicScore } from "../AS/MusicScore";
 
 //import { KeyboardInputEvent } from "electron";
 
 export interface IMaestroParams {
-    etc: ExtendedTransposeCalculator;
-    midiInputs: Input[];
-    tree?: WTree;
-    branches: WBranches;
+    musicScore: MusicScore;
 }
 
 interface IMaestroData extends IMaestroParams{
-    osmd?: OpenSheetMusicDisplay;
+    etc?: ExtendedTransposeCalculator;
+    midiInputs?: MidiInput[];
+    osmd?: ExtendedOpenSheetMusicDisplay;
     repeats: [RepetitionInstruction[],RepetitionInstruction[]][];
     flow: SheetFlowCalculator;
     midiNotes: boolean[];
@@ -29,7 +29,7 @@ interface IMaestroData extends IMaestroParams{
     exercises: IExercise[];
     currentExercise: IExercise;
     currentKey: number;
-    currentSection: BranchClass;
+    currentSheet: SheetNode;
     notesToPlay: number;
     playedNotes: number;
     errors: number;
@@ -38,8 +38,8 @@ interface IMaestroData extends IMaestroParams{
 
 export class Maestro{
     private data: IMaestroData = {
-        tree: null,
-        branches: null,
+        //tree: null,
+        //branches: null,
         etc: null,
         midiInputs: [],
         osmd : null,
@@ -63,14 +63,29 @@ export class Maestro{
             bpm: 0,
             score: 0,
         },
-        currentSection: null,
+        currentSheet: null,
     };
 
-    constructor(params: IMaestroParams){
-        this.Etc = params.etc;
-        this.MidiInputs = params.midiInputs;
-        this.Tree = params.tree;
-        this.Flow = new SheetFlowCalculator(this.Osmd);
+    constructor(musicScore: MusicScore){
+        this.MusicScore = musicScore;
+        WebMidi.enable().then(() => {
+            this.MidiInputs = WebMidi.inputs;
+            this.OSMD = new ExtendedOpenSheetMusicDisplay(musicScore.Canvas, {
+                backend: "svg",
+                drawTitle: true,
+                drawSubtitle: true,
+                disableCursor: false,
+                followCursor: true,
+            });
+            this.ETC = new ExtendedTransposeCalculator(this.OSMD);
+            this.OSMD.TransposeCalculator = this.ETC;
+            console.log(this.MidiInputs);
+            this.Flow = new SheetFlowCalculator(this.OSMD);
+            this.setListeners();
+            this.MusicScore.sleeperHide();
+        });
+
+        //this.Tree = params.tree;
         this.SheetNotes = [];
 
         for (let i: number = 0 ; i < 128; i++){
@@ -96,12 +111,12 @@ export class Maestro{
         this.data.currentKey = currentKey;
     }
 
-    public get CurrentSection(): BranchClass {
-        return this.data.currentSection || null;
+    public get CurrentSheet(): SheetNode {
+        return this.data.currentSheet || null;
     }
 
-    public set CurrentSection(currentSection: BranchClass) {
-        this.data.currentSection = currentSection;
+    public set CurrentSheet(currentSection: SheetNode) {
+        this.data.currentSheet = currentSection;
     }
 
     public get Data(): IMaestroData  {
@@ -116,14 +131,13 @@ export class Maestro{
         this.data.diary = diary;
     }
 
-    public get Etc(): ExtendedTransposeCalculator {
+    public get ETC(): ExtendedTransposeCalculator {
         return this.data.etc;
     }
 
-    public set Etc(etc: ExtendedTransposeCalculator) {
+    public set ETC(etc: ExtendedTransposeCalculator) {
         if (etc instanceof ExtendedTransposeCalculator) {
             this.data.etc = etc;
-            this.data.osmd = this.Etc.Options.OSMD;
         }
     }
 
@@ -151,11 +165,11 @@ export class Maestro{
         return this.PlayedNotes>0;
     }
 
-    public get MidiInputs(): Input[] {
+    public get MidiInputs(): MidiInput[] {
         return this.data.midiInputs;
     }
 
-    public set MidiInputs(midiInputs: Input[]) {
+    public set MidiInputs(midiInputs: MidiInput[]) {
         this.data.midiInputs = midiInputs;
     }
 
@@ -167,6 +181,18 @@ export class Maestro{
         this.data.midiNotes = midiNotes;
     }
 
+    public get MusicScore(): MusicScore{
+        return this.data.musicScore;
+    }
+
+    public set MusicScore(musicScore: MusicScore){
+        if (musicScore instanceof MusicScore){
+            this.data.musicScore = musicScore;
+        } else {
+            throw new Error("Bad MusicScore");
+        }
+    }
+
     public get NotesToPlay(): number {
         return this.data.notesToPlay || 0;
     }
@@ -175,11 +201,11 @@ export class Maestro{
         this.data.notesToPlay = notesToPlay;
     }
 
-    public get Osmd(): OpenSheetMusicDisplay {
+    public get OSMD(): ExtendedOpenSheetMusicDisplay {
         return this.data.osmd;
     }
 
-    public set Osmd(osmd: OpenSheetMusicDisplay) {
+    public set OSMD(osmd: ExtendedOpenSheetMusicDisplay) {
         this.data.osmd = osmd;
     }
 
@@ -239,7 +265,7 @@ export class Maestro{
     public set SheetNotes(osmdNotes: number[]){
         this.data.osmdNotes = osmdNotes;
     }
-
+/*
     public get Tree(): WTree{
         return this.data.tree;
     }
@@ -247,9 +273,9 @@ export class Maestro{
     public set Tree(tree: WTree){
         this.data.tree = tree;
     }
-
+*/
     public fillOsmdNotes(): void {
-        this.Osmd.cursor.NotesUnderCursor().forEach((osmdNote: Note)=>{
+        this.OSMD.cursor.NotesUnderCursor().forEach((osmdNote: Note)=>{
             if (osmdNote.halfTone!==0) {
                 if (!("tie" in osmdNote && osmdNote.NoteTie.Notes[0] !== osmdNote)){
                     this.data.osmdNotes.push(osmdNote.halfTone);
@@ -299,10 +325,10 @@ export class Maestro{
         this.PlayedNotes = 0;
         this.data.errors = 0;
 
-        this.Osmd.cursor.reset();
+        this.OSMD.cursor.reset();
         //2
         //this.playerMeasureIndex = 0;
-        this.Osmd.cursor.SkipInvisibleNotes = false;
+        this.OSMD.cursor.SkipInvisibleNotes = false;
         this.fillOsmdNotes();
         if(this.data.osmdNotes.length<1){
             this.next();
@@ -310,41 +336,40 @@ export class Maestro{
     }
 
     public loadXmSheet(
-        xml: string,
-        section: BranchClass,
-        key: number = null,
+        musicXml: string,
+        sheetNode: SheetNode,
         beforeStart: () => void = null,
         afterEnd: () => void = null
     ): void {
         if (
-            section instanceof BranchClass &&
-            section.Type === STR.section &&
-            xml !== "" &&
-            typeof xml === "string"
+            sheetNode instanceof SheetNode &&
+            musicXml !== "" &&
+            typeof musicXml === "string"
         ) {
+/*
             if(beforeStart!==null && typeof beforeStart === "function"){
                 beforeStart();
             }
 
-            this.CurrentSection = section;
+            this.CurrentSheet = sheetNode;
 
-            this.Osmd.load(xml).then(()=>{
-                console.log(section);
+            this.OSMD.load(musicXml).then(()=>{
+                console.log(sheetNode);
 
                 if (key === null) {
-                    key = this.Etc.MainKey;
+                    key = this.ETC.MainKey;
                 }
 
                 this.CurrentKey = key;
-                this.Etc.Options.transposeToKey(key);
+                this.ETC.Options.transposeToKey(key);
 
-                if (!(this.CurrentSection.ActiveKeys.includes(this.CurrentKey))) {
-                    this.CurrentSection.ActiveKeys.push(this.CurrentKey);
+                if (!(this.CurrentSheet.ActiveKeys.includes(this.CurrentKey))) {
+                    this.CurrentSheet.ActiveKeys.push(this.CurrentKey);
                 }
 
                 this.Diary.datetime = 0;
                 this.Diary.duration = 0;
-                this.Diary.id = section.Id;
+                this.Diary.id = sheetNode.Id;
                 this.Diary.key = 0;
                 this.Diary.bpm = 0;
                 this.Diary.score = 0;
@@ -352,36 +377,89 @@ export class Maestro{
                 this.PlayerMeasures = [];
                 this.PlayerMeasureIndex = 0;
 
-                if (this.CurrentSection.IsFragment) {
-                    this.Osmd.setOptions({
-                        drawFromMeasureNumber: this.CurrentSection.MeasureStart,
-                        drawUpToMeasureNumber: this.CurrentSection.MeasureEnd,
+                if (this.CurrentSheet.IsFragment) {
+                    this.OSMD.setOptions({
+                        drawFromMeasureNumber: this.CurrentSheet.MeasureStart,
+                        drawUpToMeasureNumber: this.CurrentSheet.MeasureEnd,
                         //defaultColorMusic: "#cccccc",
                    });
                 }
 
                 this.PlayerMeasures = this.Flow.calculatePlayerMeasures();
 
-                this.Osmd.zoom = 1.0;
+                this.OSMD.zoom = 1.0;
                 //this.osmd.FollowCursor = true;
-                const titleSplitted: string[] = section.Name.split(";");
+                const titleSplitted: string[] = sheetNode.Name.split(";");
                 if(titleSplitted.length===2){
-                    this.Osmd.Sheet.TitleString = titleSplitted[0];
-                    this.Osmd.Sheet.SubtitleString = titleSplitted[1];
+                    this.OSMD.Sheet.TitleString = titleSplitted[0];
+                    this.OSMD.Sheet.SubtitleString = titleSplitted[1];
 
                 } else {
-                    this.Osmd.Sheet.TitleString = section.Name;
+                    this.OSMD.Sheet.TitleString = sheetNode.Name;
                 }
 
-                this.Osmd.updateGraphic();
-                this.Osmd.render();
+                this.OSMD.updateGraphic();
+                this.OSMD.render();
                 this.reset();
-                this.Osmd.cursor.show();
+                this.OSMD.cursor.show();
 
                 if(afterEnd!==null && typeof afterEnd === "function"){
                     afterEnd();
                 }
-            });
+*/
+//************************************************************************************************* */
+                this.CurrentSheet = sheetNode;
+                if(beforeStart!==null && typeof beforeStart === "function"){
+                    beforeStart();
+                }
+                this.OSMD.load(musicXml).then(() => {
+                    this.MusicScore.sleeperShow();
+                    // trasposition
+
+                    this.ETC.Options.transposeToKey(this.MusicScore.SheetClass.ActiveKey);
+                    this.OSMD.HiddenParts = this.MusicScore.SheetClass.HiddenParts;
+                    this.OSMD.MeasureStart = this.MusicScore.SheetClass.MeasureStart;
+                    this.OSMD.MeasureEnd = this.MusicScore.SheetClass.MeasureEnd;
+
+                    this.Diary.datetime = 0;
+                    this.Diary.duration = 0;
+                    this.Diary.id = this.CurrentSheet.Id;
+                    this.Diary.key = 0;
+                    this.Diary.bpm = 0;
+                    this.Diary.score = 0;
+
+                    this.PlayerMeasures = [];
+                    this.PlayerMeasureIndex = 0;
+
+                    this.PlayerMeasures = this.Flow.calculatePlayerMeasures(this.OSMD.MeasureStart, this.OSMD.MeasureEnd);
+
+                    this.OSMD.setOptions({
+                        measureNumberInterval: 1,
+                        //drawFromMeasureNumber: this.SheetClass.MeasureStart,
+                        //drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
+                        //defaultColorMusic: "#1f1f1f",
+                    });
+                    this.OSMD.zoom = 1.0;
+                    // strings
+                    if (this.MusicScore.ScoreMode){
+                        this.OSMD.Sheet.TitleString = this.MusicScore.ScoreNode.Title;
+                        this.OSMD.Sheet.SubtitleString = this.MusicScore.ScoreNode.Subtitle;
+                    } else {
+                        this.OSMD.Sheet.TitleString = `${this.MusicScore.ScoreNode.Title} - ${this.MusicScore.SheetNode.Title}`;
+                        this.OSMD.Sheet.SubtitleString = `${this.MusicScore.ScoreNode.Subtitle} - ${this.MusicScore.SheetNode.Subtitle}`;
+                    }
+                    this.OSMD.Sheet.ComposerString = this.MusicScore.ScoreNode.Author;
+                    this.OSMD.updateGraphic();
+                    this.OSMD.render();
+                    this.reset();
+                    this.OSMD.cursor.show();
+                    if(afterEnd!==null && typeof afterEnd === "function"){
+                        afterEnd();
+                    }
+                    //sthis.maestro.OSMD.cursor.show();
+                    this.MusicScore.sleeperHide();
+                });
+//            }
         }
     }
 
@@ -498,9 +576,9 @@ export class Maestro{
     }
 
     public test(): void {
-        this.Osmd.cursor.reset();
-        while(!this.Osmd.cursor.iterator.EndReached) {
-            this.Osmd.cursor.next();
+        this.OSMD.cursor.reset();
+        while(!this.OSMD.cursor.iterator.EndReached) {
+            this.OSMD.cursor.next();
         }
     }
 
@@ -508,54 +586,54 @@ export class Maestro{
         this.data.osmdNotes = [];
         this.clearMidiNotes();
         //let expectedMeasureIndex:number = this.playerMeasures[this.playerMeasureIndex];
-        console.log("PRE-WHILE ","Current",this.Osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+        console.log("PRE-WHILE ","Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
         while (
             this.ExpectedMeasureIndex>=0 &&
             this.data.osmdNotes.length<1
 //            !this.osmd.cursor.Iterator.EndReached &&
         ) {
-            this.Osmd.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
-            this.Osmd.cursor.update();
+            this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+            this.OSMD.cursor.update();
 
     //      expectedMeasureIndex = this.playerMeasures[this.playerMeasureIndex];
     //      console.log("IN-WHILE  ","Current",this.osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",expectedMeasureIndex) ;
 
             if (
                 this.ExpectedMeasureIndex>=0 &&
-                this.Osmd.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex
+                this.OSMD.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex
             ) {
                 // C'E' SALTO UN SALTO DI MISURA
                 // AGGIORNIAMO
                 this.PlayerMeasureIndex++;
                 //expectedMeasureIndex = this.playerMeasures[this.playerMeasureIndex];
 
-                console.log("Current",this.Osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+                console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
                 if (
                     //!(this.osmd.cursor.Iterator.EndReached) &&
                     this.ExpectedMeasureIndex>=0 &&
-                    (this.Osmd.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex)
+                    (this.OSMD.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex)
                 ){
                     // SIAMO IN PRESENZA DI UNA RIPETIZIONE
-                    this.Osmd.cursor.resetIterator();
-                    this.Osmd.cursor.update();
+                    this.OSMD.cursor.resetIterator();
+                    this.OSMD.cursor.update();
                     console.log("playerMeasures",this.PlayerMeasures) ;
-                    console.log("Current",this.Osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
-                    while (this.Osmd.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex) {
-                        this.Osmd.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
-                        console.log("backJumpOccurred2",this.Osmd.cursor.iterator.backJumpOccurred);
-                        this.Osmd.cursor.update();
-                        console.log("Current",this.Osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+                    console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+                    while (this.OSMD.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex) {
+                        this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+                        console.log("backJumpOccurred2",this.OSMD.cursor.iterator.backJumpOccurred);
+                        this.OSMD.cursor.update();
+                        console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
                     }
                 }
             }
 
-            this.Osmd.cursor.update();
-            console.log(this.Osmd.cursor.Iterator.CurrentRepetition);
+            this.OSMD.cursor.update();
+            console.log(this.OSMD.cursor.Iterator.CurrentRepetition);
             if (this.PlayerMeasureIndex>=this.PlayerMeasures.length) {
                 this.PlayerMeasureIndex = this.PlayerMeasures.length-1;
             }
             if(
-                this.Osmd.cursor.Iterator.EndReached ||
+                this.OSMD.cursor.Iterator.EndReached ||
                 this.ExpectedMeasureIndex<0
             ) {
                 console.log("END REACHED");
@@ -567,12 +645,8 @@ export class Maestro{
                 if (this.PlayedDone && this.PlayedShot) {
                     success = ((this.PlayedDone / this.PlayedShot ) * 100) || 0;
                 }
-
-                this.CurrentSection.Done[0][this.CurrentKey+7] += this.PlayedDone;
-                this.CurrentSection.Done[1][this.CurrentKey+7] += this.PlayedDone;
-                this.CurrentSection.Shot[0][this.CurrentKey+7] += (this.PlayedDone * 1.1) ;// this.PlayedShot;
-                this.CurrentSection.Shot[1][this.CurrentKey+7] += (this.PlayedDone * 1.1) ;// this.PlayedShot;
-
+                this.CurrentSheet.doneAdd(this.CurrentKey,this.PlayedDone);
+                this.CurrentSheet.shotAdd(this.CurrentKey,this.PlayedShot);
                 console.log("SUCCESS:", `${success.toFixed(2)}%` );
 
                 this.Diary.duration = Date.now() - this.Diary.datetime;
@@ -580,18 +654,16 @@ export class Maestro{
 
                 console.log(this.Diary);
 
-                const diary: IDiaryObject = Object.assign({}, this.Diary);
-                const section: IBranchObject = Object.assign({}, this.CurrentSection.BranchObject);
-
-                this.Tree.updateAllPercents();
-
+//TODO
+//                this.Tree.updateAllPercents();
+/*
                 window.electron.ipcRenderer.invoke(STR.requestSaveDiaryAndSection, {
                     diaryObject: diary,
                     sectionObject: section
                 }).then((result: boolean)=>{
                     console.log(result);
                 });
-
+*/
                 this.Diary.datetime = 0;
                 this.Diary.duration = 0;
                 this.Diary.score = 0;
@@ -599,7 +671,7 @@ export class Maestro{
                 this.NotesToPlay = 0;
                 this.PlayedNotes = 0;
                 //1
-                this.Osmd.cursor.reset();
+                this.OSMD.cursor.reset();
                 this.PlayerMeasureIndex = 0;
                 //2
                 //this.reset();
@@ -607,4 +679,62 @@ export class Maestro{
             this.fillOsmdNotes();
         }
     }
+
+    setListeners(): void {
+        console.log(1);
+        if (this.MidiInputs) {
+            console.log(2);
+            this.MidiInputs.forEach((input: MidiInput)=>{
+                console.log(3);
+                input.addListener("noteon",(e: NoteMessageEvent)=>{
+                    //console.log(e.note.number, e.timestamp, e);
+                    this.setMidiNoteOn(e.note.number);
+                    if (this.Diary.datetime===0){
+                        this.Diary.datetime = Date.now();
+                    }
+                    this.Data.playedNotes++;
+                    if(this.allNotesUnderCursorArePlayed()){
+                        this.next();
+                    }
+                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
+
+                input.addListener(<Symbol><unknown>STR.noteoff,(e: NoteMessageEvent)=>{
+                    this.setMidiNoteOff(e.note.number);
+                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
+
+                input.addListener(<Symbol><unknown>STR.pitchbend ,(e: NoteMessageEvent)=>{
+                    console.log(e);
+                    this.setMidiNoteOff(e.note.number);
+                }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
+
+            });
+
+            document.addEventListener(
+                STR.keydown,
+                (event: KeyboardEvent) => {
+                    console.log(event.key);
+                    if ( event.key === STR.ArrowRight) {
+                        if(this.allNotesUnderCursorArePlayedDebug()){
+                            if (this.Diary.datetime===0){
+                                this.Diary.datetime = Date.now();
+                            }
+                            this.next();
+                        }
+                    }
+                },
+                false,
+            );
+
+            document.addEventListener(
+                STR.keydown,
+                (event: KeyboardEvent) => {
+                    if (event.key === STR.ArrowRight) {
+                        //
+                    }
+                },
+                false,
+            );
+        }
+    }
+
 }

@@ -1,12 +1,12 @@
 import { THiddenPart } from "@Library/Common/DataObjects";
-import {OpenSheetMusicDisplay, GraphicalStaffEntry, GraphicalVoiceEntry , VexFlowGraphicalNote, VexFlowMusicSheetDrawer} from "opensheetmusicdisplay";
-
+import {OpenSheetMusicDisplay, GraphicalStaffEntry, GraphicalTie, GraphicalVoiceEntry , VexFlowGraphicalNote, VexFlowMusicSheetDrawer} from "opensheetmusicdisplay";
+export * from "opensheetmusicdisplay";
 export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
 
     private measureStart: number = 0;
     private measureEnd: number = 0;
     private activeColor: string = "#000000";
-    private passiveColor: string = "#cccccc"
+    private passiveColor: string = "#999999";
     private hiddenParts: THiddenPart = {};
 
     public get ActiveColor(): string {
@@ -94,6 +94,9 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
         if (this.HasDisableds){
             this.colorizeNotes();
         }
+
+        this.cursor.CursorOptions.type = 1;
+        this.cursor.update();
     }
 
     measurePartStaveHidden(measure: number, staveIndex: number): boolean {
@@ -127,14 +130,26 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
             for (let s: number = 0; s < this.GraphicSheet.MeasureList[m].length; s++) {
                 color = this.measurePartStaveHidden(m,s)?this.passiveColor:this.ActiveColor;
                 for (let se: number = 0; se < this.GraphicSheet.MeasureList[m][s].staffEntries.length; se++) {
+                    const seObj: GraphicalStaffEntry = this.GraphicSheet.MeasureList[m][s].staffEntries[se];
+                    seObj.GraphicalInstructions.forEach((gi: any) => {
+//                        console.log("GraphicalInstructions", gi);
+                    });
+                    seObj.GraphicalTies.forEach((tie: GraphicalTie) => {
+//                        console.log(tie.SVGElement);
+                        tie.SVGElement.querySelector("path").style.fill = color;
+                    });
+                    seObj.  GraphicalInstructions.forEach((gi: any) => {
+//                        console.log("GraphicalInstructions", gi);
+                    });
+
                     for (let gve: number = 0; gve < this.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries.length; gve++) {
+
+                        const gveObj: GraphicalVoiceEntry= seObj.graphicalVoiceEntries[gve];
                         for (
                             let note: number = 0;
                             note < this.GraphicSheet.MeasureList[m][s].staffEntries[se].graphicalVoiceEntries[gve].notes.length;
                             note++)
                         {
-                            const seObj: GraphicalStaffEntry = this.GraphicSheet.MeasureList[m][s].staffEntries[se];
-                            const gveObj: GraphicalVoiceEntry= seObj.graphicalVoiceEntries[gve];
                             const graphicalNote: VexFlowGraphicalNote = <VexFlowGraphicalNote>gveObj.notes[note];
 
 //                            graphicalNote.sourceNote.NoteheadColor = "red";
@@ -157,17 +172,17 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
                                 svg.style.fill = color;
                                 svg.style.stroke = color;
                                 for (let a: number = 0; a<svg.children.length; a++){
-                                    console.log(`a:${a}`);
+//                                    console.log(`a:${a}`);
                                     svg.children[a].style.fill = color;
                                     svg.children[a].style.stroke = color;
                                     if ("children" in svg.children[a]){
                                         for (let b: number = 0; b<svg.children[a].children.length; b++){
-                                            console.log(`a:${a}, b:${b}`);
+//                                            console.log(`a:${a}, b:${b}`);
                                             svg.children[a].children[b].style.fill = color;
                                             svg.children[a].children[b].style.stroke = color;
                                             if ("children" in svg.children[a].children[b]){
                                                 for (let c: number = 0; c<svg.children[a].children[b].children.length; c++){
-                                                    console.log(`a:${a}, b:${b}, c:${c}`);
+//                                                    console.log(`a:${a}, b:${b}, c:${c}`);
                                                     svg.children[a].children[b].children[c].style.fill = color;
                                                     svg.children[a].children[b].children[c].style.stroke = color;
                                                 }

@@ -48,7 +48,6 @@ export class MajorKeys extends ASCore {
             const div: HTMLDivElement = <HTMLDivElement>document.createElement("div");
             div.textContent = this.MajoryKeyStrings[i];
             const check: HTMLInputElement = <HTMLInputElement>document.createElement("input");
-            console.log("this.boxType",this.BoxType);
             check.setAttribute("type", this.BoxType);
             check.setAttribute("name", "major-keys");
             check.value = this.MajoryKeyStrings[i];

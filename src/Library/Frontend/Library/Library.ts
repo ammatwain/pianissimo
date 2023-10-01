@@ -492,7 +492,7 @@ export class TLibrary{
     async getMusicXmlObject(parentScoreId: number): Promise<TMusicXmlObject> {
         return window.electron.ipcRenderer.invoke("request-musicxml", parentScoreId ).then((response: TResponse): TMusicXmlObject =>{
             if (response) {
-                console.log(response);
+//                console.log(response);
                 if ("error" in response) {
                     if (!response.error) {
                         if (

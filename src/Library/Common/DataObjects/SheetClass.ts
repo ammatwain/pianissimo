@@ -360,6 +360,19 @@ export class SheetClass extends LibraryClass {
         }
     }
 
+    public shotAdd(key: number, value: number): boolean {
+        key = Math.floor(key);
+        if (
+            key >= -7 &&
+            key <= 7 &&
+            value > 0
+        ) {
+            this.Shot[key + 7] += value;
+            return this.updateField("shot",this.Shot);
+        }
+        return false;
+    }
+
     public shotSet(key: number, value: number): boolean {
         key = Math.floor(key);
         if (
@@ -383,6 +396,20 @@ export class SheetClass extends LibraryClass {
         return this.SheetObject.done;
     }
 
+
+    public doneAdd(key: number, value: number): boolean {
+        key = Math.floor(key);
+        if (
+            key >= -7 &&
+            key <= 7 &&
+            value > 0
+        ) {
+            this.Done[key +7] += value;
+            return this.updateField("done",this.Done);
+        }
+        return false;
+    }
+
     public doneSet(key: number, value: number): boolean {
         key = Math.floor(key);
         if (
@@ -404,6 +431,19 @@ export class SheetClass extends LibraryClass {
             this.SheetObject.loop = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
         }
         return this.SheetObject.loop;
+    }
+
+    public loopAdd(key: number, value: number): boolean {
+        key = Math.floor(key);
+        if (
+            key >= -7 &&
+            key <= 7 &&
+            value > 0
+        ) {
+            this.Loop[key+7] += value;
+            return this.updateField("loop",this.Loop);
+        }
+        return false;
     }
 
     public loopSet(key: number, value: number): boolean {
