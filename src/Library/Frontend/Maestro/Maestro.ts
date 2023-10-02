@@ -150,7 +150,11 @@ export class Maestro{
     }
 
     public get ExpectedMeasureIndex(): number{
-        return this.PlayerMeasures[this.PlayerMeasureIndex];
+        if (this.CurrentIndexInRepetitionArray>=0) {
+            return this.PlayerMeasures[this.CurrentIndexInRepetitionArray];
+        } else {
+            return -1;
+        }
     }
 
     public get Flow(): SheetFlowCalculator {
@@ -225,11 +229,11 @@ export class Maestro{
         this.data.playMeasures = playMeasures;
     }
 
-    public get PlayerMeasureIndex(): number{
+    public get CurrentIndexInRepetitionArray(): number{
         return this.data.playMeasureIndex || 0;
     }
 
-    public set PlayerMeasureIndex(playMeasureIndex: number){
+    public set CurrentIndexInRepetitionArray(playMeasureIndex: number){
         if (playMeasureIndex >= this.PlayerMeasures.length) {playMeasureIndex = 0;}
         this.data.playMeasureIndex = playMeasureIndex;
     }
@@ -327,7 +331,7 @@ export class Maestro{
 
         this.OSMD.cursor.reset();
         //2
-        //this.playerMeasureIndex = 0;
+        this.CurrentIndexInRepetitionArray = -1;
         this.OSMD.cursor.SkipInvisibleNotes = false;
         this.fillOsmdNotes();
         if(this.data.osmdNotes.length<1){
@@ -428,10 +432,9 @@ export class Maestro{
                     this.Diary.bpm = 0;
                     this.Diary.score = 0;
 
-                    this.PlayerMeasures = [];
-                    this.PlayerMeasureIndex = 0;
-
                     this.PlayerMeasures = this.Flow.calculatePlayerMeasures(this.OSMD.MeasureStart, this.OSMD.MeasureEnd);
+
+                    this.CurrentIndexInRepetitionArray = 0;
 
                     this.OSMD.setOptions({
                         measureNumberInterval: 1,
@@ -451,8 +454,9 @@ export class Maestro{
                     this.OSMD.Sheet.ComposerString = this.MusicScore.ScoreNode.Author;
                     this.OSMD.updateGraphic();
                     this.OSMD.render();
-                    this.reset();
                     this.OSMD.cursor.show();
+                    this.reset();
+                    //this.next();
                     if(afterEnd!==null && typeof afterEnd === "function"){
                         afterEnd();
                     }
@@ -586,56 +590,69 @@ export class Maestro{
         this.data.osmdNotes = [];
         this.clearMidiNotes();
         //let expectedMeasureIndex:number = this.playerMeasures[this.playerMeasureIndex];
-        console.log("PRE-WHILE ","Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+        console.log(
+            "PRE-WHILE ",
+            "Current", this.OSMD.cursor.Iterator.CurrentMeasureIndex,
+            "Expected", this.ExpectedMeasureIndex,
+            "CurrentIndexInRepetitionArray",this.CurrentIndexInRepetitionArray
+        ) ;
+        if (this.CurrentIndexInRepetitionArray === -1){
+            this.CurrentIndexInRepetitionArray = 0;
+            this.OSMD.cursor.resetIterator();
+            while (this.OSMD.cursor.Iterator.CurrentMeasureIndex !== this.ExpectedMeasureIndex) {
+                this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+            };
+        }
         while (
             this.ExpectedMeasureIndex>=0 &&
             this.data.osmdNotes.length<1
-//            !this.osmd.cursor.Iterator.EndReached &&
         ) {
             this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
             this.OSMD.cursor.update();
-
-    //      expectedMeasureIndex = this.playerMeasures[this.playerMeasureIndex];
-    //      console.log("IN-WHILE  ","Current",this.osmd.cursor.Iterator.CurrentMeasureIndex, "Expected",expectedMeasureIndex) ;
-
             if (
-                this.ExpectedMeasureIndex>=0 &&
+                this.ExpectedMeasureIndex >= 0 &&
                 this.OSMD.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex
             ) {
                 // C'E' SALTO UN SALTO DI MISURA
-                // AGGIORNIAMO
-                this.PlayerMeasureIndex++;
-                //expectedMeasureIndex = this.playerMeasures[this.playerMeasureIndex];
-
+                if (this.CurrentIndexInRepetitionArray !== 0) {
+                    this.CurrentIndexInRepetitionArray++;
+                }
                 console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
                 if (
-                    //!(this.osmd.cursor.Iterator.EndReached) &&
                     this.ExpectedMeasureIndex>=0 &&
                     (this.OSMD.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex)
                 ){
+                    console.log("NEXT", 3);
                     // SIAMO IN PRESENZA DI UNA RIPETIZIONE
                     this.OSMD.cursor.resetIterator();
                     this.OSMD.cursor.update();
-                    console.log("playerMeasures",this.PlayerMeasures) ;
+//                    console.log("playerMeasures",this.PlayerMeasures) ;
                     console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
                     while (this.OSMD.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex) {
                         this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
-                        console.log("backJumpOccurred2",this.OSMD.cursor.iterator.backJumpOccurred);
+//                        console.log("backJumpOccurred2",this.OSMD.cursor.iterator.backJumpOccurred);
                         this.OSMD.cursor.update();
-                        console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+                        console.log(
+                            "IN-WHILE",
+                            "Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex,
+                            "Expected",this.ExpectedMeasureIndex,
+                            "PlayerMeasureIndex",this.CurrentIndexInRepetitionArray
+                        ) ;
                     }
                 }
             }
 
             this.OSMD.cursor.update();
             console.log(this.OSMD.cursor.Iterator.CurrentRepetition);
-            if (this.PlayerMeasureIndex>=this.PlayerMeasures.length) {
-                this.PlayerMeasureIndex = this.PlayerMeasures.length-1;
+            if (this.CurrentIndexInRepetitionArray>=this.PlayerMeasures.length) {
+                console.log("NEXT", 11);
+                this.CurrentIndexInRepetitionArray = this.PlayerMeasures.length-1;
             }
             if(
                 this.OSMD.cursor.Iterator.EndReached ||
                 this.ExpectedMeasureIndex<0
             ) {
+                console.log("NEXT", 12);
                 console.log("END REACHED");
                 // QUI CALCOLEREMO SUCCESSI E FALLIMENTI
                 console.log("NOTES TO PLAY", this.NotesToPlay);
@@ -654,27 +671,16 @@ export class Maestro{
 
                 console.log(this.Diary);
 
-//TODO
-//                this.Tree.updateAllPercents();
-/*
-                window.electron.ipcRenderer.invoke(STR.requestSaveDiaryAndSection, {
-                    diaryObject: diary,
-                    sectionObject: section
-                }).then((result: boolean)=>{
-                    console.log(result);
-                });
-*/
                 this.Diary.datetime = 0;
                 this.Diary.duration = 0;
                 this.Diary.score = 0;
 
                 this.NotesToPlay = 0;
                 this.PlayedNotes = 0;
-                //1
-                this.OSMD.cursor.reset();
-                this.PlayerMeasureIndex = 0;
-                //2
-                //this.reset();
+                this.reset();
+                //this.OSMD.cursor.reset();
+                this.CurrentIndexInRepetitionArray = 0; //this.OSMD.MeasureStart;
+
             }
             this.fillOsmdNotes();
         }

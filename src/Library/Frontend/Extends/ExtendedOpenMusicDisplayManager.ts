@@ -1,5 +1,18 @@
 import { THiddenPart } from "@Library/Common/DataObjects";
-import {OpenSheetMusicDisplay, GraphicalStaffEntry, GraphicalTie, GraphicalVoiceEntry , VexFlowGraphicalNote, VexFlowMusicSheetDrawer} from "opensheetmusicdisplay";
+import {
+    OpenSheetMusicDisplay,
+    GraphicalLine,
+    GraphicalMeasure,
+    GraphicalMusicPage,
+    GraphicalStaffEntry,
+    GraphicalSlur,
+    GraphicalTie,
+    GraphicalVoiceEntry,
+    MusicSystem,
+    StaffLine,
+    VexFlowGraphicalNote,
+    VexFlowMusicSheetDrawer
+} from "opensheetmusicdisplay";
 export * from "opensheetmusicdisplay";
 export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
 
@@ -126,6 +139,30 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
 
     colorizeNotes(): void {
         let color: string = this.passiveColor;
+        this.GraphicSheet.MusicPages.forEach((musicPage: GraphicalMusicPage) => {
+            musicPage.MusicSystems.forEach((musicSystem: MusicSystem) => {
+                musicSystem.StaffLines.forEach((staffLine: StaffLine, staffIndex: number) => {
+                    staffLine.GraphicalSlurs.forEach((graphicaSlur: GraphicalSlur) => {
+                        const measureIndex: number = graphicaSlur.slur.StartNote.SourceMeasure.measureListIndex;
+                        if (graphicaSlur.SVGElement instanceof SVGGElement) {
+                            const path: SVGPathElement = graphicaSlur.SVGElement.querySelector("path");
+                            if (path) {
+                                color = this.measurePartStaveHidden(measureIndex,staffIndex )?this.passiveColor:this.ActiveColor;
+                                path.style.fill = color;
+                            }
+                        }
+                    });
+//                    staffLine.Measures.forEach( (measure: GraphicalMeasure) => {
+//                        console.log(measure);
+//                    });
+//                    staffLine.StaffLines.forEach( (line: GraphicalLine) => {
+//                        console.log(line);
+//                    });
+                });
+            });
+        });
+        //console.log(this.GraphicSheet.MusicPages[0].MusicSystems[0].StaffLines[1].GraphicalSlurs[0]);
+
         for (let m: number = 0; m < this.GraphicSheet.MeasureList.length; m++) {
             for (let s: number = 0; s < this.GraphicSheet.MeasureList[m].length; s++) {
                 color = this.measurePartStaveHidden(m,s)?this.passiveColor:this.ActiveColor;
