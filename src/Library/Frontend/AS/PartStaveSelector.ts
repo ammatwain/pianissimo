@@ -52,22 +52,11 @@ export class PartStaveSelector extends ASCore {
         super.$alwaysConnect();
     }
 
-    public get Parts(): TPartStave[] {
-        return this.$Argument.partsAndStaves;
-    }
-
     public get HiddenParts(): THiddenPart {
-        const hiddenParts: THiddenPart = {};
+        const hiddenParts: THiddenPart = [];
         this.$Elements.select.querySelectorAll("option").forEach((option: HTMLOptionElement) => {
             if(!option.selected) {
-                const path: string[] = option.value.split(",");
-                if (path.length===2) {
-                    const part: string = String(path[0]);
-                    if (!(part in hiddenParts)) {
-                        hiddenParts[part]=[];
-                    }
-                    hiddenParts[part].push(Number(path[1]));
-                }
+                hiddenParts.push(Number(option.value));
             }
         });
         console.log("get hiddenParts",hiddenParts);
@@ -79,21 +68,19 @@ export class PartStaveSelector extends ASCore {
         this.$Elements.select.querySelectorAll("option").forEach((option: HTMLOptionElement) => {
             option.selected = true;
         });
-        Object.keys(hiddenParts).forEach((key: string)=>{
-            key = String(key);
-            console.log(1,key);
-            const values: number[] = hiddenParts[key];
-            if(values && Array.isArray(values)){
-                values.forEach((value: number) => {
-                    const queryString: string = `#id-${key}-${value}`;
-                    const option: HTMLOptionElement = <HTMLOptionElement>this.$Elements.select.querySelector(queryString);
-                    if (option) {
-                        console.log(3,option);
-                        option.selected = false;
-                    }
-                });
-            }
-        });
+        if (hiddenParts && Array.isArray(hiddenParts) && hiddenParts.length) {
+            hiddenParts.forEach((staveIndex: number) =>{
+                const queryString: string = `#id-${staveIndex}`;
+                const option: HTMLOptionElement = <HTMLOptionElement>this.$Elements.select.querySelector(queryString);
+                if (option) {
+                    option.selected = false;
+                }
+            });
+        }
+    }
+
+    public get Parts(): TPartStave[] {
+        return this.$Argument.partsAndStaves;
     }
 
     public set Parts(partStave: TPartStave[]) {
@@ -108,9 +95,10 @@ export class PartStaveSelector extends ASCore {
             for (let o: number = 0; o < part.staves.length; o++){
                 countRows++;
                 const option: HTMLOptionElement = <HTMLOptionElement>document.createElement("option");
-                option.value = `${p},${o}`;
-                option.id = `id-${p}-${o}`;
-                option.selected = part.staves[o];
+                option.value = `${part.staves[o]}`;
+                option.id = `id-${part.staves[o]}`;
+//                option.selected = part.staves[o];
+                option.selected = true;
                 option.innerHTML = `Staff ${o+1}`;
                 option.onmousedown = (event): void => {
                     this.$Elements.select.focus();

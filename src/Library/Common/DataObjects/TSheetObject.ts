@@ -25,7 +25,8 @@ export type TTransposeSettings = {
 	removeKeySignatures: boolean;
 };
 
-export type THiddenPart = {[key: string]: number[]};
+//export type THiddenPart = {[key: string]: number[]};
+export type THiddenPart = number[];
 
 export type TSheetObject = {
     sheetId: number;

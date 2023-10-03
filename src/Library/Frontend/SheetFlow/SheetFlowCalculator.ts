@@ -20,9 +20,6 @@ export class SheetFlowCalculator {
         const playMeasureIndex: number = -1;
         const temporaryPlayMeasures: number[] = [];
         let latestPlayMeasureIndex: number = -1;
-        console.log(measureStart,0);
-        console.log(measureEnd,sheet.SourceMeasures.length-1);
-
         if (measureStart===0 && measureEnd===sheet.SourceMeasures.length-1){
             sheet.SourceMeasures.forEach((m: SourceMeasure, currentPlayMeasureIndex: number)=>{
                 if(latestPlayMeasureIndex < currentPlayMeasureIndex) {
@@ -54,7 +51,6 @@ export class SheetFlowCalculator {
             }
             playMeasures.push(-1);
         }
-        console.log(playMeasures);
         return playMeasures;
     }
 

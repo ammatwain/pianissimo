@@ -195,7 +195,7 @@ export class Letture extends Store {
                 sheetObject.activeKey = scoreObject.mainKey;
                 sheetObject.measureStart = 1;
                 sheetObject.measureEnd = scoreObject.measures;
-                sheetObject.hiddenParts = {};
+                sheetObject.hiddenParts = [];
                 sheetObject.transposeSettings = {
                     type:"transposeByKey",
                     octave:0,

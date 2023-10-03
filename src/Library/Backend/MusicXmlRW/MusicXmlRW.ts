@@ -232,12 +232,13 @@ export class MusicXmlRW {
 
     get Instruments(): TPartStave[] {
         const instruments: TPartStave[] = [];
+        let absoluteStaveIndex: number = -1;
         this.ScorePartList.forEach((scorePart: XmlElement)=>{
             const id: string = scorePart.attr.id;
             let partName: string;
             let instrument: string;
             let numerOfStaves: number = 1;
-            const staves: boolean[] = [];
+            const staves: number[] = [];
             try {
                 partName = scorePart.childNamed("part-name").val || "Piano";
             } catch {
@@ -273,7 +274,8 @@ export class MusicXmlRW {
             }
 
             for (let i: number = 0; i < numerOfStaves ; i++) {
-                staves.push(true);
+                absoluteStaveIndex++;
+                staves.push(absoluteStaveIndex);
             }
             instruments.push({
                 part: partName,

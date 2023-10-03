@@ -79,7 +79,6 @@ export class Maestro{
             });
             this.ETC = new ExtendedTransposeCalculator(this.OSMD);
             this.OSMD.TransposeCalculator = this.ETC;
-            console.log(this.MidiInputs);
             this.Flow = new SheetFlowCalculator(this.OSMD);
             this.setListeners();
             this.MusicScore.sleeperHide();
@@ -150,8 +149,8 @@ export class Maestro{
     }
 
     public get ExpectedMeasureIndex(): number{
-        if (this.CurrentIndexInRepetitionArray>=0) {
-            return this.PlayerMeasures[this.CurrentIndexInRepetitionArray];
+        if (this.PlayMeasureIndex>=0) {
+            return this.PlayerMeasures[this.PlayMeasureIndex];
         } else {
             return -1;
         }
@@ -229,11 +228,11 @@ export class Maestro{
         this.data.playMeasures = playMeasures;
     }
 
-    public get CurrentIndexInRepetitionArray(): number{
+    public get PlayMeasureIndex(): number{
         return this.data.playMeasureIndex || 0;
     }
 
-    public set CurrentIndexInRepetitionArray(playMeasureIndex: number){
+    public set PlayMeasureIndex(playMeasureIndex: number){
         if (playMeasureIndex >= this.PlayerMeasures.length) {playMeasureIndex = 0;}
         this.data.playMeasureIndex = playMeasureIndex;
     }
@@ -322,20 +321,6 @@ export class Maestro{
         midiNoteValue = midiNoteValue-12;
         if (midiNoteValue>=0 && midiNoteValue<this.MidiNotes.length) {
             this.MidiNotes[midiNoteValue]=value;
-        }
-    }
-    public reset(): void {
-        this.NotesToPlay = 0;
-        this.PlayedNotes = 0;
-        this.data.errors = 0;
-
-        this.OSMD.cursor.reset();
-        //2
-        this.CurrentIndexInRepetitionArray = -1;
-        this.OSMD.cursor.SkipInvisibleNotes = false;
-        this.fillOsmdNotes();
-        if(this.data.osmdNotes.length<1){
-            this.next();
         }
     }
 
@@ -434,7 +419,7 @@ export class Maestro{
 
                     this.PlayerMeasures = this.Flow.calculatePlayerMeasures(this.OSMD.MeasureStart, this.OSMD.MeasureEnd);
 
-                    this.CurrentIndexInRepetitionArray = 0;
+                    this.PlayMeasureIndex = 0;
 
                     this.OSMD.setOptions({
                         measureNumberInterval: 1,
@@ -456,7 +441,6 @@ export class Maestro{
                     this.OSMD.render();
                     this.OSMD.cursor.show();
                     this.reset();
-                    //this.next();
                     if(afterEnd!==null && typeof afterEnd === "function"){
                         afterEnd();
                     }
@@ -586,7 +570,88 @@ export class Maestro{
         }
     }
 
+    public moveToNext(newMeasureIndex: number): void {
+        // la battuta è cambiata,
+        // ora dobbiame controllare se quella in cui ci troviamo adesso è quella
+        // prevista dal "piano" di ripetizione delle battute
+        // siccome l'indice di battuta è incrementato di uno
+        // dobbiamo incrementre l'indice del "piano" di ripetizione di uno
+        // e controllare se il valore contenuto nell'indice del piano
+        // sia uguale all'indice di battuta attuale.
+        // SE NON LO E',
+        // allora bisogna spostarsi con in avanti o all'indietro fino a che
+        // i due valori combaciano.
+        //
+        // OK INCREMENTIAMO L'INDICE DEL PIANO DI BATTUTA
+        this.PlayMeasureIndex++;
+        if (this.ExpectedMeasureIndex<0){
+            this.PlayMeasureIndex = 0;
+        }
+        // ora controlliamo se l'indice attuale è uguale a qyello atteso
+        if (newMeasureIndex !== this.ExpectedMeasureIndex) {
+            // siamo troppo avanti, resettiamo
+            if (newMeasureIndex > this.ExpectedMeasureIndex) {
+                this.OSMD.cursor.reset();
+                this.OSMD.cursor.resetIterator();
+            }
+            while (
+                this.OSMD.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex
+            ) {
+                this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+            }
+        }
+    }
+
+    public resetTo(newMeasureIndex: number): void {
+        this.OSMD.cursor.reset();
+        //this.OSMD.cursor.resetIterator();
+        while (
+            this.OSMD.cursor.Iterator.CurrentMeasureIndex < newMeasureIndex
+        ) {
+            this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+            console.log(this.OSMD.cursor.Iterator.currentTimeStamp);
+        }
+        this.OSMD.cursor.update();
+    }
+
+    public reset(): void {
+        this.NotesToPlay = 0;
+        this.PlayedNotes = 0;
+        this.data.errors = 0;
+
+        this.PlayMeasureIndex = 0;
+        this.resetTo(this.ExpectedMeasureIndex);
+        this.OSMD.cursor.SkipInvisibleNotes = false;
+        this.fillOsmdNotes();
+        if(this.data.osmdNotes.length<1){
+            this.next();
+        }
+    }
+
     public next(): void {
+        //
+        const oldMeasureIndex: number = this.OSMD.cursor.Iterator.CurrentMeasureIndex;
+        this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+        const newMeasureIndex: number = this.OSMD.cursor.Iterator.CurrentMeasureIndex;
+        if (newMeasureIndex !== oldMeasureIndex){
+            // la battuta è cambiata,
+            // ora dobbiame controllare se quella in cui ci troviamo adesso è quella
+            // prevista dal "piano" di ripetizione delle battute
+            // siccome l'indice di battuta è incrementato di uno
+            // dobbiamo incrementre l'indice del "piano" di ripetizione di uno
+            // e controllare se il valore contenuto nell'indice del piano
+            // sia uguale all'indice di battuta attuale.
+            // SE NON LO E',
+            // allora bisogna spostarsi con in avanti o all'indietro fino a che
+            // i due valori combaciano.
+            //
+            // OK INCREMENTIAMO L'INDICE DEL PIANO DI BATTUTA
+            this.moveToNext(newMeasureIndex);
+        }
+        this.OSMD.cursor.update();
+    }
+
+    public _next(): void {
         this.data.osmdNotes = [];
         this.clearMidiNotes();
         //let expectedMeasureIndex:number = this.playerMeasures[this.playerMeasureIndex];
@@ -594,11 +659,11 @@ export class Maestro{
             "PRE-WHILE ",
             "Current", this.OSMD.cursor.Iterator.CurrentMeasureIndex,
             "Expected", this.ExpectedMeasureIndex,
-            "CurrentIndexInRepetitionArray",this.CurrentIndexInRepetitionArray
+            "CurrentIndexInRepetitionArray",this.PlayMeasureIndex
         ) ;
-        if (this.CurrentIndexInRepetitionArray === -1){
-            this.CurrentIndexInRepetitionArray = 0;
-            this.OSMD.cursor.resetIterator();
+        if (this.PlayMeasureIndex === -1){
+            this.PlayMeasureIndex = 0;
+            //this.OSMD.cursor.resetIterator();
             while (this.OSMD.cursor.Iterator.CurrentMeasureIndex !== this.ExpectedMeasureIndex) {
                 this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
             };
@@ -607,16 +672,19 @@ export class Maestro{
             this.ExpectedMeasureIndex>=0 &&
             this.data.osmdNotes.length<1
         ) {
+            console.log("PROCEDURE 1");
             this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
             this.OSMD.cursor.update();
             if (
                 this.ExpectedMeasureIndex >= 0 &&
                 this.OSMD.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex
             ) {
+                console.log("PROCEDURE 2");
                 // C'E' SALTO UN SALTO DI MISURA
-                if (this.CurrentIndexInRepetitionArray !== 0) {
-                    this.CurrentIndexInRepetitionArray++;
-                }
+                // QUANDO C'E' UN SALTO DI MISURA IL CONTATORE DEL PLAYER VIENE COMUNQUE INCREMENTATO
+                //if (this.CurrentIndexInRepetitionArray !== 0) {
+                    this.PlayMeasureIndex++;
+                //}
                 console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
                 if (
                     this.ExpectedMeasureIndex>=0 &&
@@ -636,17 +704,16 @@ export class Maestro{
                             "IN-WHILE",
                             "Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex,
                             "Expected",this.ExpectedMeasureIndex,
-                            "PlayerMeasureIndex",this.CurrentIndexInRepetitionArray
+                            "CurrentIndexInRepetitionArray",this.PlayMeasureIndex
                         ) ;
                     }
                 }
             }
 
             this.OSMD.cursor.update();
-            console.log(this.OSMD.cursor.Iterator.CurrentRepetition);
-            if (this.CurrentIndexInRepetitionArray>=this.PlayerMeasures.length) {
+            if (this.PlayMeasureIndex>=this.PlayerMeasures.length) {
                 console.log("NEXT", 11);
-                this.CurrentIndexInRepetitionArray = this.PlayerMeasures.length-1;
+                this.PlayMeasureIndex = this.PlayerMeasures.length-1;
             }
             if(
                 this.OSMD.cursor.Iterator.EndReached ||
@@ -679,7 +746,7 @@ export class Maestro{
                 this.PlayedNotes = 0;
                 this.reset();
                 //this.OSMD.cursor.reset();
-                this.CurrentIndexInRepetitionArray = 0; //this.OSMD.MeasureStart;
+                this.PlayMeasureIndex = 0; //this.OSMD.MeasureStart;
 
             }
             this.fillOsmdNotes();
@@ -687,13 +754,9 @@ export class Maestro{
     }
 
     setListeners(): void {
-        console.log(1);
         if (this.MidiInputs) {
-            console.log(2);
             this.MidiInputs.forEach((input: MidiInput)=>{
-                console.log(3);
                 input.addListener("noteon",(e: NoteMessageEvent)=>{
-                    //console.log(e.note.number, e.timestamp, e);
                     this.setMidiNoteOn(e.note.number);
                     if (this.Diary.datetime===0){
                         this.Diary.datetime = Date.now();
@@ -718,7 +781,6 @@ export class Maestro{
             document.addEventListener(
                 STR.keydown,
                 (event: KeyboardEvent) => {
-                    console.log(event.key);
                     if ( event.key === STR.ArrowRight) {
                         if(this.allNotesUnderCursorArePlayedDebug()){
                             if (this.Diary.datetime===0){
