@@ -128,8 +128,8 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
 
         if (
             partString in this.HiddenParts &&
-            Array.isArray(this.hiddenParts[partString]) &&
-            this.hiddenParts[partString].includes(partStave.stave)
+            Array.isArray(this.hiddenParts) &&
+            this.hiddenParts.includes(partStave.stave)
         ) {
             hiddenPart = true;
         }

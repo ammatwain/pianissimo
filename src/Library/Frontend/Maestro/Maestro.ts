@@ -1,7 +1,7 @@
 import { STR } from "@Global/STR";
 import {OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 
-import { RepetitionInstruction, Note, ExtendedOpenSheetMusicDisplay } from "../Extends/ExtendedOpenMusicDisplayManager";
+import { RepetitionInstruction, Note, ExtendedOpenSheetMusicDisplay, GraphicalNote } from "../Extends/ExtendedOpenMusicDisplayManager";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import { WebMidi, Input as MidiInput, NoteMessageEvent } from "../WebMidi";
 import { SheetFlowCalculator } from "@Frontend/SheetFlow";
@@ -278,6 +278,20 @@ export class Maestro{
     }
 */
     public fillOsmdNotes(): void {
+//        this.OSMD.HiddenParts =
+        this.data.osmdNotes = [];
+        this.OSMD.cursor.GNotesUnderCursor().forEach((osmdNote: GraphicalNote)=>{
+            const measureIndex: number = osmdNote.parentVoiceEntry.parentStaffEntry.parentMeasure.parentSourceMeasure.measureListIndex;
+            const staffIndex: number = osmdNote.parentVoiceEntry.parentStaffEntry.parentMeasure.ParentStaff.idInMusicSheet;
+            const halfTone: number = osmdNote.sourceNote.halfTone;
+            if (!this.OSMD.measurePartStaveHidden(measureIndex, staffIndex)){
+                if (halfTone) {
+                    this.data.osmdNotes.push(halfTone);
+                    this.NotesToPlay++;
+                }
+            }
+        });
+/*
         this.OSMD.cursor.NotesUnderCursor().forEach((osmdNote: Note)=>{
             if (osmdNote.halfTone!==0) {
                 if (!("tie" in osmdNote && osmdNote.NoteTie.Notes[0] !== osmdNote)){
@@ -286,6 +300,7 @@ export class Maestro{
                 }
             }
         });
+*/
     }
 
     public getRandomExercise(): IExercise {
@@ -595,9 +610,11 @@ export class Maestro{
                 this.OSMD.cursor.resetIterator();
             }
             while (
-                this.OSMD.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex
+                this.OSMD.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex ||
+                this.OsmdNotes.length === 0
             ) {
-                this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+                this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+                this.fillOsmdNotes();
             }
         }
     }
@@ -629,6 +646,8 @@ export class Maestro{
     }
 
     public next(): void {
+        this.data.osmdNotes = [];
+        this.clearMidiNotes();
         //
         const oldMeasureIndex: number = this.OSMD.cursor.Iterator.CurrentMeasureIndex;
         this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
@@ -648,6 +667,8 @@ export class Maestro{
             // OK INCREMENTIAMO L'INDICE DEL PIANO DI BATTUTA
             this.moveToNext(newMeasureIndex);
         }
+        this.fillOsmdNotes();
+        console.log(this.data.osmdNotes);
         this.OSMD.cursor.update();
     }
 
