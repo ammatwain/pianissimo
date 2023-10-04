@@ -20,14 +20,14 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
     private measureEnd: number = 0;
     private activeColor: string = "#000000";
     private passiveColor: string = "#999999";
-    private hiddenParts: THiddenPart = {};
+    private hiddenParts: THiddenPart = [];
 
     public get ActiveColor(): string {
         return this.activeColor;
     }
 
     public get HiddenParts(): THiddenPart {
-        return this.hiddenParts || {};
+        return this.hiddenParts || [];
     }
 
     public set HiddenParts(hiddenParts: THiddenPart) {
@@ -54,7 +54,10 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
         return (
             this.GraphicSheet &&
             !(this.measureStart===0 && (this.measureEnd === this.GraphicSheet.MeasureList.length - 1)) ||
-            Object.keys(this.hiddenParts).length > 0
+            (
+                Array.isArray(this.hiddenParts) &&
+                this.hiddenParts.length > 0
+            )
         );
     }
 

@@ -180,20 +180,17 @@ export class Maestro{
         this.data.flow = flow;
     }
 
-    public get IsPlayable(): boolean {
+    public get IsPlayableSelection(): boolean {
         let ok: boolean = false;
         this.Cursor.reset();
         while(this.CurrentMeasureIndex < this.MeasureStart) {
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
         }
-        while(this.CurrentMeasureIndex < this.MeasureEnd) {
-            if (this.fillDrawNotes()){
-                ok = true;
-                break;
-            }
+        ok = this.fillDrawNotes()>0;
+        while(!ok && this.CurrentMeasureIndex < this.MeasureEnd) {
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+            ok = this.fillDrawNotes()>0;
         }
-        //this.reset();
         return ok;
     }
 
@@ -210,11 +207,11 @@ export class Maestro{
     }
 
     public get MeasureStart(): number {
-        return this.MusicScore.SheetClass.MeasureStart;
+        return this.MusicScore.SheetClass.MeasureStart-1;
     }
 
     public get MeasureEnd(): number {
-        return this.MusicScore.SheetClass.MeasureEnd;
+        return this.MusicScore.SheetClass.MeasureEnd-1;
     }
 
     public get MidiInputs(): MidiInput[] {
@@ -260,8 +257,9 @@ export class Maestro{
             const measureIndex: number = parentMeasure.parentSourceMeasure.measureListIndex;
             const staffIndex: number = parentMeasure.ParentStaff.idInMusicSheet;
             const halfTone: number = osmdNote.sourceNote.halfTone;
+            const isNotRest: boolean = !osmdNote.sourceNote.isRest();
             if (!this.OSMD.measurePartStaveHidden(measureIndex, staffIndex)){
-                if (halfTone) {
+                if (halfTone && isNotRest) {
                     notesUnderCursor.push(halfTone);
                     this.NotesToPlay++;
                 }
@@ -541,7 +539,7 @@ export class Maestro{
                 this.OSMD.Sheet.ComposerString = this.MusicScore.ScoreNode.Author;
                 this.OSMD.updateGraphic();
                 this.OSMD.render();
-                if (!this.IsPlayable) {
+                if (!this.IsPlayableSelection) {
                     alert("Non ci sono note da suonare nalla selezione");
                     return null;
                 }
@@ -568,14 +566,11 @@ export class Maestro{
     }
 
     public next(): void {
-        let looped: boolean = false;
-        console.log(Date.now());
         this.clearMidiNotes();
         this.clearDrawNotes();
         while (
-            !looped &&
-            this.ExpectedMeasureIndex > 0 && (
-                this.Cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex ||
+            this.ExpectedMeasureIndex >= 0 && (
+                this.CurrentMeasureIndex < this.ExpectedMeasureIndex ||
                 this.DrawNotes.length === 0
             )
         ) {
@@ -584,19 +579,15 @@ export class Maestro{
             if (this.LatestMeasureIndex!==this.CurrentMeasureIndex){
                 this.LatestMeasureIndex = this.CurrentMeasureIndex;
                 this.PlayMeasureIndex++;
-                console.log(this.ExpectedMeasureIndex);
                 if (this.ExpectedMeasureIndex>=0) {
                     if (this.CurrentMeasureIndex !== this.ExpectedMeasureIndex){
                         this.resetTo(this.ExpectedMeasureIndex);
                     }
                 } else {
-                    looped = true;
+                    this.reset();
                 }
             }
             this.fillDrawNotes();
-        }
-        if (looped){
-            this.reset();
         }
         this.Cursor.update();
     }
@@ -608,7 +599,6 @@ export class Maestro{
             this.Cursor.Iterator.CurrentMeasureIndex < newMeasureIndex
         ) {
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
-            console.log(this.Cursor.Iterator.currentTimeStamp);
         }
         this.Cursor.update();
     }
@@ -650,7 +640,6 @@ export class Maestro{
             //this.moveToNext(newMeasureIndex);
         }
         this.fillDrawNotes();
-        console.log(this.DrawNotes);
         this.Cursor.update();
     }
 
@@ -675,7 +664,6 @@ export class Maestro{
             this.ExpectedMeasureIndex>=0 &&
             this.DrawNotes.length<1
         ) {
-            console.log("PROCEDURE 1");
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(false);
             this.Cursor.update();
             if (
@@ -715,14 +703,12 @@ export class Maestro{
 
             this.Cursor.update();
             if (this.PlayMeasureIndex>=this.PlayerMeasures.length) {
-                console.log("NEXT", 11);
                 this.PlayMeasureIndex = this.PlayerMeasures.length-1;
             }
             if(
                 this.Cursor.Iterator.EndReached ||
                 this.ExpectedMeasureIndex<0
             ) {
-                console.log("NEXT", 12);
                 console.log("END REACHED");
                 // QUI CALCOLEREMO SUCCESSI E FALLIMENTI
                 console.log("NOTES TO PLAY", this.NotesToPlay);
