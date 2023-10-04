@@ -113,8 +113,8 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
     }
 
     measurePartStaveHidden(measure: number, staveIndex: number): boolean {
-        const partStave:  {part: number, stave: number} = this.getPartStaveFromIndex(staveIndex);
-        const partString: string = String(partStave.part);
+        //const partStave:  {part: number, stave: number} = this.getPartStaveFromIndex(staveIndex);
+        //const partString: string = String(partStave.part);
         let hiddenPart: boolean = false;
         let hiddenMeasure: boolean;
         if  (
@@ -127,9 +127,9 @@ export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
         }
 
         if (
-            partString in this.HiddenParts &&
+            //partString in this.HiddenParts &&
             Array.isArray(this.hiddenParts) &&
-            this.hiddenParts.includes(partStave.stave)
+            this.hiddenParts.includes(staveIndex)
         ) {
             hiddenPart = true;
         }

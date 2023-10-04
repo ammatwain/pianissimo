@@ -160,7 +160,7 @@ export class MusicScore extends ASCore {
     public update(): void {
         this.ScoreNode.Library.getMusicXmlObject(this.musicXmlId ).then((musicXmlObject: TMusicXmlObject) =>{
             if (musicXmlObject) {
-                this.maestro.loadXmSheet(musicXmlObject.musicXml, this.SheetNode);
+                this.maestro.loadXmlSheet(musicXmlObject.musicXml, this.SheetNode);
 /*
                 this.maestro.OSMD.load(musicXmlObject.musicXml).then(() => {
                     this.sleeperShow();

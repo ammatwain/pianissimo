@@ -78,7 +78,7 @@ function appFrontendListeners(app: App): void {
         const branch: BranchClass = app.Tree.getBranchById(ids.sectionId);
         if (branch.Type === STR.section && ids.xml!==null) {
             app.Tree.fillPropertyEditor(ids.sectionId);
-            app.Maestro.loadXmSheet(ids.xml, branch);
+            app.Maestro.loadXmlSheet(ids.xml, branch);
         }
     });
 

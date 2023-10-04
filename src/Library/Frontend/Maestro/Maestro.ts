@@ -1,13 +1,12 @@
 import { STR } from "@Global/STR";
-import {OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 
-import { RepetitionInstruction, Note, ExtendedOpenSheetMusicDisplay, GraphicalNote } from "../Extends/ExtendedOpenMusicDisplayManager";
+import { RepetitionInstruction, Note, ExtendedOpenSheetMusicDisplay, GraphicalNote, GraphicalMeasure, Cursor } from "../Extends/ExtendedOpenMusicDisplayManager";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import { WebMidi, Input as MidiInput, NoteMessageEvent } from "../WebMidi";
 import { SheetFlowCalculator } from "@Frontend/SheetFlow";
 import { SheetNode } from "@Frontend/AS/SheetNode";
 import { IExercise } from "@Common/Interfaces/IExercise";
-import { IBranchObject, IDiaryObject } from "@Library/Common";
+import { IDiaryObject } from "@Library/Common";
 import { MusicScore } from "../AS/MusicScore";
 
 //import { KeyboardInputEvent } from "electron";
@@ -23,7 +22,8 @@ interface IMaestroData extends IMaestroParams{
     repeats: [RepetitionInstruction[],RepetitionInstruction[]][];
     flow: SheetFlowCalculator;
     midiNotes: boolean[];
-    osmdNotes: number[];
+    drawNotes: number[];
+    latestMeasureIndex: number;
     playMeasures: number[];
     playMeasureIndex: number;
     exercises: IExercise[];
@@ -38,15 +38,15 @@ interface IMaestroData extends IMaestroParams{
 
 export class Maestro{
     private data: IMaestroData = {
-        //tree: null,
-        //branches: null,
+        musicScore: null,
         etc: null,
         midiInputs: [],
         osmd : null,
         repeats : [],
         flow: null,
         midiNotes : [],
-        osmdNotes : [],
+        drawNotes : [],
+        latestMeasureIndex: -1,
         playMeasures : [],
         playMeasureIndex: 0,
         exercises: [],
@@ -85,7 +85,7 @@ export class Maestro{
         });
 
         //this.Tree = params.tree;
-        this.SheetNotes = [];
+        this.DrawNotes = [];
 
         for (let i: number = 0 ; i < 128; i++){
             this.MidiNotes.push(false);
@@ -110,12 +110,20 @@ export class Maestro{
         this.data.currentKey = currentKey;
     }
 
+    public get CurrentMeasureIndex(): number {
+        return this.Cursor.Iterator.CurrentMeasureIndex || 0;
+    }
+
     public get CurrentSheet(): SheetNode {
         return this.data.currentSheet || null;
     }
 
     public set CurrentSheet(currentSection: SheetNode) {
         this.data.currentSheet = currentSection;
+    }
+
+    public get Cursor(): Cursor {
+        return this.OSMD.cursor;
     }
 
     public get Data(): IMaestroData  {
@@ -128,6 +136,14 @@ export class Maestro{
 
     public set Diary(diary: IDiaryObject) {
         this.data.diary = diary;
+    }
+
+    public get Errors(): number {
+        return this.data.errors;
+    }
+
+    public set Errors(errors: number) {
+        this.data.errors = errors;
     }
 
     public get ETC(): ExtendedTransposeCalculator {
@@ -164,8 +180,41 @@ export class Maestro{
         this.data.flow = flow;
     }
 
+    public get IsPlayable(): boolean {
+        let ok: boolean = false;
+        this.Cursor.reset();
+        while(this.CurrentMeasureIndex < this.MeasureStart) {
+            this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+        }
+        while(this.CurrentMeasureIndex < this.MeasureEnd) {
+            if (this.fillDrawNotes()){
+                ok = true;
+                break;
+            }
+            this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+        }
+        //this.reset();
+        return ok;
+    }
+
     public get IsPlaying(): boolean {
         return this.PlayedNotes>0;
+    }
+
+    public get LatestMeasureIndex(): number {
+        return this.data.latestMeasureIndex;
+    }
+
+    public set LatestMeasureIndex(latestMeasureIndex: number) {
+        this.data.latestMeasureIndex = latestMeasureIndex;
+    }
+
+    public get MeasureStart(): number {
+        return this.MusicScore.SheetClass.MeasureStart;
+    }
+
+    public get MeasureEnd(): number {
+        return this.MusicScore.SheetClass.MeasureEnd;
     }
 
     public get MidiInputs(): MidiInput[] {
@@ -204,6 +253,23 @@ export class Maestro{
         this.data.notesToPlay = notesToPlay;
     }
 
+    public get NotesUnderCursor(): number [] {
+        const notesUnderCursor: number[] = [];
+        this.Cursor.GNotesUnderCursor().forEach((osmdNote: GraphicalNote)=>{
+            const parentMeasure: GraphicalMeasure = osmdNote.parentVoiceEntry.parentStaffEntry.parentMeasure;
+            const measureIndex: number = parentMeasure.parentSourceMeasure.measureListIndex;
+            const staffIndex: number = parentMeasure.ParentStaff.idInMusicSheet;
+            const halfTone: number = osmdNote.sourceNote.halfTone;
+            if (!this.OSMD.measurePartStaveHidden(measureIndex, staffIndex)){
+                if (halfTone) {
+                    notesUnderCursor.push(halfTone);
+                    this.NotesToPlay++;
+                }
+            }
+        });
+        return notesUnderCursor;
+    }
+
     public get OSMD(): ExtendedOpenSheetMusicDisplay {
         return this.data.osmd;
     }
@@ -212,12 +278,12 @@ export class Maestro{
         this.data.osmd = osmd;
     }
 
-    public get OsmdNotes(): number[]{
-        return this.data.osmdNotes;
+    public get DrawNotes(): number[]{
+        return this.data.drawNotes;
     }
 
-    public set OsmdNotes(osmdNotes: number[]){
-        this.data.osmdNotes = osmdNotes;
+    public set DrawNotes(drawNotes: number[]){
+        this.data.drawNotes = drawNotes;
     }
 
     public get PlayerMeasures(): number[]{
@@ -233,7 +299,11 @@ export class Maestro{
     }
 
     public set PlayMeasureIndex(playMeasureIndex: number){
-        if (playMeasureIndex >= this.PlayerMeasures.length) {playMeasureIndex = 0;}
+        if (playMeasureIndex >= this.PlayerMeasures.length) {
+            playMeasureIndex = this.PlayerMeasures.length-1;
+        } else if (playMeasureIndex<0) {
+            playMeasureIndex = 0;
+        }
         this.data.playMeasureIndex = playMeasureIndex;
     }
 
@@ -261,58 +331,124 @@ export class Maestro{
         this.data.playedNotes = playedShot;
     }
 
-    public get SheetNotes(): number[]{
-        return this.data.osmdNotes;
-    }
+    // METHODS ******************************************************************************
 
-    public set SheetNotes(osmdNotes: number[]){
-        this.data.osmdNotes = osmdNotes;
-    }
-/*
-    public get Tree(): WTree{
-        return this.data.tree;
-    }
-
-    public set Tree(tree: WTree){
-        this.data.tree = tree;
-    }
-*/
-    public fillOsmdNotes(): void {
-//        this.OSMD.HiddenParts =
-        this.data.osmdNotes = [];
-        this.OSMD.cursor.GNotesUnderCursor().forEach((osmdNote: GraphicalNote)=>{
-            const measureIndex: number = osmdNote.parentVoiceEntry.parentStaffEntry.parentMeasure.parentSourceMeasure.measureListIndex;
-            const staffIndex: number = osmdNote.parentVoiceEntry.parentStaffEntry.parentMeasure.ParentStaff.idInMusicSheet;
-            const halfTone: number = osmdNote.sourceNote.halfTone;
-            if (!this.OSMD.measurePartStaveHidden(measureIndex, staffIndex)){
-                if (halfTone) {
-                    this.data.osmdNotes.push(halfTone);
-                    this.NotesToPlay++;
+    public allNotesUnderCursorArePlayed(playType: string | boolean = "medio"): boolean {
+        switch(playType) {
+            case "facile": {
+                // ciclo 1
+                // controlla se le note grafiche sono suonate.
+                let ok: boolean=false;
+                console.log(STR.sheet, this.DrawNotes);
+                console.log("midi", this.MidiNotes);
+                for(let i: number = 0 ; i < this.DrawNotes.length; i++) {
+                    if(this.getMidiNote(this.DrawNotes[i])) {ok = true;}
                 }
-            }
-        });
-/*
-        this.OSMD.cursor.NotesUnderCursor().forEach((osmdNote: Note)=>{
-            if (osmdNote.halfTone!==0) {
-                if (!("tie" in osmdNote && osmdNote.NoteTie.Notes[0] !== osmdNote)){
-                    this.data.osmdNotes.push(osmdNote.halfTone);
-                    this.NotesToPlay++;
+                if (ok) {
+                    this.clearMidiNotes();
+                    this.clearDrawNotes();
                 }
+                return ok;
             }
-        });
-*/
+            case "adattato": {
+                // ciclo 1
+                // controlla se le note grafiche sono suonate.
+                let ok: boolean=true;
+                const midiNotes: number[] = [];
+                for (let i: number = 0; i < 128 ; i++){
+                    if(this.MidiNotes[i]) {
+                        midiNotes.push(i%12);
+                        this.PlayedNotes++;
+                    }
+                }
+
+                console.log(STR.sheet, this.DrawNotes);
+                console.log("midi" , midiNotes);
+                for(let i: number = 0 ; i < this.DrawNotes.length; i++) {
+                    if (midiNotes.length>0) {
+                        const index: number = midiNotes.indexOf(this.DrawNotes[i] % 12 );
+                        if (index > -1) {
+                            delete midiNotes[index];
+                        } else {
+                            ok = false;
+                            this.Errors++;
+                            break;
+                        }
+                    } else {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) {
+                    this.clearMidiNotes();
+                    this.clearDrawNotes();
+                }
+                return ok;
+            }
+            case "medio": {
+                // ciclo 1
+                // controlla se le note grafiche sono suonate.
+                let ok: boolean=true;
+                const midiNotes: number[] = [];
+                for (let i: number = 0; i < 128 ; i++ ){
+                    if(this.MidiNotes[i]) {
+                        midiNotes.push(i);
+                    }
+                }
+
+                for(let i: number = 0 ; i < this.DrawNotes.length; i++) {
+                    if(!this.getMidiNote(this.DrawNotes[i])) {
+                        ok = false;
+                    }
+                }
+                if (ok) {
+                    this.clearMidiNotes();
+                    this.clearDrawNotes();
+                }
+                return ok;
+            }
+            case "difficile" : {
+                // ciclo 1
+                // controlla se le note grafiche sono suonate.
+                let ok: boolean=true;
+                console.log(STR.sheet,this.DrawNotes);
+                console.log("midi",this.MidiNotes);
+                for(let i: number = 0 ; i<this.DrawNotes.length; i++) {
+                    if(!this.getMidiNote(this.DrawNotes[i])) {ok = false;}
+                }
+                // ciclo 2
+                // se il ciclo 1 è ok, controlla se ci sono stecche.
+                //if (ok){
+                    for(let i: number = 0 ; i<this.MidiNotes.length; i++) {
+                        if(this.MidiNotes[i]===true){
+                            if(!this.DrawNotes.includes(i)) {
+                            this.setMidiNoteOff(i);
+                            ok = false;
+                            console.log("hai steccato!");
+                            }
+                        };
+                    }
+                //}
+                if (ok) {
+                    this.clearMidiNotes();
+                    this.clearDrawNotes();
+                }
+                return ok;
+            }
+            case true :
+            case false : {
+                this.clearMidiNotes();
+                this.clearDrawNotes();
+                return Boolean(playType);
+            }
+            default: {
+                return false;
+            }
+        }
     }
 
-    public getRandomExercise(): IExercise {
-        return this.Exercises[ Math.floor( Math.random() * this.Exercises.length) ];
-    }
-
-    public setMidiNoteOn(midiNoteValue: number): void{
-        this.setMidiNote(midiNoteValue, true);
-    }
-
-    public setMidiNoteOff(midiNoteValue: number): void{
-        this.setMidiNote(midiNoteValue, false);
+    public clearDrawNotes(): void{
+        this.DrawNotes = [];
     }
 
     public clearMidiNotes(): void{
@@ -321,8 +457,13 @@ export class Maestro{
         }
     }
 
-    public clearSheetNotes(): void{
-        this.data.osmdNotes = [];
+    public fillDrawNotes(): number {
+        this.DrawNotes = this.NotesUnderCursor;
+        return this.DrawNotes.length;
+    }
+
+    public getRandomExercise(): IExercise {
+        return this.Exercises[ Math.floor( Math.random() * this.Exercises.length) ];
     }
 
     public getMidiNote(midiNoteValue: number): boolean{
@@ -339,7 +480,15 @@ export class Maestro{
         }
     }
 
-    public loadXmSheet(
+    public setMidiNoteOff(midiNoteValue: number): void{
+        this.setMidiNote(midiNoteValue, false);
+    }
+
+    public setMidiNoteOn(midiNoteValue: number): void{
+        this.setMidiNote(midiNoteValue, true);
+    }
+
+    public loadXmlSheet(
         musicXml: string,
         sheetNode: SheetNode,
         beforeStart: () => void = null,
@@ -350,308 +499,141 @@ export class Maestro{
             musicXml !== "" &&
             typeof musicXml === "string"
         ) {
-/*
+            this.CurrentSheet = sheetNode;
             if(beforeStart!==null && typeof beforeStart === "function"){
                 beforeStart();
             }
+            this.OSMD.load(musicXml).then(() => {
+                this.MusicScore.sleeperShow();
+                // trasposition
 
-            this.CurrentSheet = sheetNode;
-
-            this.OSMD.load(musicXml).then(()=>{
-                console.log(sheetNode);
-
-                if (key === null) {
-                    key = this.ETC.MainKey;
-                }
-
-                this.CurrentKey = key;
-                this.ETC.Options.transposeToKey(key);
-
-                if (!(this.CurrentSheet.ActiveKeys.includes(this.CurrentKey))) {
-                    this.CurrentSheet.ActiveKeys.push(this.CurrentKey);
-                }
+                this.ETC.Options.transposeToKey(this.MusicScore.SheetClass.ActiveKey);
+                this.OSMD.HiddenParts = this.MusicScore.SheetClass.HiddenParts;
+                this.OSMD.MeasureStart = this.MusicScore.SheetClass.MeasureStart;
+                this.OSMD.MeasureEnd = this.MusicScore.SheetClass.MeasureEnd;
 
                 this.Diary.datetime = 0;
                 this.Diary.duration = 0;
-                this.Diary.id = sheetNode.Id;
+                this.Diary.id = this.CurrentSheet.Id;
                 this.Diary.key = 0;
                 this.Diary.bpm = 0;
                 this.Diary.score = 0;
 
-                this.PlayerMeasures = [];
-                this.PlayerMeasureIndex = 0;
+                this.PlayerMeasures = this.Flow.calculatePlayerMeasures(this.OSMD.MeasureStart, this.OSMD.MeasureEnd);
 
-                if (this.CurrentSheet.IsFragment) {
-                    this.OSMD.setOptions({
-                        drawFromMeasureNumber: this.CurrentSheet.MeasureStart,
-                        drawUpToMeasureNumber: this.CurrentSheet.MeasureEnd,
-                        //defaultColorMusic: "#cccccc",
-                   });
-                }
+                this.PlayMeasureIndex = 0;
 
-                this.PlayerMeasures = this.Flow.calculatePlayerMeasures();
-
+                this.OSMD.setOptions({
+                    measureNumberInterval: 1,
+                    //drawFromMeasureNumber: this.SheetClass.MeasureStart,
+                    //drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
+                    //defaultColorMusic: "#1f1f1f",
+                });
                 this.OSMD.zoom = 1.0;
-                //this.osmd.FollowCursor = true;
-                const titleSplitted: string[] = sheetNode.Name.split(";");
-                if(titleSplitted.length===2){
-                    this.OSMD.Sheet.TitleString = titleSplitted[0];
-                    this.OSMD.Sheet.SubtitleString = titleSplitted[1];
-
+                // strings
+                if (this.MusicScore.ScoreMode){
+                    this.OSMD.Sheet.TitleString = this.MusicScore.ScoreNode.Title;
+                    this.OSMD.Sheet.SubtitleString = this.MusicScore.ScoreNode.Subtitle;
                 } else {
-                    this.OSMD.Sheet.TitleString = sheetNode.Name;
+                    this.OSMD.Sheet.TitleString = `${this.MusicScore.ScoreNode.Title} - ${this.MusicScore.SheetNode.Title}`;
+                    this.OSMD.Sheet.SubtitleString = `${this.MusicScore.ScoreNode.Subtitle} - ${this.MusicScore.SheetNode.Subtitle}`;
                 }
-
+                this.OSMD.Sheet.ComposerString = this.MusicScore.ScoreNode.Author;
                 this.OSMD.updateGraphic();
                 this.OSMD.render();
+                if (!this.IsPlayable) {
+                    alert("Non ci sono note da suonare nalla selezione");
+                    return null;
+                }
+                this.Cursor.show();
                 this.reset();
-                this.OSMD.cursor.show();
-
                 if(afterEnd!==null && typeof afterEnd === "function"){
                     afterEnd();
                 }
-*/
-//************************************************************************************************* */
-                this.CurrentSheet = sheetNode;
-                if(beforeStart!==null && typeof beforeStart === "function"){
-                    beforeStart();
-                }
-                this.OSMD.load(musicXml).then(() => {
-                    this.MusicScore.sleeperShow();
-                    // trasposition
-
-                    this.ETC.Options.transposeToKey(this.MusicScore.SheetClass.ActiveKey);
-                    this.OSMD.HiddenParts = this.MusicScore.SheetClass.HiddenParts;
-                    this.OSMD.MeasureStart = this.MusicScore.SheetClass.MeasureStart;
-                    this.OSMD.MeasureEnd = this.MusicScore.SheetClass.MeasureEnd;
-
-                    this.Diary.datetime = 0;
-                    this.Diary.duration = 0;
-                    this.Diary.id = this.CurrentSheet.Id;
-                    this.Diary.key = 0;
-                    this.Diary.bpm = 0;
-                    this.Diary.score = 0;
-
-                    this.PlayerMeasures = this.Flow.calculatePlayerMeasures(this.OSMD.MeasureStart, this.OSMD.MeasureEnd);
-
-                    this.PlayMeasureIndex = 0;
-
-                    this.OSMD.setOptions({
-                        measureNumberInterval: 1,
-                        //drawFromMeasureNumber: this.SheetClass.MeasureStart,
-                        //drawUpToMeasureNumber: this.SheetClass.MeasureEnd,
-                        //defaultColorMusic: "#1f1f1f",
-                    });
-                    this.OSMD.zoom = 1.0;
-                    // strings
-                    if (this.MusicScore.ScoreMode){
-                        this.OSMD.Sheet.TitleString = this.MusicScore.ScoreNode.Title;
-                        this.OSMD.Sheet.SubtitleString = this.MusicScore.ScoreNode.Subtitle;
-                    } else {
-                        this.OSMD.Sheet.TitleString = `${this.MusicScore.ScoreNode.Title} - ${this.MusicScore.SheetNode.Title}`;
-                        this.OSMD.Sheet.SubtitleString = `${this.MusicScore.ScoreNode.Subtitle} - ${this.MusicScore.SheetNode.Subtitle}`;
-                    }
-                    this.OSMD.Sheet.ComposerString = this.MusicScore.ScoreNode.Author;
-                    this.OSMD.updateGraphic();
-                    this.OSMD.render();
-                    this.OSMD.cursor.show();
-                    this.reset();
-                    if(afterEnd!==null && typeof afterEnd === "function"){
-                        afterEnd();
-                    }
-                    //sthis.maestro.OSMD.cursor.show();
-                    this.MusicScore.sleeperHide();
-                });
-//            }
+                this.MusicScore.sleeperHide();
+            });
         }
-    }
-
-    public allNotesUnderCursorArePlayedDebug(): boolean{
-        this.clearMidiNotes();
-        this.clearSheetNotes();
-        return true;
-    }
-
-    public allNotesUnderCursorArePlayedFacile(): boolean{
-      // ciclo 1
-      // controlla se le note grafiche sono suonate.
-      let ok: boolean=false;
-      console.log(STR.sheet,this.data.osmdNotes);
-      console.log("midi",this.data.midiNotes);
-      for(let i: number = 0 ; i < this.SheetNotes.length; i++) {
-        if(this.getMidiNote(this.SheetNotes[i])) {ok = true;}
-      }
-      if (ok) {
-        this.clearMidiNotes();
-        this.clearSheetNotes();
-      }
-      return ok;
-    }
-
-    public allNotesUnderCursorArePlayedAdattato(): boolean{
-        // ciclo 1
-        // controlla se le note grafiche sono suonate.
-        let ok: boolean=true;
-        const midiNotes: number[] = [];
-        for (let i: number = 0; i < 128 ; i++){
-            if(this.data.midiNotes[i]) {
-                midiNotes.push(i%12);
-                this.PlayedNotes++;
-            }
-        }
-
-        console.log(STR.sheet, this.data.osmdNotes);
-        console.log("midi" , midiNotes);
-        for(let i: number = 0 ; i < this.SheetNotes.length; i++) {
-            if (midiNotes.length>0) {
-                const index: number = midiNotes.indexOf(this.SheetNotes[i] % 12 );
-                if (index > -1) {
-                    delete midiNotes[index];
-                } else {
-                    ok = false;
-                    this.data.errors++;
-                    break;
-                }
-            } else {
-                ok = false;
-                break;
-            }
-        }
-        if (ok) {
-            this.clearMidiNotes();
-            this.clearSheetNotes();
-        }
-        return ok;
-    }
-
-    public allNotesUnderCursorArePlayedMedio(): boolean{
-        // ciclo 1
-        // controlla se le note grafiche sono suonate.
-        let ok: boolean=true;
-        const midiNotes: number[] = [];
-        for (let i: number = 0; i < 128 ; i++ ){
-            if(this.data.midiNotes[i]) {midiNotes.push(i);}
-        }
-
-        for(let i: number = 0 ; i < this.SheetNotes.length; i++) {
-            if(!this.getMidiNote(this.SheetNotes[i])) {
-                ok = false;
-            }
-        }
-        if (ok) {
-            this.clearMidiNotes();
-            this.clearSheetNotes();
-        }
-        return ok;
-    }
-
-    public allNotesUnderCursorArePlayedDifficile(): boolean{
-        // ciclo 1
-        // controlla se le note grafiche sono suonate.
-        let ok: boolean=true;
-        console.log(STR.sheet,this.data.osmdNotes);
-        console.log("midi",this.data.midiNotes);
-        for(let i: number = 0 ; i<this.SheetNotes.length; i++) {
-            if(!this.getMidiNote(this.SheetNotes[i])) {ok = false;}
-        }
-        // ciclo 2
-        // se il ciclo 1 è ok, controlla se ci sono stecche.
-        //if (ok){
-            for(let i: number = 0 ; i<this.data.midiNotes.length; i++) {
-                if(this.data.midiNotes[i]===true){
-                    if(!this.data.osmdNotes.includes(i)) {
-                    this.setMidiNoteOff(i);
-                    ok = false;
-                    console.log("hai steccato!");
-                    }
-                };
-            }
-        //}
-        if (ok) {
-            this.clearMidiNotes();
-            this.clearSheetNotes();
-        }
-        return ok;
-    }
-
-    public allNotesUnderCursorArePlayed(): boolean{
-        return this.allNotesUnderCursorArePlayedMedio();
     }
 
     public test(): void {
-        this.OSMD.cursor.reset();
-        while(!this.OSMD.cursor.iterator.EndReached) {
-            this.OSMD.cursor.next();
+        this.Cursor.reset();
+        while(!this.Cursor.iterator.EndReached) {
+            this.Cursor.next();
         }
     }
 
-    public moveToNext(newMeasureIndex: number): void {
-        // la battuta è cambiata,
-        // ora dobbiame controllare se quella in cui ci troviamo adesso è quella
-        // prevista dal "piano" di ripetizione delle battute
-        // siccome l'indice di battuta è incrementato di uno
-        // dobbiamo incrementre l'indice del "piano" di ripetizione di uno
-        // e controllare se il valore contenuto nell'indice del piano
-        // sia uguale all'indice di battuta attuale.
-        // SE NON LO E',
-        // allora bisogna spostarsi con in avanti o all'indietro fino a che
-        // i due valori combaciano.
-        //
-        // OK INCREMENTIAMO L'INDICE DEL PIANO DI BATTUTA
-        this.PlayMeasureIndex++;
-        if (this.ExpectedMeasureIndex<0){
-            this.PlayMeasureIndex = 0;
-        }
-        // ora controlliamo se l'indice attuale è uguale a qyello atteso
-        if (newMeasureIndex !== this.ExpectedMeasureIndex) {
-            // siamo troppo avanti, resettiamo
-            if (newMeasureIndex > this.ExpectedMeasureIndex) {
-                this.OSMD.cursor.reset();
-                this.OSMD.cursor.resetIterator();
+    checkPlayability(): boolean{
+        this.reset();
+        return true;
+    }
+
+    public next(): void {
+        let looped: boolean = false;
+        console.log(Date.now());
+        this.clearMidiNotes();
+        this.clearDrawNotes();
+        while (
+            !looped &&
+            this.ExpectedMeasureIndex > 0 && (
+                this.Cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex ||
+                this.DrawNotes.length === 0
+            )
+        ) {
+            this.LatestMeasureIndex = this.CurrentMeasureIndex;
+            this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+            if (this.LatestMeasureIndex!==this.CurrentMeasureIndex){
+                this.LatestMeasureIndex = this.CurrentMeasureIndex;
+                this.PlayMeasureIndex++;
+                console.log(this.ExpectedMeasureIndex);
+                if (this.ExpectedMeasureIndex>=0) {
+                    if (this.CurrentMeasureIndex !== this.ExpectedMeasureIndex){
+                        this.resetTo(this.ExpectedMeasureIndex);
+                    }
+                } else {
+                    looped = true;
+                }
             }
-            while (
-                this.OSMD.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex ||
-                this.OsmdNotes.length === 0
-            ) {
-                this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(true);
-                this.fillOsmdNotes();
-            }
+            this.fillDrawNotes();
         }
+        if (looped){
+            this.reset();
+        }
+        this.Cursor.update();
     }
 
     public resetTo(newMeasureIndex: number): void {
-        this.OSMD.cursor.reset();
-        //this.OSMD.cursor.resetIterator();
+        this.Cursor.reset();
+        //this.Cursor.resetIterator();
         while (
-            this.OSMD.cursor.Iterator.CurrentMeasureIndex < newMeasureIndex
+            this.Cursor.Iterator.CurrentMeasureIndex < newMeasureIndex
         ) {
-            this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(true);
-            console.log(this.OSMD.cursor.Iterator.currentTimeStamp);
+            this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+            console.log(this.Cursor.Iterator.currentTimeStamp);
         }
-        this.OSMD.cursor.update();
+        this.Cursor.update();
     }
 
     public reset(): void {
         this.NotesToPlay = 0;
         this.PlayedNotes = 0;
-        this.data.errors = 0;
+        this.Errors = 0;
 
         this.PlayMeasureIndex = 0;
         this.resetTo(this.ExpectedMeasureIndex);
-        this.OSMD.cursor.SkipInvisibleNotes = false;
-        this.fillOsmdNotes();
-        if(this.data.osmdNotes.length<1){
+        this.Cursor.SkipInvisibleNotes = false;
+        this.fillDrawNotes();
+        if(this.DrawNotes.length<1){
             this.next();
         }
     }
 
-    public next(): void {
-        this.data.osmdNotes = [];
+    public __next(): void {
+        this.DrawNotes = [];
         this.clearMidiNotes();
         //
-        const oldMeasureIndex: number = this.OSMD.cursor.Iterator.CurrentMeasureIndex;
-        this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
-        const newMeasureIndex: number = this.OSMD.cursor.Iterator.CurrentMeasureIndex;
+        const oldMeasureIndex: number = this.Cursor.Iterator.CurrentMeasureIndex;
+        this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
+        const newMeasureIndex: number = this.Cursor.Iterator.CurrentMeasureIndex;
         if (newMeasureIndex !== oldMeasureIndex){
             // la battuta è cambiata,
             // ora dobbiame controllare se quella in cui ci troviamo adesso è quella
@@ -665,40 +647,40 @@ export class Maestro{
             // i due valori combaciano.
             //
             // OK INCREMENTIAMO L'INDICE DEL PIANO DI BATTUTA
-            this.moveToNext(newMeasureIndex);
+            //this.moveToNext(newMeasureIndex);
         }
-        this.fillOsmdNotes();
-        console.log(this.data.osmdNotes);
-        this.OSMD.cursor.update();
+        this.fillDrawNotes();
+        console.log(this.DrawNotes);
+        this.Cursor.update();
     }
 
     public _next(): void {
-        this.data.osmdNotes = [];
+        this.DrawNotes = [];
         this.clearMidiNotes();
         //let expectedMeasureIndex:number = this.playerMeasures[this.playerMeasureIndex];
         console.log(
             "PRE-WHILE ",
-            "Current", this.OSMD.cursor.Iterator.CurrentMeasureIndex,
+            "Current", this.Cursor.Iterator.CurrentMeasureIndex,
             "Expected", this.ExpectedMeasureIndex,
             "CurrentIndexInRepetitionArray",this.PlayMeasureIndex
         ) ;
         if (this.PlayMeasureIndex === -1){
             this.PlayMeasureIndex = 0;
-            //this.OSMD.cursor.resetIterator();
-            while (this.OSMD.cursor.Iterator.CurrentMeasureIndex !== this.ExpectedMeasureIndex) {
-                this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+            //this.Cursor.resetIterator();
+            while (this.Cursor.Iterator.CurrentMeasureIndex !== this.ExpectedMeasureIndex) {
+                this.Cursor.Iterator.moveToNextVisibleVoiceEntry(false);
             };
         }
         while (
             this.ExpectedMeasureIndex>=0 &&
-            this.data.osmdNotes.length<1
+            this.DrawNotes.length<1
         ) {
             console.log("PROCEDURE 1");
-            this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
-            this.OSMD.cursor.update();
+            this.Cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+            this.Cursor.update();
             if (
                 this.ExpectedMeasureIndex >= 0 &&
-                this.OSMD.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex
+                this.Cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex
             ) {
                 console.log("PROCEDURE 2");
                 // C'E' SALTO UN SALTO DI MISURA
@@ -706,24 +688,24 @@ export class Maestro{
                 //if (this.CurrentIndexInRepetitionArray !== 0) {
                     this.PlayMeasureIndex++;
                 //}
-                console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+                console.log("Current",this.Cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
                 if (
                     this.ExpectedMeasureIndex>=0 &&
-                    (this.OSMD.cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex)
+                    (this.Cursor.Iterator.CurrentMeasureIndex!==this.ExpectedMeasureIndex)
                 ){
                     console.log("NEXT", 3);
                     // SIAMO IN PRESENZA DI UNA RIPETIZIONE
-                    this.OSMD.cursor.resetIterator();
-                    this.OSMD.cursor.update();
+                    this.Cursor.resetIterator();
+                    this.Cursor.update();
 //                    console.log("playerMeasures",this.PlayerMeasures) ;
-                    console.log("Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
-                    while (this.OSMD.cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex) {
-                        this.OSMD.cursor.Iterator.moveToNextVisibleVoiceEntry(false);
-//                        console.log("backJumpOccurred2",this.OSMD.cursor.iterator.backJumpOccurred);
-                        this.OSMD.cursor.update();
+                    console.log("Current",this.Cursor.Iterator.CurrentMeasureIndex, "Expected",this.ExpectedMeasureIndex) ;
+                    while (this.Cursor.Iterator.CurrentMeasureIndex < this.ExpectedMeasureIndex) {
+                        this.Cursor.Iterator.moveToNextVisibleVoiceEntry(false);
+//                        console.log("backJumpOccurred2",this.Cursor.iterator.backJumpOccurred);
+                        this.Cursor.update();
                         console.log(
                             "IN-WHILE",
-                            "Current",this.OSMD.cursor.Iterator.CurrentMeasureIndex,
+                            "Current",this.Cursor.Iterator.CurrentMeasureIndex,
                             "Expected",this.ExpectedMeasureIndex,
                             "CurrentIndexInRepetitionArray",this.PlayMeasureIndex
                         ) ;
@@ -731,13 +713,13 @@ export class Maestro{
                 }
             }
 
-            this.OSMD.cursor.update();
+            this.Cursor.update();
             if (this.PlayMeasureIndex>=this.PlayerMeasures.length) {
                 console.log("NEXT", 11);
                 this.PlayMeasureIndex = this.PlayerMeasures.length-1;
             }
             if(
-                this.OSMD.cursor.Iterator.EndReached ||
+                this.Cursor.Iterator.EndReached ||
                 this.ExpectedMeasureIndex<0
             ) {
                 console.log("NEXT", 12);
@@ -766,11 +748,11 @@ export class Maestro{
                 this.NotesToPlay = 0;
                 this.PlayedNotes = 0;
                 this.reset();
-                //this.OSMD.cursor.reset();
+                //this.Cursor.reset();
                 this.PlayMeasureIndex = 0; //this.OSMD.MeasureStart;
 
             }
-            this.fillOsmdNotes();
+            this.fillDrawNotes();
         }
     }
 
@@ -782,7 +764,7 @@ export class Maestro{
                     if (this.Diary.datetime===0){
                         this.Diary.datetime = Date.now();
                     }
-                    this.Data.playedNotes++;
+                    this.PlayedNotes++;
                     if(this.allNotesUnderCursorArePlayed()){
                         this.next();
                     }
@@ -803,7 +785,7 @@ export class Maestro{
                 STR.keydown,
                 (event: KeyboardEvent) => {
                     if ( event.key === STR.ArrowRight) {
-                        if(this.allNotesUnderCursorArePlayedDebug()){
+                        if(this.allNotesUnderCursorArePlayed(true)){
                             if (this.Diary.datetime===0){
                                 this.Diary.datetime = Date.now();
                             }
