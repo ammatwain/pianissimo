@@ -319,6 +319,7 @@ export class Maestro{
 
     public set PlayedNotes(playedNotes: number) {
         this.data.playedNotes = playedNotes;
+        console.log(this.PlayedNotes);
     }
 
     public get PlayedShot(): number {
@@ -420,9 +421,9 @@ export class Maestro{
                     for(let i: number = 0 ; i<this.MidiNotes.length; i++) {
                         if(this.MidiNotes[i]===true){
                             if(!this.DrawNotes.includes(i)) {
-                            this.setMidiNoteOff(i);
-                            ok = false;
-                            console.log("hai steccato!");
+                                this.setMidiNoteOff(i);
+                                ok = false;
+                                console.log("hai steccato!");
                             }
                         };
                     }
@@ -584,7 +585,7 @@ export class Maestro{
                         this.resetTo(this.ExpectedMeasureIndex);
                     }
                 } else {
-                    this.reset();
+                    this.reset(true);
                 }
             }
             this.fillDrawNotes();
@@ -603,7 +604,41 @@ export class Maestro{
         this.Cursor.update();
     }
 
-    public reset(): void {
+    public reset(calculate: boolean = false): void {
+        if (calculate){
+            if(
+                this.Cursor.Iterator.EndReached ||
+                this.ExpectedMeasureIndex<0
+            ) {
+                console.log("END REACHED");
+                // QUI CALCOLEREMO SUCCESSI E FALLIMENTI
+                console.log("NOTES TO PLAY", this.NotesToPlay);
+                console.log("PLAYED NOTES", this.PlayedNotes);
+    
+                let success: number = 0;
+                if (this.PlayedDone && this.PlayedShot) {
+                    success = ((this.PlayedDone / this.PlayedShot ) * 100) || 0;
+                }
+                this.CurrentSheet.doneAdd(this.CurrentKey,this.PlayedDone);
+                this.CurrentSheet.shotAdd(this.CurrentKey,this.PlayedShot);
+                console.log("SUCCESS:", `${success.toFixed(2)}%` );
+    
+                this.Diary.duration = Date.now() - this.Diary.datetime;
+                this.Diary.score = success;
+    
+                console.log(this.Diary);
+    
+                this.Diary.datetime = 0;
+                this.Diary.duration = 0;
+                this.Diary.score = 0;
+    
+                this.NotesToPlay = 0;
+                this.PlayedNotes = 0;
+                this.reset();
+                //this.Cursor.reset();
+                this.PlayMeasureIndex = 0; //this.OSMD.MeasureStart;
+            }
+        }
         this.NotesToPlay = 0;
         this.PlayedNotes = 0;
         this.Errors = 0;
@@ -771,6 +806,7 @@ export class Maestro{
                 STR.keydown,
                 (event: KeyboardEvent) => {
                     if ( event.key === STR.ArrowRight) {
+                        this.PlayedNotes += this.DrawNotes.length + (Math.floor(Math.random() * 2));
                         if(this.allNotesUnderCursorArePlayed(true)){
                             if (this.Diary.datetime===0){
                                 this.Diary.datetime = Date.now();
