@@ -614,7 +614,7 @@ export class Maestro{
                 // QUI CALCOLEREMO SUCCESSI E FALLIMENTI
                 console.log("NOTES TO PLAY", this.NotesToPlay);
                 console.log("PLAYED NOTES", this.PlayedNotes);
-    
+
                 let success: number = 0;
                 if (this.PlayedDone && this.PlayedShot) {
                     success = ((this.PlayedDone / this.PlayedShot ) * 100) || 0;
@@ -622,16 +622,16 @@ export class Maestro{
                 this.CurrentSheet.doneAdd(this.CurrentKey,this.PlayedDone);
                 this.CurrentSheet.shotAdd(this.CurrentKey,this.PlayedShot);
                 console.log("SUCCESS:", `${success.toFixed(2)}%` );
-    
+
                 this.Diary.duration = Date.now() - this.Diary.datetime;
                 this.Diary.score = success;
-    
+
                 console.log(this.Diary);
-    
+
                 this.Diary.datetime = 0;
                 this.Diary.duration = 0;
                 this.Diary.score = 0;
-    
+
                 this.NotesToPlay = 0;
                 this.PlayedNotes = 0;
                 this.reset();
