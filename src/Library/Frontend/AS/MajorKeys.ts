@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { AS, ASCore } from "./ASCore";
+import { ASCore } from "./ASCore";
 
 ASCSS.MajorKeys = {
     "background-color":"#2b2b2b",

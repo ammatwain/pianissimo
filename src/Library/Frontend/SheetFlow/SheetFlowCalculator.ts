@@ -1,15 +1,15 @@
-import { MusicSheet, OpenSheetMusicDisplay, RepetitionInstruction, SourceMeasure } from "opensheetmusicdisplay";
+import { MusicSheet, ExtendedOSMD, RepetitionInstruction, SourceMeasure } from "@Library/Frontend/Extends/ExtendedOSMD";
 import { Repetitions } from "./Repetitions";
 
 interface IShetFlowCalculatorData {
-    osmd?: OpenSheetMusicDisplay;
+    osmd?: ExtendedOSMD;
 }
 
 export class SheetFlowCalculator {
     private data: IShetFlowCalculatorData = {};
 
-    constructor(osmd: OpenSheetMusicDisplay) {
-        if(osmd instanceof OpenSheetMusicDisplay) {
+    constructor(osmd: ExtendedOSMD) {
+        if(osmd instanceof ExtendedOSMD) {
             this.data.osmd = osmd;
         }
     }

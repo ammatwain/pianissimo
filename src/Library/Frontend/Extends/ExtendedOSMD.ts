@@ -14,7 +14,7 @@ import {
     VexFlowMusicSheetDrawer
 } from "opensheetmusicdisplay";
 export * from "opensheetmusicdisplay";
-export class ExtendedOpenSheetMusicDisplay extends OpenSheetMusicDisplay {
+export class ExtendedOSMD extends OpenSheetMusicDisplay {
 
     private measureStart: number = 0;
     private measureEnd: number = 0;

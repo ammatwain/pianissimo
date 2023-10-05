@@ -1,14 +1,8 @@
-import { globSync } from "glob";
-import md5file from "md5-file";
 import { Store, StoreOptions } from "@Backend/Store";
-import { Walk } from "@Library/Common/Walk";
 import { SqlQuery } from "@Backend/Letture/Queries";
-import { IBranchObject } from "@Interfaces/IBranchObject";
-import { STR } from "@Library/Global/STR";
 import { TDBRackObject, TRackObject } from "@DataObjects/TRackObject";
 import { TDBScoreObject, TDBSheetObject, TDBZippedObject, THiddenPart, TMusicXmlObject, TScoreObject, TSheetObject } from "@Library/Common/DataObjects";
 import { MusicXmlRW } from "../MusicXmlRW";
-//import { Config } from "../Config";
 
 export class Letture extends Store {
     constructor (dbFileName: string, dbOptions: StoreOptions = { verbose: console.warn}) {
@@ -28,22 +22,6 @@ export class Letture extends Store {
             },
         });
         */
-    }
-
-    getLinearLibrary(): IBranchObject[] {
-        const library: IBranchObject[] = <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
-        library.forEach((branchObject: IBranchObject)=>{
-            if (typeof branchObject.custom === STR.string) {
-                branchObject.custom = JSON.parse(branchObject.custom) || {};
-            }
-        });
-        return library;
-        //return <IBranchObject[]>this.prepare(SqlQuery.SelectTableLibrary).all();
-    }
-
-    getTreeLibrary(): IBranchObject[] {
-        const walk: IBranchObject[] = new Walk(this.getLinearLibrary()).TreeObjects;
-        return walk;
     }
 
     getRackObject(dbRackObject: TDBRackObject): TRackObject {

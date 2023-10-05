@@ -1,5 +1,3 @@
-import { TPartStave } from "./TScoreObject";
-
 export type TDBSheetObject = {
     sheetId: number;
 	parentScoreId: number;

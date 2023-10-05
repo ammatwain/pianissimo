@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-import { contextBridge, ipcRenderer /*, IpcRendererEvent */} from "electron";
-import {readdirSync} from "fs";
+import { contextBridge, ipcRenderer } from "electron";
 
 export const electronHandler: { [index: string]: any } = {
   ipcRenderer: {

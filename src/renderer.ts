@@ -32,7 +32,8 @@ import { App } from "./Library/Frontend";
 const app: App = new App("osmd");
 */
 
-import { Application } from "@Frontend/Application";
+import { AppPianissimo } from "@Frontend/Application";
 
-const application: Application = new Application();
+const appPianissimo: AppPianissimo = new AppPianissimo();
+console.log(AppPianissimo.name);
 

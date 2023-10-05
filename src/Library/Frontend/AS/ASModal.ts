@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { AS, ASCore } from "./ASCore";
+import { ASCore } from "./ASCore";
 
 ASCSS.ASModal = {
     "animation": "fadeOut 0.3s",

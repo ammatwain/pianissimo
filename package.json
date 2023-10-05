@@ -1,7 +1,7 @@
 {
     "name": "pianissimo",
     "productName": "pianissimo",
-    "version": "0.2.940",
+    "version": "0.2.953",
     "description": "pianissimo",
     "main": ".webpack/main",
     "scripts": {
@@ -49,24 +49,24 @@
         "filemanager-webpack-plugin": "^8.0.0",
         "fork-ts-checker-webpack-plugin": "^7.3.0",
         "node-loader": "^2.0.0",
+        "npm-run-all": "^4.1.5",
         "sass": "^1.64.2",
         "sass-loader": "^13.3.2",
         "style-loader": "^3.3.3",
         "ts-loader": "^9.4.4",
         "ts-node": "^10.9.1",
+        "tsconfig-paths-webpack-plugin": "^4.1.0",
         "typescript": "~4.5.4",
         "webpack-cli": "^5.1.4"
     },
     "dependencies": {
-        "better-sqlite3": "^8.5.0",
+        "better-sqlite3": "^8.7.0",
         "browser-or-node": "^2.1.1",
         "directory-tree": "^3.5.1",
         "electron-squirrel-startup": "^1.0.0",
-        "extended-transpose-calculator": "^0.2.32",
+        "extended-transpose-calculator": "^0.2.33",
         "glob": "^10.3.3",
         "md5-file": "^5.0.0",
-        "npm-run-all": "^4.1.5",
-        "tsconfig-paths-webpack-plugin": "^4.1.0",
         "xmldoc": "github:ammatwain/xmldoc"
     }
 }

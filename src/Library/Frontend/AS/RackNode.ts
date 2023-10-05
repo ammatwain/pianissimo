@@ -1,7 +1,6 @@
 import { ASCSS } from "./ASCSS";
-import { TRackObject, RackClass } from "@Common/DataObjects";
+import { RackClass } from "@Common/DataObjects";
 import { LibraryNode } from "./LibraryNode";
-import { ASModal } from "./ASModal";
 import { ASModalRack } from "./ASModalRack";
 
 ASCSS.RackNode = {
@@ -129,11 +128,11 @@ export class RackNode extends LibraryNode {
         this.RackClass.Sequence = sequence;
     }
 
-    public get Status(): string {
+    public get Status(): string[] {
         return this.RackClass.Status;
     }
 
-    public set Status(status: string) {
+    public set Status(status: string[]) {
         this.RackClass.Status = status;
     }
 
@@ -143,10 +142,7 @@ export class RackNode extends LibraryNode {
 
     public set Title(title: string) {
         this.RackClass.Title = title;
-        //this.$Caption = title;
     }
-
-    //
 
     public get ParentRack(): RackNode{
         if (this.$Parent instanceof RackNode) {

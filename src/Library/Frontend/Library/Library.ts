@@ -14,6 +14,7 @@ import { SheetNode } from "@Frontend/AS/SheetNode";
 import { ASNode } from "../AS";
 import { TResponse } from "@Library/Common/DataObjects/TResponse";
 import { TMusicXmlObject } from "@Library/Common/DataObjects";
+
 export class LibraryObjectMap extends Map<number, TLibraryObject> {};
 export class RackObjectMap extends Map<number, TRackObject> {};
 export class ScoreObjectMap extends Map<number, TScoreObject> {};
@@ -26,6 +27,12 @@ export class LibraryNodesMap extends Map<number, LibraryNode> {};
 export class RackNodesMap extends Map<number, RackNode> {};
 export class ScoreNodesMap extends Map<number, ScoreNode> {};
 export class SheetNodesMap extends Map<number, SheetNode> {};
+
+declare global {
+    interface Window {
+        electron: any;
+    }
+}
 
 export class TLibrary{
     private libraryObjects: LibraryObjectMap;
@@ -54,16 +61,19 @@ export class TLibrary{
         this.rackNodes = new RackNodesMap();
         this.scoreNodes = new ScoreNodesMap();
         this.sheetNodes = new SheetNodesMap();
-        this.RootNode =  new LibraryNode({library: this, caption: this.libraryName});
+        this.RootNode =  new LibraryNode({library: this, caption: this.LibraryName});
     }
 
     public get LibraryName(): string {
-        return this.RootNode.$Caption;
+        if (this.RootNode && this.RootNode instanceof LibraryNode) {
+            return this.RootNode.$Caption;
+        }
+        return "";
     }
 
     public set LibraryName(libraryName: string) {
         window.electron.ipcRenderer.invoke("request-set-config-key-value", {key: "libraryName", value: libraryName}).then((result: boolean)=>{
-            if (result) {
+            if (this.RootNode && this.RootNode instanceof LibraryNode  && result) {
                 this.RootNode.$Caption = libraryName;
             }
         });
@@ -459,7 +469,7 @@ export class TLibrary{
                 activeKey: scoreObject.mainKey,
                 measureStart: 1,
                 measureEnd: scoreObject.measures,
-                hiddenParts: {},
+                hiddenParts: [],
                 transposeSettings: {
                     type:"transposeByKey",
                     octave:0,

@@ -1,4 +1,4 @@
-import { RepetitionInstruction, RepetitionInstructionEnum, SourceMeasure } from "opensheetmusicdisplay";
+import { RepetitionInstruction, RepetitionInstructionEnum, SourceMeasure } from "@Library/Frontend/Extends/ExtendedOSMD";
 
 //https://www.myriad-online.com/resources/docs/melody/italiano/breaks.htm
 /*

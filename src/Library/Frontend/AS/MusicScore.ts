@@ -4,7 +4,6 @@ import { ASCSS } from "./ASCSS";
 import { SheetNode } from "./SheetNode";
 import { ScoreNode } from "./ScoreNode";
 import { Maestro } from "../Maestro";
-import { STR } from "@Library/Global/STR";
 
 ASCSS.MusicScore = {
     "bottom":"0px",

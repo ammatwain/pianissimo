@@ -1,6 +1,5 @@
 import { LibraryNode } from "@Frontend/AS/LibraryNode";
 import { ASCSS } from "./ASCSS";
-import { AS, ASCore } from "./ASCore";
 import { ASModal } from "./ASModal";
 
 ASCSS.ASModalLibrary = {

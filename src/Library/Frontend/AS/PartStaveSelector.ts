@@ -1,6 +1,6 @@
 import { THiddenPart, TPartStave } from "@Library/Common/DataObjects";
 import { ASCSS } from "./ASCSS";
-import { AS, ASCore } from "./ASCore";
+import { ASCore } from "./ASCore";
 
 ASCSS.PartStaveSelector = {
     "display": "block",

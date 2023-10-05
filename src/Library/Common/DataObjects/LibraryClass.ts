@@ -60,8 +60,8 @@ export class LibraryClass {
         }
     }
 
-    protected $updateDb(query: {table: string, pkey: string, id: number, field: string, value: number | string }): boolean {
-        this.library.updateDb(query);
+    protected $updateDb(query: {table: string, pkey: string, id: number, field: string, value: number | string }): TLibrary {
+        return this.library.updateDb(query);
     }
 
     protected updateField(field: string, value: number | string): boolean {

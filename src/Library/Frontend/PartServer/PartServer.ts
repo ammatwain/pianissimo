@@ -1,5 +1,5 @@
 import { THiddenPart, TPartStave } from "@Library/Common/DataObjects";
-import { Instrument, MusicSheet, Staff } from "../Extends/ExtendedOpenMusicDisplayManager";
+import { Instrument, MusicSheet, Staff } from "../Extends/ExtendedOSMD";
 
 type TSheetPart = {partIndex: number, relativeStaveIndex: number};
 export class PartServer {

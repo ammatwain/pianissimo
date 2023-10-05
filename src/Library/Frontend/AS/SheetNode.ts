@@ -1,6 +1,5 @@
 import { ASCSS } from "./ASCSS";
 import {
-    TVariableMajorKeyNumberArray,
     SheetClass,
     TPartStave,
     THiddenPart
@@ -8,7 +7,6 @@ import {
 
 import { LibraryNode } from "./LibraryNode";
 import { ScoreNode } from "./ScoreNode";
-import { ASModal } from "./ASModal";
 import { ASModalScore } from "./ASModalScore";
 import { MusicScore } from "./MusicScore";
 
@@ -41,10 +39,6 @@ export class SheetNode extends LibraryNode {
             this.$Elements.delete.style.display = "";
         }
         this.$Elements.add.style.display = "none";
-        this.$Elements.add.onclick = (): void => {
-            ASModal.show("Sheet Add");
-            console.log(this.constructor.name, "clicked", "add");
-        };
         this.$Elements.delete.onclick = (): void => {
             this.Library.deleteLibraryObject(this.SheetId);
             console.log(this.ParentScore.$Items.length);
@@ -202,18 +196,6 @@ export class SheetNode extends LibraryNode {
 
     public set Title(title: string) {
         this.SheetClass.Title = title;
-    }
-
-    public practiceKeysAdd(practiceKey: number): void {
-        this.SheetClass.practiceKeysAdd(practiceKey);
-    }
-
-    public practiceKeysDel(practiceKey: number): void {
-        this.SheetClass.practiceKeysDel(practiceKey);
-    }
-
-    public practiceKeysExists(practiceKey: number): boolean {
-        return this.SheetClass.practiceKeysExists(practiceKey);
     }
 
     public shotAdd(key: number, value: number): boolean {

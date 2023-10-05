@@ -92,7 +92,7 @@ ASCSS.ASCore = {
 
 export class ASCore extends AS {
 
-    private $: IASCoreInternalData;;
+    protected $: IASCoreInternalData;;
 
     constructor(args: any = {} ){
         super();

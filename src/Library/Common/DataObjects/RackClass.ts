@@ -1,4 +1,3 @@
-import { TLibraryObject } from "./TLibraryObject";
 import { TRackObject } from "./TRackObject";
 import { LibraryClass } from "./LibraryClass";
 
@@ -10,7 +9,7 @@ export class RackClass extends LibraryClass {
         super.Fields = fields;
     }
 
-    public get RackFields(): TRackObject {
+    public get RackObject(): TRackObject {
         return <TRackObject>this.fields;
     }
 
@@ -27,28 +26,28 @@ export class RackClass extends LibraryClass {
     }
 
     public get RackId(): number {
-        return this.RackFields.rackId;
+        return this.RackObject.rackId;
     }
 
     public set RackId(rackId: number) {
-        if (this.RackFields.rackId !== rackId) {
-            this.RackFields.rackId = rackId;
+        if (this.RackObject.rackId !== rackId) {
+            this.RackObject.rackId = rackId;
             this.FieldsChanged = true;
             console.log(this.constructor.name, "changed", "RackId");
         }
     }
 
     public get ParentRackId(): number {
-        if (this.RackFields && this.RackFields.parentRackId){
-            return this.RackFields.parentRackId;
+        if (this.RackObject && this.RackObject.parentRackId){
+            return this.RackObject.parentRackId;
         } else {
             return 0;
         }
     }
 
     public set ParentRackId(parentRackId: number) {
-        if (this.RackFields.parentRackId !== parentRackId) {
-            this.RackFields.parentRackId = parentRackId;
+        if (this.RackObject.parentRackId !== parentRackId) {
+            this.RackObject.parentRackId = parentRackId;
             this.FieldsChanged = true;
             if (this.updateField("parentRackId",parentRackId)) {
                 console.log(this.constructor.name, "update success");
@@ -59,12 +58,12 @@ export class RackClass extends LibraryClass {
     }
 
     public get Sequence(): number {
-        return this.RackFields.sequence;
+        return this.RackObject.sequence;
     }
 
     public set Sequence(sequence: number) {
-        if (this.RackFields.sequence !== sequence) {
-            this.RackFields.sequence = sequence;
+        if (this.RackObject.sequence !== sequence) {
+            this.RackObject.sequence = sequence;
             this.FieldsChanged = true;
             if (this.updateField("sequence",sequence)) {
                 console.log(this.constructor.name, "update success");
@@ -74,29 +73,32 @@ export class RackClass extends LibraryClass {
         }
     }
 
-    public get Status(): string {
-        return this.RackFields.status;
+    public get Status(): string[] {
+        return this.RackObject.status;
     }
 
-    public set Status(status: string) {
-        if (this.RackFields.status !== status) {
-            this.RackFields.status = status;
+    public set Status(status: string[]) {
+        const oldStatus: string = JSON.stringify(this.RackObject.status);
+        const newStatus: string = JSON.stringify(status.sort());
+
+        if (oldStatus !== newStatus) {
+            this.RackObject.status = JSON.parse(newStatus);
             this.FieldsChanged = true;
             console.log(this.constructor.name, "changed", "Status");
         }
     }
 
     public get Title(): string {
-        if ("title" in this.RackFields) {
-            return this.RackFields.title;
+        if ("title" in this.RackObject) {
+            return this.RackObject.title;
         } else {
             return "";
         }
     }
 
     public set Title(title: string) {
-        if (this.RackFields.title !== title) {
-            this.RackFields.title = title;
+        if (this.RackObject.title !== title) {
+            this.RackObject.title = title;
             this.FieldsChanged = true;
             if (this.updateField("title",title)) {
                 console.log(this.constructor.name, "update success");

@@ -1,4 +1,3 @@
-export * from "./TFieldTypes";
 export * from "./TRackObject";
 export * from "./TScoreObject";
 export * from "./TSheetObject";

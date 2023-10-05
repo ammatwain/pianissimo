@@ -1,5 +1,5 @@
 import { ASCSS } from "./ASCSS";
-import { AS, ASCore } from "./ASCore";
+import { ASCore } from "./ASCore";
 
 ASCSS.MeasureRange = {
     "box-sizing": "border-box",

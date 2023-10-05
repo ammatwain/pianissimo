@@ -1,17 +1,14 @@
-import { RackNode, ScoreNode, SheetNode } from "@Frontend/AS";
-import "./Application.scss";
 import { LibraryNode } from "../AS/LibraryNode";
 import { TRackObject } from "@Library/Common/DataObjects/TRackObject";
 import { TScoreObject } from "@Library/Common/DataObjects/TScoreObject";
 import { TSheetObject } from "@Common/DataObjects/TSheetObject";
-import { LibraryClass } from "@Library/Common/DataObjects/LibraryClass";
-import { RackClass } from "@Common/DataObjects/RackClass";
-import { ScoreClass } from "@Common/DataObjects/ScoreClass";
-import { SheetClass } from "@Common/DataObjects/SheetClass";
 import { Library } from "../Library/Library";
 import { MusicScore } from "../AS/MusicScore";
+import { Package } from "@Library/Backend/Package";
 
-export class Application {
+import "./Application.scss";
+
+export class AppPianissimo {
     private header: HTMLDivElement;
     private footer: HTMLDivElement;
     private left: HTMLDivElement;
@@ -24,6 +21,9 @@ export class Application {
         this.setListeners();
     }
 
+    public get Name(): string {
+        return Package.name;
+    }
     buildTree(data: any): void {
 //        console.log(data);
         Library.LibraryName = data.libraryName;

@@ -1,6 +1,6 @@
 import { STR } from "@Global/STR";
 
-import { RepetitionInstruction, Note, ExtendedOpenSheetMusicDisplay, GraphicalNote, GraphicalMeasure, Cursor } from "../Extends/ExtendedOpenMusicDisplayManager";
+import { RepetitionInstruction, Note, ExtendedOSMD, GraphicalNote, GraphicalMeasure, Cursor } from "../Extends/ExtendedOSMD";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
 import { WebMidi, Input as MidiInput, NoteMessageEvent } from "../WebMidi";
 import { SheetFlowCalculator } from "@Frontend/SheetFlow";
@@ -18,7 +18,7 @@ export interface IMaestroParams {
 interface IMaestroData extends IMaestroParams{
     etc?: ExtendedTransposeCalculator;
     midiInputs?: MidiInput[];
-    osmd?: ExtendedOpenSheetMusicDisplay;
+    osmd?: ExtendedOSMD;
     repeats: [RepetitionInstruction[],RepetitionInstruction[]][];
     flow: SheetFlowCalculator;
     midiNotes: boolean[];
@@ -70,7 +70,7 @@ export class Maestro{
         this.MusicScore = musicScore;
         WebMidi.enable().then(() => {
             this.MidiInputs = WebMidi.inputs;
-            this.OSMD = new ExtendedOpenSheetMusicDisplay(musicScore.Canvas, {
+            this.OSMD = new ExtendedOSMD(musicScore.Canvas, {
                 backend: "svg",
                 drawTitle: true,
                 drawSubtitle: true,
@@ -268,11 +268,11 @@ export class Maestro{
         return notesUnderCursor;
     }
 
-    public get OSMD(): ExtendedOpenSheetMusicDisplay {
+    public get OSMD(): ExtendedOSMD {
         return this.data.osmd;
     }
 
-    public set OSMD(osmd: ExtendedOpenSheetMusicDisplay) {
+    public set OSMD(osmd: ExtendedOSMD) {
         this.data.osmd = osmd;
     }
 

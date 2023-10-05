@@ -2,22 +2,6 @@ import { THiddenPart, TSheetObject } from "./TSheetObject";
 import { LibraryClass } from "./LibraryClass";
 import { TLibrary } from "@Library/Frontend";
 
-class TArrayUnique extends Array {
-    add(value: any): TArrayUnique {
-        if (this.indexOf(value)===-1){
-            this.push(value);
-        }
-        return this;
-    }
-    del(value: any): TArrayUnique {
-        const i: number = this.indexOf(value);
-        if (i>=0){
-            delete this[i];
-        }
-        return this;
-    }
-}
-
 class TPracticeKeys extends Set<number> {
 
     protected jsonString: string =  "[]";
@@ -352,7 +336,7 @@ export class SheetClass extends LibraryClass {
         return this.SheetObject.shot;
     }
 
-    public set Shot(status: string[]) {
+    public set Shot(status: number[]) {
         const oldStatusString: string = JSON.stringify(this.SheetObject.status);
         const newStatusString: string = JSON.stringify(status);
         if (oldStatusString !== newStatusString) {

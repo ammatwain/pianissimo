@@ -1,8 +1,8 @@
-import { MusicSheet, OpenSheetMusicDisplay, RepetitionInstruction, SourceMeasure } from "opensheetmusicdisplay";
+import { MusicSheet, ExtendedOSMD, RepetitionInstruction, SourceMeasure } from "./ExtendedOSMD";
 import { ExtendedRepetitions } from "./ExtendedRepetitions";
 
 interface IShetFlowCalculatorData {
-    osmd?: OpenSheetMusicDisplay;
+    osmd?: ExtendedOSMD;
 }
 
 export class ExtendedRepeats {
