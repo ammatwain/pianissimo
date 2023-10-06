@@ -183,18 +183,17 @@ export class Maestro{
     public get IsPlayableSelection(): boolean {
         let ok: boolean = false;
         this.Cursor.reset();
-        let notesToPlay: number = 0;
+        this.data.notesToPlay = 0;
         while(this.CurrentMeasureIndex < this.MeasureStart) {
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
         }
         while(this.CurrentMeasureIndex <= this.MeasureEnd) {
             if (this.CurrentMeasureIndex <= this.MeasureEnd) {
-                notesToPlay += this.fillDrawNotes();
+                this.data.notesToPlay += this.fillDrawNotes();
             }
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
         }
-        ok = notesToPlay>0;
-        console.log("NOTE TO PLAY", notesToPlay);
+        ok = this.data.notesToPlay>0;
         this.DrawNotes = [];
         return ok;
     }
@@ -250,24 +249,24 @@ export class Maestro{
     public get NotesToPlay(): number {
         return this.data.notesToPlay || 0;
     }
-
+/*
     public set NotesToPlay(notesToPlay: number) {
         this.data.notesToPlay = notesToPlay;
-        console.log("this.NotesToPlay",this.NotesToPlay);
     }
-
+*/
     public get NotesUnderCursor(): number [] {
         const notesUnderCursor: number[] = [];
         this.Cursor.GNotesUnderCursor().forEach((osmdNote: GraphicalNote)=>{
             const parentMeasure: GraphicalMeasure = osmdNote.parentVoiceEntry.parentStaffEntry.parentMeasure;
             const measureIndex: number = parentMeasure.parentSourceMeasure.measureListIndex;
             const staffIndex: number = parentMeasure.ParentStaff.idInMusicSheet;
-            const halfTone: number = osmdNote.sourceNote.halfTone;
-            const isNotRest: boolean = !osmdNote.sourceNote.isRest();
             if (!this.OSMD.measurePartStaveHidden(measureIndex, staffIndex)){
-                if (halfTone && isNotRest) {
+                const halfTone: number = osmdNote.sourceNote.halfTone;
+                const isNotRest: boolean = !osmdNote.sourceNote.isRest();
+                const isNotTieProsecution = (!osmdNote.sourceNote.NoteTie) || osmdNote.sourceNote.NoteTie.StartNote === osmdNote.sourceNote;  
+                if (isNotTieProsecution && halfTone && isNotRest) {
                     notesUnderCursor.push(halfTone);
-                    this.NotesToPlay++;
+//                    this.NotesToPlay++;
                 }
             }
         });
@@ -325,7 +324,6 @@ export class Maestro{
 
     public set PlayedNotes(playedNotes: number) {
         this.data.playedNotes = playedNotes;
-        console.log(this.PlayedNotes);
     }
 
     public get PlayedShot(): number {
@@ -464,6 +462,7 @@ export class Maestro{
 
     public fillDrawNotes(): number {
         this.DrawNotes = this.NotesUnderCursor;
+
         return this.DrawNotes.length;
     }
 
@@ -597,8 +596,6 @@ export class Maestro{
             this.fillDrawNotes();
         }
         this.Cursor.update();
-        console.log("this.Cursor.NotesUnderCursor",this.Cursor.NotesUnderCursor());
-        console.log("this.Cursor.GNotesUnderCursor",this.Cursor.GNotesUnderCursor());
     }
 
     public resetTo(newMeasureIndex: number): void {
@@ -640,14 +637,14 @@ export class Maestro{
                 this.Diary.duration = 0;
                 this.Diary.score = 0;
 
-                this.NotesToPlay = 0;
+//                this.NotesToPlay = 0;
                 this.PlayedNotes = 0;
                 this.Cursor.reset();
                 //this.Cursor.reset();
                 this.PlayMeasureIndex = 0; //this.OSMD.MeasureStart;
             }
         }
-        this.NotesToPlay = 0;
+//        this.NotesToPlay = 0;
         this.PlayedNotes = 0;
         this.Errors = 0;
 
@@ -774,7 +771,7 @@ export class Maestro{
                 this.Diary.duration = 0;
                 this.Diary.score = 0;
 
-                this.NotesToPlay = 0;
+//                this.NotesToPlay = 0;
                 this.PlayedNotes = 0;
                 this.reset();
                 //this.Cursor.reset();
@@ -814,7 +811,7 @@ export class Maestro{
                 STR.keydown,
                 (event: KeyboardEvent) => {
                     if ( event.key === STR.ArrowRight) {
-                        this.PlayedNotes += this.DrawNotes.length + (Math.floor(Math.random() * 2));
+                        this.PlayedNotes++; // += this.DrawNotes.length + (Math.floor(Math.random() * 2));
                         if(this.allNotesUnderCursorArePlayed(true)){
                             if (this.Diary.datetime===0){
                                 this.Diary.datetime = Date.now();

@@ -15,6 +15,7 @@
             .then( (meiXML) => {
               let svg = tk.renderData(meiXML, {});
               document.getElementById("notation").innerHTML = svg;
+              console.log(tk);
             });
           }
       });
