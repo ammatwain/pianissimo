@@ -181,6 +181,11 @@ export class Maestro{
     }
 
     public get IsPlayableSelection(): boolean {
+        const noteInMeasures: number[] = [];
+        for(let i: number = 0; i < this.OSMD.Sheet.SourceMeasures.length; i++){
+            noteInMeasures.push(0);
+        }
+
         let ok: boolean = false;
         this.Cursor.reset();
         this.data.notesToPlay = 0;
@@ -189,10 +194,19 @@ export class Maestro{
         }
         while(this.CurrentMeasureIndex <= this.MeasureEnd) {
             if (this.CurrentMeasureIndex <= this.MeasureEnd) {
-                this.data.notesToPlay += this.fillDrawNotes();
+                const playableNotes: number = this.fillDrawNotes();
+                noteInMeasures[this.CurrentMeasureIndex] += playableNotes;
             }
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
         }
+        for(let i: number = 0; i < this.PlayerMeasures.length; i++){
+            const measureIndex: number = this.PlayerMeasures[i];
+            if (measureIndex>=0){
+                this.data.notesToPlay += noteInMeasures[measureIndex];
+            }
+        }
+        console.log("NOTE TO PLAY",this.NotesToPlay);
+
         ok = this.data.notesToPlay>0;
         this.DrawNotes = [];
         return ok;
@@ -263,7 +277,7 @@ export class Maestro{
             if (!this.OSMD.measurePartStaveHidden(measureIndex, staffIndex)){
                 const halfTone: number = osmdNote.sourceNote.halfTone;
                 const isNotRest: boolean = !osmdNote.sourceNote.isRest();
-                const isNotTieProsecution = (!osmdNote.sourceNote.NoteTie) || osmdNote.sourceNote.NoteTie.StartNote === osmdNote.sourceNote;  
+                const isNotTieProsecution: boolean = (!osmdNote.sourceNote.NoteTie) || osmdNote.sourceNote.NoteTie.StartNote === osmdNote.sourceNote;
                 if (isNotTieProsecution && halfTone && isNotRest) {
                     notesUnderCursor.push(halfTone);
 //                    this.NotesToPlay++;
