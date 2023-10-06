@@ -2,7 +2,7 @@ import { STR } from "@Global/STR";
 
 import { RepetitionInstruction, Note, ExtendedOSMD, GraphicalNote, GraphicalMeasure, Cursor } from "../Extends/ExtendedOSMD";
 import { ExtendedTransposeCalculator } from "extended-transpose-calculator";
-import { WebMidi, Input as MidiInput, NoteMessageEvent } from "../WebMidi";
+import { WebMidi, Input as MidiInput, NoteMessageEvent, InputEventMap } from "../WebMidi";
 import { SheetFlowCalculator } from "@Frontend/SheetFlow";
 import { SheetNode } from "@Frontend/AS/SheetNode";
 import { IExercise } from "@Common/Interfaces/IExercise";
@@ -183,14 +183,19 @@ export class Maestro{
     public get IsPlayableSelection(): boolean {
         let ok: boolean = false;
         this.Cursor.reset();
+        let notesToPlay: number = 0;
         while(this.CurrentMeasureIndex < this.MeasureStart) {
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
         }
-        ok = this.fillDrawNotes()>0;
-        while(!ok && this.CurrentMeasureIndex < this.MeasureEnd) {
+        while(this.CurrentMeasureIndex <= this.MeasureEnd) {
+            if (this.CurrentMeasureIndex <= this.MeasureEnd) {
+                notesToPlay += this.fillDrawNotes();
+            }
             this.Cursor.Iterator.moveToNextVisibleVoiceEntry(true);
-            ok = this.fillDrawNotes()>0;
         }
+        ok = notesToPlay>0;
+        console.log("NOTE TO PLAY", notesToPlay);
+        this.DrawNotes = [];
         return ok;
     }
 
@@ -248,6 +253,7 @@ export class Maestro{
 
     public set NotesToPlay(notesToPlay: number) {
         this.data.notesToPlay = notesToPlay;
+        console.log("this.NotesToPlay",this.NotesToPlay);
     }
 
     public get NotesUnderCursor(): number [] {
@@ -401,7 +407,7 @@ export class Maestro{
                     }
                 }
                 if (ok) {
-                    this.clearMidiNotes();
+                    //this.clearMidiNotes();
                     this.clearDrawNotes();
                 }
                 return ok;
@@ -567,7 +573,7 @@ export class Maestro{
     }
 
     public next(): void {
-        this.clearMidiNotes();
+        //this.clearMidiNotes();
         this.clearDrawNotes();
         while (
             this.ExpectedMeasureIndex >= 0 && (
@@ -591,6 +597,8 @@ export class Maestro{
             this.fillDrawNotes();
         }
         this.Cursor.update();
+        console.log("this.Cursor.NotesUnderCursor",this.Cursor.NotesUnderCursor());
+        console.log("this.Cursor.GNotesUnderCursor",this.Cursor.GNotesUnderCursor());
     }
 
     public resetTo(newMeasureIndex: number): void {
@@ -619,8 +627,8 @@ export class Maestro{
                 if (this.PlayedDone && this.PlayedShot) {
                     success = ((this.PlayedDone / this.PlayedShot ) * 100) || 0;
                 }
-                this.CurrentSheet.doneAdd(this.CurrentKey,this.PlayedDone);
-                this.CurrentSheet.shotAdd(this.CurrentKey,this.PlayedShot);
+                //this.CurrentSheet.doneAdd(this.CurrentKey,this.PlayedDone);
+                //this.CurrentSheet.shotAdd(this.CurrentKey,this.PlayedShot);
                 console.log("SUCCESS:", `${success.toFixed(2)}%` );
 
                 this.Diary.duration = Date.now() - this.Diary.datetime;
@@ -634,7 +642,7 @@ export class Maestro{
 
                 this.NotesToPlay = 0;
                 this.PlayedNotes = 0;
-                this.reset();
+                this.Cursor.reset();
                 //this.Cursor.reset();
                 this.PlayMeasureIndex = 0; //this.OSMD.MeasureStart;
             }
@@ -791,13 +799,13 @@ export class Maestro{
                     }
                 }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
 
-                input.addListener(<Symbol><unknown>STR.noteoff,(e: NoteMessageEvent)=>{
+                input.addListener(<keyof InputEventMap>STR.noteoff,(e: NoteMessageEvent)=>{
                     this.setMidiNoteOff(e.note.number);
                 }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
 
-                input.addListener(<Symbol><unknown>STR.pitchbend ,(e: NoteMessageEvent)=>{
+                input.addListener(<keyof InputEventMap>STR.pitchbend ,(e: NoteMessageEvent)=>{
                     console.log(e);
-                    this.setMidiNoteOff(e.note.number);
+                    //this.setMidiNoteOff(e.note.number);
                 }, {channels: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]});
 
             });
